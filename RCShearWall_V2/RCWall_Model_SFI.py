@@ -74,7 +74,7 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, l
     # ---------------------------------------------------------------------------------------
     global Aload  # axial force in N according to ACI318-19 (not considering the reinforced steel at this point for simplicity)
     Aload = 0.85 * abs(fc) * tw * lw * loadF
-    print(Aload)
+
     # ---------------------------------------------------------------------------------------
     # Define Steel uni-axial materials
     # ---------------------------------------------------------------------------------------
