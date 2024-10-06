@@ -12,7 +12,7 @@ parameter_ranges = {
     'tw': (100.0 * mm, 400.0 * mm),  # Thickness
     'tb': (None, 600.0 * mm),  # Boundary thickness
     'lw': (None, 3.0 * m),  # Wall length (min t*6)
-    'ar': (1.5, 3.0),  # Aspect Ratio
+    'ar': (1.0, 3.0),  # Aspect Ratio
     'hw': (2.0 * m, 6.0 * m),  # Wall height
     'lbe': (0.08, 0.20),  # BE length (percentage of wall length)
     'fc': (25.0 * MPa, 60.0 * MPa),  # Concrete Compressive Strength
@@ -32,9 +32,7 @@ loading_ranges = {
     'repetition_cycles': (1, 3),  # Repetition cycles
 }
 
-# ***************************************************************************************************
-#           DEFINE PARAMETER RANGES
-# ***************************************************************************************************
+'''
 # Define the parameter ranges
 minParameters = [
     100.0 * mm,  # (tw) Minimum thickness
@@ -82,3 +80,4 @@ maxLoading = [
     150 * mm,  # max_displacement
     3  # repetition_cycles
 ]
+'''

@@ -4,7 +4,7 @@ import multiprocessing
 
 
 def run_generator(instance_id, start_index, end_index):
-    subprocess.run(['python', 'RCWall_Data_Generator_Parallel.py', str(instance_id), str(start_index), str(end_index)])
+    subprocess.run(['python', 'RCWall_Data_Generator.py', str(instance_id), str(start_index), str(end_index)])
 
 
 if __name__ == "__main__":

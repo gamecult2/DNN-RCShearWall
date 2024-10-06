@@ -3,12 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Constants
-eleH = 10  # Number of elements in height
-eleL = 8  # Number of elements in length
+eleH = 50  # Number of elements in height
+eleL = 50  # Number of elements in length
 crack_factor = 4
-eleL = 8  # Number of elements in length
 steps = 1000
-dt = 20
+dt = 1
+
 
 def load_data(file_path):
     return np.loadtxt(file_path, delimiter=None)
@@ -41,8 +41,8 @@ def plot_cracks(step):
 
     # x1 = [0, 70, 120, 170, 220, 270, 320, 370, 420, 470, 540]
     # y1 = list(range(0, 2251, 50))
-    x1 = list(range(0, eleL+1, 1))
-    y1 = list(range(0, eleH+1, 1))
+    x1 = list(range(0, eleL + 1, 1))
+    y1 = list(range(0, eleH + 1, 1))
 
     # Plot grid lines
     for y in y1:
@@ -53,15 +53,15 @@ def plot_cracks(step):
     # Plot cracks
     for j in range(1, eleL):
         for i in range(1, eleH):
-            print('C1', C1)
+            # print('C1', C1)
             theta1 = C1[i][j][0]  # Assuming first value is the angle
             if theta1 == 10:
                 continue
 
             x_center = (x1[j] + x1[j + 1]) / 2
-            print('x_center', x_center)
+            # print('x_center', x_center)
             y_center = (y1[i] + y1[i + 1]) / 2
-            print('y_center', y_center)
+            # print('y_center', y_center)
             x = np.linspace(x1[j], x1[j + 1], 100)
             k = np.tan(theta1)
             b = y_center - k * x_center
@@ -89,7 +89,7 @@ def plot_cracks(step):
 
             plt.plot(x, y, 'r', linewidth=linewidth)
 
-    plt.axis([0-2, eleL+2, 0-1, eleH+2])
+    plt.axis([0 - 2, eleL + 2, 0 - 1, eleH + 2])
     plt.xticks([])
     plt.yticks([])
     plt.axis('off')

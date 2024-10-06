@@ -101,7 +101,7 @@ SEQUENCE_LENGTH = 501  # One data point to remove in data preparation
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("Usage: python RCWall_Data_Generator.py <instance_id> <start_index> <end_index>")
+        print("Usage: python RCWall_Data_Generator_Old.py <instance_id> <start_index> <end_index>")
         sys.exit(1)
 
     instance_id = int(sys.argv[1])

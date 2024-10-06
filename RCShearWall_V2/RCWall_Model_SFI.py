@@ -20,7 +20,7 @@ def reset_analysis():
     ops.wipe()
 
 
-def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, eleH=10, eleL=8, printProgression=True):
+def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, eleH=10, eleL=10, printProgression=True):
     """
     Builds a model based on the provided parameters.
 
@@ -65,9 +65,11 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, l
     # ---------------------------------------------------------------------------------------
     # Define Control Node and DOF
     # ---------------------------------------------------------------------------------------
-    global controlNode, controlNodeDof
+    global controlNode, controlNodeDof, eH, eL
     controlNode = eleH + 1  # Control Node (TopNode)
     controlNodeDof = 1  # Control DOF 1 = X-direction
+    eH = eleH
+    eL = eleL
 
     # ---------------------------------------------------------------------------------------
     # Define Axial Load on Top Node
@@ -247,37 +249,23 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, l
 
     parameter_values = [tw, tb, hw, lw, lbe, fc, fyb, fyw, round(rouYb, 4), round(rouYw, 4), round(rouXb, 4), round(rouXw, 4), loadF]
     '''
-    ops.recorder('Node', '-file', f'plot/MVLEM_Dx.txt', '-time', '-nodeRange', 1, eleH, '-dof', 1, 'disp')
-    for i in range(0, eleH):
-        for j in range(0, eleL):
-            # Unaxial Steel Recorders for all panels
-            # ops.recorder('Element', '-file', f'MVLEM_strain_stress_steelX_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_steelX')
-            # ops.recorder('Element', '-file', f'MVLEM_strain_stress_steelY_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_steelY')
-            # print('recorder', 'Element', '-file', f'plot/MVLEM_strain_stress_steelX_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_steelX')
-            # print('recorder', 'Element', '-file', f'plot/MVLEM_strain_stress_steelY_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_steelY')
-
-            # Unaxial Concrete Recorders for all panels
-            ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_concr1_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_concrete1')
-            ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_concr2_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_concrete2')
-            # print('recorder', 'Element', '-file', f'plot/MVLEM_strain_stress_concr1_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_concrete1')
-            # print('recorder', 'Element', '-file', f'plot/MVLEM_strain_stress_concr2_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_concrete2')
-
-            # Shear Concrete Recorders for all panels
-            ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_inter1_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_interlock1')
-            ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_inter2_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_interlock2')
-            # print('recorder', 'Element', '-file', f'MVLEM_strain_stress_inter1_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_interlock1')
-            # print('recorder', 'Element', '-file', f'MVLEM_strain_stress_inter2_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_interlock2')
-            ops.recorder('Element', '-file', f'plot/MVLEM_cracking_angle_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'cracking_angles')
-            # print('recorder', 'Element', '-file', f'plot/MVLEM_cracking_angle_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'cracking_angles')
-            ops.recorder('Element', '-file', f'plot/MVLEM_panel_crack_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'panel_crack')
+        for i in range(0, eleH):
+            for j in range(0, eleL):
+                # Unaxial Steel Recorders for all panels
+                # ops.recorder('Element', '-file', f'MVLEM_strain_stress_steelX_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_steelX')
+                # ops.recorder('Element', '-file', f'MVLEM_strain_stress_steelY_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_steelY')
+    
+                # Unaxial Concrete Recorders for all panels
+                ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_concr1_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_concrete1')
+                ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_concr2_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_concrete2')
+    
+                # Shear Concrete Recorders for all panels
+                ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_inter1_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_interlock1')
+                ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_inter2_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_interlock2')
+    
+                ops.recorder('Element', '-file', f'plot/MVLEM_cracking_angle_ele_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'cracking_angles')
+                ops.recorder('Element', '-file', f'plot/MVLEM_panel_crack_{i + 1}_panel_{j + 1}.txt', '-time', '-ele', i + 1, 'RCPanel', j + 1, 'panel_crack')
     '''
-
-    # ops.recorder('Node', '-file', f'MVLEM_Dtop.out.txt', '-time', '-node', controlNode, '-dof', 1, 'disp')
-    #
-    # for i in range(0, eleH):
-    #     # Unaxial Steel Recorders for all panels
-    #     ops.recorder('Element', '-file', f'MVLEM_Fgl.out_{i + 1}.txt', '-time', '-ele', i + 1, '-dof', 1, 'globalForce')
-    #     ops.recorder('Element', '-file', f'MVLEM_Dsh.out_{i + 1}.txt', '-time', '-ele', i + 1, 'ShearDef')
 
     if printProgression:
         print('--------------------------------------------------------------------------------------------------')
@@ -310,6 +298,11 @@ def run_analysis(DisplacementStep, pushover=False, printProgression=True):
             print("RUNNING PUSHOVER ANALYSIS")
         else:
             print("RUNNING CYCLIC ANALYSIS")
+
+    """Set up OpenSees recorders for failure analysis"""
+    ops.recorder('Node', '-file', f'node_disp.out', '-time', '-node', eH, '-dof', 1, 'disp')
+    ops.recorder('Element', '-file', f'element_forces.out', '-time', '-ele', 1, 'force')
+    ops.recorder('Element', '-file', f'element_strain.out', '-time', '-ele', 1, 'strain')
 
     if pushover:
         MaxDisp = max(DisplacementStep)
@@ -411,3 +404,5 @@ def run_analysis(DisplacementStep, pushover=False, printProgression=True):
         # forceData[j + 1] = eleForce
 
     return [dispData[0:finishedSteps], loadData[0:finishedSteps]]
+
+

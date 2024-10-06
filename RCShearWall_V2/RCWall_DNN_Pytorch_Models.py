@@ -133,7 +133,7 @@ class Informer_Model(nn.Module):
                  d_model=256, n_heads=4, e_layers=2, d_layers=2, d_ff=512,
                  dropout=0.0, attn='prob', embed='fixed', freq='h', activation='gelu',
                  output_attention=False, distil=True, mix=True, device=torch.device('cuda:0')):
-        super(InformerAE_Model, self).__init__()
+        super(Informer_Model, self).__init__()
         self.sequence_length = sequence_length
         self.d_model = d_model
         self.device = device
