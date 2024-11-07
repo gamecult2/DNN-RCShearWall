@@ -1313,7 +1313,7 @@ def Lefas_SW11():
 # ------- Select Model for Validation -----------------------------------------------------------------------------------------------
 validation_model = Thomsen_and_Wallace_RW2()
 # validation_model = Thomsen_and_Wallace_RW1()
-validation_model = Tran_and_Wallace_A15P10S78()
+# validation_model = Tran_and_Wallace_A15P10S78()
 # validation_model = Tran_and_Wallace_A20P10S38()
 # validation_model = Dazio_WSH2()
 # validation_model = Dazio_WSH3()

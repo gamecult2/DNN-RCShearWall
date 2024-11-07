@@ -59,12 +59,12 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
     # SteelMPF model
     ops.uniaxialMaterial('SteelMPF', IDsYb, fyb, fyb, Es, byb, byb, R0, cR1, cR2)  # Steel Y boundary
     ops.uniaxialMaterial('SteelMPF', IDsYw, fyw, fyw, Es, byw, byw, R0, cR1, cR2)  # Steel Y web
-    ops.uniaxialMaterial('SteelMPF', IDsX, fx, fx, Es, bX, bX, R0, cR1, cR2)  # Steel X
+    ops.uniaxialMaterial('SteelMPF', IDsX, fx, fx, Es, bX, bX, R0, cR1, cR2)  # Steel X boundary
     if printProgression:
         print('--------------------------------------------------------------------------------------------------')
         print('SteelMPF', IDsYb, fyb, fyb, Es, byb, byb, R0, cR1, cR2)  # Steel Y boundary
         print('SteelMPF', IDsYw, fyw, fyw, Es, byw, byw, R0, cR1, cR2)  # Steel Y web
-        print('SteelMPF', IDsX, fx, fx, Es, bX, bX, R0, cR1, cR2)  # Steel X
+        print('SteelMPF', IDsX, fx, fx, Es, bX, bX, R0, cR1, cR2) # Steel X
 
     # Define "ConcreteCM" uni-axial materials
     IDconcWeb, IDconcBE = 4, 5  # Concrete ID
@@ -350,7 +350,7 @@ def run_analysis(DisplacementStep, analysis='cyclic', printProgression=True, ena
         loadData[j + 1] = baseLoad
         # eleForce = ops.eleForce(1, 4) / 1000
         # forceData[j + 1] = eleForce
-
+        failure_types = {}  # Dictionary to store failure type for each panel
         # Loop to store the response for each panel at each timestep
         for i in range(eH):
             for k in range(eL):
@@ -376,6 +376,7 @@ def run_analysis(DisplacementStep, analysis='cyclic', printProgression=True, ena
                     max_strains_matrix_2[i, k, 0] = strain_2
                     max_strains_matrix_2[i, k, 1] = angle_2
 
+
     # Create a DataFrame to store the maximum strains and angles
     data = {
         "Max Strain 1": [max_strains_matrix_1[i, k][0] for i in range(eH) for k in range(eL)],
@@ -386,7 +387,7 @@ def run_analysis(DisplacementStep, analysis='cyclic', printProgression=True, ena
     df = pd.DataFrame(data)
 
     # Save the DataFrame to a CSV file
-    df.to_csv("max_strains_and_angles.csv", index=False)
+    # df.to_csv("max_strains_and_angles.csv", index=False)
 
     # Plotting section
     if enablePlotting:
