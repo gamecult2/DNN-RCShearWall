@@ -1302,18 +1302,17 @@ def Lefas_SW11():
     rouXw = 0.011
 
     loadF = 0.0000
-    DisplacementStep = generate_cyclic_loading_linear(num_cycles=10,
-                                                      max_displacement=10,
-                                                      num_points=50,
-                                                      repetition_cycles=1)
+
+    DisplacementStep = generate_cyclic_loading_linear(num_cycles=10, max_displacement=10, num_points=50, repetition_cycles=1)
 
     return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+
 
 
 # ------- Select Model for Validation -----------------------------------------------------------------------------------------------
 validation_model = Thomsen_and_Wallace_RW2()
 # validation_model = Thomsen_and_Wallace_RW1()
-validation_model = Tran_and_Wallace_A15P10S78()
+# validation_model = Tran_and_Wallace_A15P10S78()
 # validation_model = Tran_and_Wallace_A20P10S38()
 # validation_model = Dazio_WSH2()
 # validation_model = Dazio_WSH3()
@@ -1336,14 +1335,14 @@ validation_model = Tran_and_Wallace_A15P10S78()
 # validation_model = Kong_1()
 # validation_model = Lefas_SW11()
 
-
 tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep = validation_model
 
 
 #  ---------------- RUN CYCLIC ANALYSIS ---------------------------------------------------------------
+
 rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, printProgression=True)
 rcmodel.run_gravity(printProgression=False)
-[x, y] = rcmodel.run_analysis(DisplacementStep, analysis='cyclic', printProgression=True)
+x, y, _, _ = rcmodel.run_analysis(DisplacementStep, analysis='cyclic', printProgression=True, enablePlotting=True)
 rcmodel.reset_analysis()
 plotting(x, y, 'Displacement (mm)', 'Base Shear (kN)', f'{name}', save_fig=False, plotValidation=True)
 
@@ -1353,7 +1352,6 @@ plotting(x, y, 'Displacement (mm)', 'Base Shear (kN)', f'{name}', save_fig=False
 # [x, y] = rcmodel.run_analysis(DisplacementStep, analysis='pushover', printProgression=False)
 # rcmodel.reset_analysis()
 # plotting(x, y, 'Displacement (mm)', 'Base Shear (kN)', f'{name}', save_fig=False, plotValidation=True)
-
 
 # Find the index of the maximum y value
 max_y_index = np.argmax(y)

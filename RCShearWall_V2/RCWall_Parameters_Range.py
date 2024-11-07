@@ -12,7 +12,7 @@ parameter_ranges = {
     'tw': (80.0 * mm, 400.0 * mm),  # Thickness
     'tb': (None, 600.0 * mm),  # Boundary thickness
     'lw': (None, 3.0 * m),  # Wall length (min t*6)
-    'ar': (0.5, 4.0),  # Aspect Ratio
+    'ar': (0.5, 5.0),  # Aspect Ratio
     'hw': (2.0 * m, 6.0 * m),  # Wall height
     'lbe': (0.08, 0.20),  # BE length (percentage of wall length)
     'fc': (20.0 * MPa, 70.0 * MPa),  # Concrete Compressive Strength

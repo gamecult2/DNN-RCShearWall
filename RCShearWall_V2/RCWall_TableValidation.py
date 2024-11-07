@@ -1,11 +1,8 @@
-import numpy as np
 import pandas as pd
-from utils import *
 import random
-import math
 import csv
 # import RCWall_Cyclic_Model as rcmodel
-from GenerateCyclicLoading import *
+from RCShearWall_V2.backupfile.GenerateCyclicLoading import *
 import RCWall_Cyclic_Model_simple as rcmodel
 from RCWall_Cyclic_Parameters import *
 

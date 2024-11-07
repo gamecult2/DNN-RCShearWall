@@ -1,8 +1,7 @@
-import math
 import matplotlib.pyplot as plt
 from keras import backend as K
 from keras.saving.save import load_model
-from GenerateCyclicLoading import *
+from RCShearWall_V2.backupfile.GenerateCyclicLoading import *
 from RCWall_DataProcessing import *
 
 

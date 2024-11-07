@@ -31,8 +31,7 @@ def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=F
 
         if fit:
             data_scaled = scaler.fit_transform(data_reshaped)
-            print("Min value of the scaler:", scaler.data_min_)
-            print("Max value of the scaler:", scaler.data_max_)
+
         else:
             data_scaled = scaler.transform(data_reshaped)
 
@@ -41,8 +40,6 @@ def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=F
     else:
         if fit:
             data_scaled = scaler.fit_transform(data)
-            print("Min value of the scaler:", scaler.data_min_)
-            print("Max value of the scaler:", scaler.data_max_)
         else:
             data_scaled = scaler.transform(data)
 
@@ -78,36 +75,42 @@ def denormalize(data_scaled, scaler=None, scaler_filename=None, sequence=False):
     return data_restored
 
 
-def load_data(data_size=100, sequence_length=500, normalize_data=True, save_normalized_data=False, pushover=False):
+def load_data(data_size=100, sequence_length=500, normalize_data=True, analysis='CYCLIC', verbose=True):
     # ---------------------- Read Data  -------------------------------
     data_folder = Path("RCWall_Data/Processed_Data/Data_30K")  # Base data folder
-    file_suffix = "Pushover" if pushover else "Cyclic"
+    file_suffix = "Pushover" if analysis == 'PUSHOVER' else "Cyclic"
 
-    # Read input and output data from Parquet files
-    # 310022
+    # Read input and output data from Parquet files    # 310022
     InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size].to_numpy(dtype=float)
     InDisp = pd.read_parquet(data_folder / f"Input{file_suffix}Displacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
     OutShear = pd.read_parquet(data_folder / f"Output{file_suffix}Shear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
-    print("Shape of Parameters:", InParams.shape)
-    print("Shape of Displacement:", InDisp.shape)
-    print("Shape of Shear Load:", OutShear.shape)
+    if verbose:
+        print(f"\nDataset shape:")
+        print("  Parameters    :", InParams.shape)
+        print("  Displacement  :", InDisp.shape)
+        print("  Lateral Load  :", OutShear.shape)
 
     if normalize_data:
         NormInParams, param_scaler = normalize(InParams, sequence=False, range=(0, 1), fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
         NormInDisp, disp_scaler = normalize(InDisp, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/disp_{file_suffix.lower()}_scaler.joblib")
         NormOutShear, shear_scaler = normalize(OutShear, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/shear_{file_suffix.lower()}_scaler.joblib")
-
-        if save_normalized_data:
-            np.savetxt(data_folder / f"Normalized/InputParameters.csv", NormInParams, delimiter=',')
-            np.savetxt(data_folder / f"Normalized/Input{file_suffix}Displacement.csv", NormInDisp, delimiter=',')
-            np.savetxt(data_folder / f"Normalized/Output{file_suffix}Shear.csv", NormOutShear, delimiter=',')
-
+        if verbose:
+            print("\nDataset Max and Mean values:")
+            # print("  Parameters:")
+            # print(f"    Max  : {np.round(np.max(InParams, axis=0), 0)}")  # Round to 2 decimal places
+            # print(f"    Min  : {np.round(np.min(InParams, axis=0), 2)}")
+            # print(f"  Displacement:")
+            # print(f"    Max  : {np.round(np.max(InDisp), 2)}")
+            # print(f"    Min  : {np.round(np.min(InDisp), 2)}")
+            print(f"  Lateral Load:")
+            print(f"    Max  : {np.round(np.max(OutShear), 2)}")
+            print(f"    Min  : {np.round(np.min(OutShear), 2)}")
         return (NormInParams, NormInDisp, NormOutShear), (param_scaler, disp_scaler, shear_scaler)
     else:
         return (InParams, InDisp, OutShear), (InParams, InDisp, OutShear)
 
 
-def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device='cuda'):
+def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device='cuda', verbose=True):
     """Splits data into train, validation, and test sets, then converts to PyTorch tensors.
 
       Args:
@@ -122,8 +125,16 @@ def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device
                                     X_param_val, X_disp_val, Y_shear_val,
                                     X_param_test, X_disp_test, Y_shear_test)
       """
+    # Input validation
+    if not len(data) == 3:
+        raise ValueError(f"Expected 3 arrays in data tuple, got {len(data)}")
 
     X_param, X_disp, Y_shear = data
+
+    # Check if dimensions match
+    n_samples = X_param.shape[0]
+    if not (X_disp.shape[0] == n_samples and Y_shear.shape[0] == n_samples):
+        raise ValueError("All input arrays must have the same number of samples")
 
     # Convert to PyTorch tensors
     X_param = torch.tensor(X_param, dtype=torch.float32, device=device)
@@ -137,10 +148,11 @@ def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device
     # Split train+val into train and val
     X_param_train, X_param_val, X_disp_train, X_disp_val, Y_shear_train, Y_shear_val = train_test_split(
         X_param_temp, X_disp_temp, Y_shear_temp, test_size=val_size / (1 - test_size), random_state=random_state)
-
-    print("Shape of training :", X_param_train.shape)
-    print("Shape of validation :", X_param_val.shape)
-    print("Shape of testing :", X_param_test.shape)
+    if verbose:
+        print(f"\nDataset splits:")
+        print(f"  Training   : {X_param_train.shape[0]} -- ({100 * len(X_param_train) / n_samples:.1f}%)")
+        print(f"  Validation : {X_param_val.shape[0]} -- ({100 * len(X_param_val) / n_samples:.1f}%)")
+        print(f"  Testing    : {X_param_test.shape[0]} -- ({100 * len(X_param_test) / n_samples:.1f}%)")
 
     return (
         X_param_train, X_disp_train, Y_shear_train,

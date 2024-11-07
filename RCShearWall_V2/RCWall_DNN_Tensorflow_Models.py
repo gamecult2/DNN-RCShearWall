@@ -226,7 +226,7 @@ NUM_DECODER_LAYERS = 2
 DFF = 256
 DROPOUT_RATE = 0.1
 
-data, scalers = load_data(DATA_SIZE, SEQUENCE_LENGTH, normalize_data=True, save_normalized_data=False, pushover=PUSHOVER)
+data, scalers = load_data(DATA_SIZE, SEQUENCE_LENGTH, NORMALIZE_DATA=True, save_normalized_data=False, pushover=PUSHOVER)
 InParams, InDisp, OutShear = data
 param_scaler, disp_scaler, shear_scaler = scalers
 

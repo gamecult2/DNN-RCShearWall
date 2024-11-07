@@ -10,7 +10,7 @@ from multiprocessing import Pool, cpu_count, current_process
 
 import RCWall_Model_SFI as rcmodel
 from RCWall_Parameters_Range import parameter_ranges, loading_ranges
-from functions import generate_increasing_cyclic_loading_with_repetition
+from functions import generate_cyclic_loading_linear
 
 # Define SEQUENCE_LENGTH as a global constant
 SEQUENCE_LENGTH = 501
@@ -28,7 +28,7 @@ def generate_sample(instance_id, sample_index, run_index=4):
     tw = round(np.random.uniform(*parameter_ranges['tw']))
     tb = round(np.random.uniform(tw, parameter_ranges['tb'][1]))
     lw = round(np.random.uniform(tw * 6, parameter_ranges['lw'][1]) / 10) * 10
-    ar = round(np.random.uniform(*parameter_ranges['ar']))
+    ar = round(np.random.uniform(*parameter_ranges['ar']), 1)
     hw = lw * ar
     lbe = round(np.random.uniform(lw * parameter_ranges['lbe'][0], lw * parameter_ranges['lbe'][1]))
     Ag = tw * (lw - (2 * lbe)) + 2 * (tb * lbe)  # Calculate Ag based on provided formula
@@ -47,39 +47,42 @@ def generate_sample(instance_id, sample_index, run_index=4):
     max_displacement = int(np.random.uniform(*loading_ranges['max_displacement']))
     repetition_cycles = int(np.random.uniform(*loading_ranges['repetition_cycles']))
     num_points = math.ceil(SEQUENCE_LENGTH / (num_cycles * repetition_cycles))
-    DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles, max_displacement, num_points, repetition_cycles)[:SEQUENCE_LENGTH]
+    DisplacementStep = generate_cyclic_loading_linear(num_cycles, max_displacement, num_points, repetition_cycles)[:SEQUENCE_LENGTH]
 
-    parameter_values = [tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag]
+    parameter_values = [tw, tb, hw, lw, ar, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag]
 
     # Run Cyclic Analysis
     rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, printProgression=False)
     rcmodel.run_gravity()
-    x1, y1 = rcmodel.run_analysis(DisplacementStep, analysis='cyclic', printProgression=False)
+    x1, y1, _, _ = rcmodel.run_analysis(DisplacementStep, analysis='cyclic', printProgression=False)
     rcmodel.reset_analysis()
 
-    # Ensure y1 length matches SEQUENCE_LENGTH for consistency
-    if len(y1) == SEQUENCE_LENGTH:
-        return worker_id, parameter_values, DisplacementStep[:-1], np.concatenate((y1[:1], y1[2:]))
+    if len(y1) != SEQUENCE_LENGTH:
+        print(f"Sample {sample_index}: INVALID SAMPLE (y1 length: {len(y1)})")
+        return None
 
-    return None
+    force_threshold = 27000
+    if np.any(np.abs(y1) > force_threshold):
+        print(f"Sample {sample_index}: INVALID SAMPLE (y1 contains unreasonably large values)")
+        return None
+
+    print(f"Worker {worker_id}, Sample {sample_index}: VALID SAMPLE")
+    return worker_id, parameter_values, DisplacementStep[:-1], np.concatenate((y1[:1], y1[2:]))
 
 
 def process_samples(instance_id, start_index, end_index):
-    valid_samples = []
+    valid_samples = 0  # Initialize as a counter
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     file_path = os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_Data.csv")
-    # Print start and end sample IDs for this process
-    print(f"Worker {instance_id}: Start sample ID: {start_index}, End sample ID: {end_index - 1}")
-
+    # print(f"Worker {instance_id}: Start sample ID: {start_index}, End sample ID: {end_index - 1}")
     with open(file_path, 'a', newline='') as file:
         writer = csv.writer(file)
-        chunk = []
         for sample_index in range(start_index, end_index):
             sample_result = generate_sample(instance_id, sample_index)
             if sample_result is not None:
+                writer.writerows(sample_result[1:])  # Parameters + Displacement + Shear
                 valid_samples += 1
-                chunk.append(sample_result[1])  # Add parameter_values to the chunk
-                writer.writerows(sample_result[1:])  # Write parameter_values, DisplacementStep, and y1
+                print(f"Total valid samples: {valid_samples}")
 
     return valid_samples
 
@@ -105,7 +108,7 @@ if __name__ == "__main__":
         NUM_PROCESSES = int(sys.argv[2])
     else:
         NUM_SAMPLES = 10000
-        NUM_PROCESSES = 5  # cpu_count()
+        NUM_PROCESSES = 5
 
     print(f"Running in parallel mode with {NUM_SAMPLES} samples, {NUM_PROCESSES} processes...")
     run_parallel(NUM_SAMPLES, NUM_PROCESSES)

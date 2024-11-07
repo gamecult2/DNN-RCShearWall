@@ -10,11 +10,6 @@ def open_csv_file(filename):
         return list(csv.reader(f))
 
 
-def read_csv_file(filename):
-    """Reads a CSV file and returns a pandas DataFrame."""
-    return pd.read_csv(filename, on_bad_lines='skip', header=None)
-
-
 def split_rows(rows, batch_row=3):
     """Splits a list of rows into six lists, where each list contains the rows for a single data point."""
     return [rows[i:i + batch_row] for i in range(0, len(rows), batch_row)]
@@ -37,24 +32,6 @@ def save_data(filename, data, file_type='csv'):
         df.to_parquet(filename, index=False)
 
 
-# Configuration
-FOLDER = "RCWall_Data"
-FILENAME = "Original_Data/Original_Data_30K.csv"
-FILE_FORMATS = ['csv', 'parquet']
-OUTPUT_FILES = {
-    'InputParameters': 0,
-    'InputCyclicDisplacement': 1,
-    'OutputCyclicShear': 2
-}
-df = open_csv_file(f"{FOLDER}/{FILENAME}")
-num_lines_read = len(df)
-print(f'Number of lines read CSV: {num_lines_read}')
-
-df = read_csv_file(f"{FOLDER}/{FILENAME}")
-num_lines_read = len(df)
-print(f'Number of lines read PANDAS: {num_lines_read}')
-
-
 def process_data():
     # Read CSV file
     df = open_csv_file(f"{FOLDER}/{FILENAME}")
@@ -68,6 +45,15 @@ def process_data():
             save_data(output_file, data, file_format)
 
 
-if __name__ == "c__main__":
-    # process_data()
-    print('goodc')
+if __name__ == "__main__":
+    # Configuration
+    FOLDER = "RCWall_Data"
+    FILENAME = "Original_Data/Original_Data_30K.csv"
+    FILE_FORMATS = ['csv', 'parquet']
+    OUTPUT_FILES = {
+        'InputParameters': 0,
+        'InputCyclicDisplacement': 1,
+        'OutputCyclicShear': 2
+    }
+    process_data()
+    print("Processing completed successfully!")

@@ -82,19 +82,6 @@ def generate_cyclic_displacement(num_cycles, num_points, max_displacement, scale
     return discretize_loading(num_points, displacement)
 
 
-def generate_cyclic_load(max_displacement=75):
-    duration = 10
-    sampling_rate = 50
-    # Generate a constant time array
-    t = np.linspace(0, duration, int(sampling_rate * duration), endpoint=False)
-    # Calculate the displacement slope to achieve the desired max_displacement
-    displacement_slope = (max_displacement / 2) / (duration / 2)
-    # Generate the cyclic load with displacement varying over time
-    displacement = (displacement_slope * t) * np.sin(2 * np.pi * t)
-
-    return displacement
-
-
 def generate_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=60, num_points=50, repetition_cycles=2):
     time = np.linspace(0, num_cycles * repetition_cycles, num_points * num_cycles * repetition_cycles)
     displacement = np.zeros_like(time)
@@ -236,7 +223,8 @@ def plot_panel_response_animation(eH, eL, Nsteps, resp_per_panel_1, resp_per_pan
                 # Update crack lines for both sets
                 crack_angle1 = crack_angles_1[j].get(panel_key, np.nan)
                 crack_angle2 = crack_angles_2[j].get(panel_key, np.nan)
-
+                # crack_angle1 = math.pi/4
+                # crack_angle2 = -math.pi/4
                 # Calculate center of the panel
                 center_x = k
                 center_y = i
@@ -357,7 +345,7 @@ def plot_max_panel_response(eH, eL, max_strains_matrix_1, max_strains_matrix_2):
     fig, ax = plt.subplots(figsize=(12, 10))
 
     # Create grid data using average of maximum strains from both layers
-    grid_data = (max_strains_matrix_1[:, :, 0] + max_strains_matrix_2[:, :, 0]) / 2
+    grid_data = np.maximum(max_strains_matrix_1[:, :, 0], max_strains_matrix_2[:, :, 0])
 
     # Plot heatmap
     im = ax.imshow(grid_data, cmap="coolwarm", interpolation="nearest", aspect="auto", vmin=-0.02, vmax=0.02)
@@ -371,8 +359,8 @@ def plot_max_panel_response(eH, eL, max_strains_matrix_1, max_strains_matrix_2):
     ax.invert_yaxis()
 
     # Create crack lines for each panel
-    lines_1 = [[None for _ in range(eL)] for _ in range(eH)]
-    lines_2 = [[None for _ in range(eL)] for _ in range(eH)]
+    # lines_1 = [[None for _ in range(eL)] for _ in range(eH)]
+    # lines_2 = [[None for _ in range(eL)] for _ in range(eH)]
 
     def create_crack_line(center_x, center_y, angle, length, thickness, color):
         """Create a crack line with the given properties"""
@@ -397,6 +385,9 @@ def plot_max_panel_response(eH, eL, max_strains_matrix_1, max_strains_matrix_2):
             max_angle1 = max_strains_matrix_1[i, k, 1]
             max_strain2 = max_strains_matrix_2[i, k, 0]
             max_angle2 = max_strains_matrix_2[i, k, 1]
+
+            # max_angle1 = math.pi / 4
+            # max_angle2 = -math.pi / 4
 
             # Create and add lines
             line1 = create_crack_line(k, i, max_angle1, 0.9, max_strain1, 'red')
