@@ -31,6 +31,8 @@ def Dazio_WSH2():
     fyb = 583.1 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 484.9 * MPa  # Steel tension yield strength (+Tension, -Compression)
 
+    fx = fyw
+
     # Reinforcement ratios
     # Y direction
     YbeNum = 6    # Y boundary
@@ -96,9 +98,9 @@ def Dazio_WSH2():
                         -8.83263, -1.81074, 2.97899, 11.17028, 16.82533, 23.86855, 30.03791, 35.63324, 41.48998, 46.507, 53.20346, 55.07607, 52.48436, 47.39908, 44.26747, 37.21145, 31.28218, 27.91475, 19.5047, 9.92951, -0.74683, -7.24588, -18.50479, -23.56874, -32.54002, -41.7642, -48.4692,
                         -53.49048, -57.94626, -59.61718, -55.90726, -51.62331, -46.81224, -40.03471, -33.83122, -29.60273, -22.61071, -15.05319, 2.1094, 18.23057, 24.69121, 33.07993, 39.51071, 46.48993, 51.7897, 55.97979, 58.47763, 53.62817, 49.90546, 40.60022, 31.84769, 22.57231, 9.67662, -0.43421,
                         -12.854, -18.19643, -22.96483, -28.85144, -32.49309, -35.54364, -39.18103, -44.50213, -52.59956, -59.01328, -67.93336, -71.00098, -74.62556]
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=6, initial_displacement=7, max_displacement=64, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=6, initial_displacement=7, max_displacement=64, num_points=50, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Dazio_WSH3():
@@ -117,6 +119,8 @@ def Dazio_WSH3():
     fc = 39.2 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 583.1 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 484.9 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
+    fx = fyw
 
     # Reinforcement ratios
     # Y direction
@@ -161,9 +165,9 @@ def Dazio_WSH3():
                         -76.82631, -71.82988, -65.58434, -60.89891, -55.91269, -53.10347, -48.46399, -44.4414, -37.05907, -30.90543, -25.05768, -19.51582, -12.12839, -6.90264, 0.46948, 13.69445, 24.79858, 32.83355, 43.95809, 51.67184, 58.7687, 63.09208, 69.25594, 76.94926, 83.11312, 88.96087,
                         92.01982, 91.64756, 88.76687, 84.37712, 78.71274, 75.55679, 68.39355, 63.70302, 59.3388, 53.73568, 46.00661, 37.68107, 28.11152, 16.73213, 5.34764, -5.71565, -17.72215, -27.89838, -34.37834, -40.55751, -49.80074, -55.67401, -62.45987, -67.71114, -72.94199, -78.78464,
                         -82.4707]
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=6, initial_displacement=8, max_displacement=92, num_points=100, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=6, initial_displacement=8, max_displacement=92, num_points=100, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Thomsen_and_Wallace_RW2():
@@ -182,6 +186,7 @@ def Thomsen_and_Wallace_RW2():
     fc = 41.75 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 434 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 448 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = 448 * MPa  # Steel tension yield strength (+Tension, -Compression)
 
     # Reinforcement ratios
     # Y direction
@@ -243,12 +248,11 @@ def Thomsen_and_Wallace_RW2():
     #                     -2.28, -3.52, -6.00, -8.07, -9.31, -11.79, -13.04, -15.52, -14.69, -13.04, -8.48, -6.41, -3.10, 1.86, 6.83, 10.55, 13.45, 12.21, 8.90, 6.41, 4.76, 1.86, -0.62, -4.76, -8.90, -11.79, -13.04, -15.11, -12.21, -10.55, -8.90, -6.83, -3.10, 0.21, 3.52, 9.31, 13.04, 16.35, 19.66,
     #                     22.55, 21.31, 20.49, 18.00, 13.86, 10.55, 7.24, 3.93, -1.03, -3.93, -7.66, -10.97, -13.45, -16.35, -18.83, -21.31, -24.62, -22.97, -19.66, -16.35, -12.62, -8.48, -4.76, 0.21, 4.76, 9.31, 14.69, 18.00, 20.07, 23.38, 20.49, 19.66, 15.11, 11.38, 7.66, -1.45, -3.10, -8.07, -13.86, -16.35, -19.24, -21.31, -22.55, -16.76, -12.21, -8.90, -5.17, 0.62, 8.48, 16.35, 20.49, 24.21, 27.52, 29.18, 32.07, 30.83, 28.35, 24.21, 22.14, 18.83, 15.93, 10.55, 7.24, 4.35, 2.69, 0.62, -3.93, -11.79, -13.04, -17.59, -22.14, -24.21, -27.93, -30.83, -33.31, -31.25, -28.76, -24.62, -21.31, -17.59, -13.45, -9.73, -6.83, -2.69, 1.45, 8.07, 12.62, 18.00, 22.55, 25.87, 29.18, 30.83, 31.66, 29.59, 27.11, 23.80, 19.66, 13.86, 9.31, -3.93, -13.04, -19.24, -23.80, -28.35, -30.83, -30.42, -26.28, -22.97, -18.83, -14.69, -11.79, -7.66, -3.52, -0.21, 3.10, 10.55, 15.93, 20.49, 25.04, 29.59, 34.56, 40.76, 44.90, 48.63, 47.39, 44.07, 39.94, 37.45, 31.25, 25.45, 19.24, 14.69, 8.48, 2.28, -2.28, -7.66, -14.69, -20.49, -26.28, -30.42, -35.38, -42.42, -47.80, -50.28, -49.87, -45.73, -41.18, -36.63, -31.66, -27.11, -22.55, -16.35, -12.62, -5.17, 2.69, 23.38, 28.35, 34.14, 39.11, 42.42, 49.46, 47.80, 44.07, 40.35, 33.73, 30.00, 24.62, 18.83, 12.21, 6.00, -1.45, -16.76, -23.38, -30.83, -36.63, -42.83, -47.80, -47.39, -43.66, -39.52, -33.73, -29.59, -25.04, -20.90, -15.52, -7.66, 1.03, 6.00, 20.07, 25.87, 32.07, 38.28, 43.66, 49.87, 56.08, 62.28, 66.42, 62.70, 58.56, 55.66, 49.87, 43.66, 37.87, 30.83, 23.38, 19.24, 15.11, 8.48, 2.28, -6.41, -16.35, -22.14, -30.83, -39.94, -45.73, -52.77, -60.63, -65.59, -64.77, -61.04, -58.15, -54.84, -50.70, -44.07, -38.28, -32.49, -27.11, -20.90, -13.04, -6.00, 1.45, 9.73, 19.24, 25.45, 33.73, 41.18, 47.39, 54.42, 61.46, 67.25, 73.87, 80.08, 85.46, 82.98, 80.08, 76.77, 74.70, 69.73, 65.59, 61.04, 55.66, 50.28, 42.42, 32.07, 23.38, 15.11, 6.83, -2.69, -12.62, -24.21, -33.31, -43.66, -51.94, -61.04, -68.49, -78.42, -83.80, -80.49, -75.94, -70.56, -64.77, -57.73, -50.28, -40.76, -30.42, -20.90, -9.31, 0.21, 8.07, 14.28, 22.97, 33.31, 42.01, 49.46, 55.25, 63.94, 73.04, 80.08, 85.46, 82.56, 79.25, 75.11, 68.49, 63.11, 55.25, 48.63, 39.11, 28.35, 10.14, -3.93, -15.52, -26.28, -35.38, -43.66, -51.52, -62.28, -70.15, -76.36, -81.32, -84.22, -80.91, -77.18, -73.04, -67.66, -61.87, -53.18, -46.14, -37.87, -30.42, -21.73, -13.45, 1.03]
 
-    # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=7, initial_displacement=6, max_displacement=86, num_points=50, repetition_cycles=2)
-    DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=8, max_displacement=86, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=7, initial_displacement=7, max_displacement=86, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading_linear(num_cycles=8, max_displacement=86, num_points=50, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    # DisplacementStep = generate_strain_history(num_cycles=8, num_divisions=50, target_strain=86, scale_pos=1.0, scale_neg=1.0, repetitions_per_peak=2)
+
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Thomsen_and_Wallace_RW1():
@@ -267,6 +271,7 @@ def Thomsen_and_Wallace_RW1():
     fc = 42.75 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 434 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 448 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 8  # BE long reinforcement diameter (mm)
@@ -303,19 +308,19 @@ def Thomsen_and_Wallace_RW1():
                         -8.518652, 0.623316, 8.934196, 19.322796, 28.048966, 37.606478, 46.748446, 54.643782, 62.539118, 70.01891, 76.66736, 79.576168, 81.238344, 82.90052, 84.97824, 87.05596, 89.13368, 90.380312, 92.042488]
 
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=7, initial_displacement=6, max_displacement=86, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=8, max_displacement=86, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=7, initial_displacement=7, max_displacement=86, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading(num_cycles=7, initial_displacement=6, max_displacement=86, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(num_cycles=8, max_displacement=86, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_exponential(num_cycles=7, initial_displacement=7, max_displacement=86, num_points=50, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Tran_and_Wallace_A15P10S78():
     # https://www.iitk.ac.in/nicee/wcee/article/WCEE2012_3913.pdf
     global name
-    name = 'Tran_S63'
+    name = 'Tran_S78'
     # Wall Geometry ------------------------------------------------------------------
-    tw = 152.5 * mm  # Wall thickness
+    tw = 150 * mm  # Wall thickness
     hw = 1.828 * m  # Wall height
     lw = 1.220 * m  # Wall length
     lbe = 228.6 * mm  # Boundary element length
@@ -326,7 +331,8 @@ def Tran_and_Wallace_A15P10S78():
     fc = 55.78 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 473.66 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 473.66 * MPa  # Steel tension yield strength (+Tension, -Compression)
-    fyXp = 402.7248417 * MPa
+    fyXp = 402.72 * MPa
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 8  # BE long reinforcement diameter (mm)
@@ -335,10 +341,11 @@ def Tran_and_Wallace_A15P10S78():
     YwebDiam = 9.32  # Web long reinforcement diameter (mm)
     rouYb = (rebarArea(YbeDiam) * YbeNum) / (lbe * tw)  # Y boundary        0.003
     rouYw = (rebarArea(YwebDiam) * YwebNum) / (lweb * tw)  # Y web             0.0293
-    rouXw = 0.0074  # X web
+    rouXw = 0.0073  # X web
     rouXb = 0.0082  # X boundary
-    rouYw = 0.0074  # Y web
     rouYb = 0.0587  # Y boundary
+    rouYw = 0.0073  # Y web
+
     # print('rouYb = ', rouYb)
     # print('rouYw = ', rouYw)
     # ---- Steel in X direction (BE + Web) -------------------------------------------
@@ -351,7 +358,7 @@ def Tran_and_Wallace_A15P10S78():
     # print('rouXb = ', rouXb)
     # print('rouXw = ', rouXw)
 
-    loadF = 0.064 / 0.85
+    loadF = 0.060 / 0.85
 
     DisplacementStep = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, -1, -2, -3,
                         -4, -5, -6, -7, -8, -9, -10, -11, -12, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15,
@@ -372,10 +379,11 @@ def Tran_and_Wallace_A15P10S78():
                         -27, -28, -29, -30, -31, -32, -33, -34, -35, -36, -37, -38, -39, -40, -41, -42, -43, -44, -45, -46, -47, -48, -49, -50, -51, -52, -53, -54, -54, -53, -52, -51, -50, -49, -48, -47, -46, -45, -44, -43, -42, -41, -40, -39, -38, -37, -36, -35, -34, -33, -32, -31, -30, -29, -28,
                         -27, -26, -25, -24, -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1]  # Displacement steps For Tran_and_Wallace_A15P10S78
 
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=6, initial_displacement=15, max_displacement=76, num_points=100, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=7, max_displacement=86, num_points=50, repetition_cycles=2)
-
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    # DisplacementStep = generate_cyclic_loading(num_cycles=6, initial_displacement=15, max_displacement=75, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_exponential(num_cycles=7, initial_displacement=7, max_displacement=55, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading_linear(num_cycles=5, max_displacement=54, num_points=100, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_tri(num_cycles=5, num_divisions=100, target_strain=54, scale_pos=1.0, scale_neg=1.0, repetition_cycles=2)
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Tran_and_Wallace_A20P10S38():
@@ -395,6 +403,7 @@ def Tran_and_Wallace_A20P10S38():
     fyb = 429.78 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 409.71 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyX = 469.93 * MPa
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 8  # BE long reinforcement diameter (mm)
@@ -440,10 +449,10 @@ def Tran_and_Wallace_A20P10S38():
     #                    -27, -28, -29, -30, -31, -32, -33, -34, -35, -36, -37, -38, -39, -40, -41, -42, -43, -44, -45, -46, -47, -48, -49, -50, -51, -52, -53, -54, -54, -53, -52, -51, -50, -49, -48, -47, -46, -45, -44, -43, -42, -41, -40, -39, -38, -37, -36, -35, -34, -33, -32, -31, -30, -29, -28,
     #                    -27, -26, -25, -24, -23, -22, -21, -20, -19, -18, -17, -16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1]  # Displacement steps For Tran_and_Wallace_A15P10S78
 
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=6, initial_displacement=15, max_displacement=76, num_points=100, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=7, max_displacement=86, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=6, initial_displacement=15, max_displacement=76, num_points=100, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_exponential(num_cycles=6, initial_displacement=7, max_displacement=86, num_points=50, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Greifenhagen_M3():
@@ -462,6 +471,7 @@ def Greifenhagen_M3():
     fc = 20.1 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 504 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 504 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 1  # BE long reinforcement diameter (mm)
@@ -485,10 +495,10 @@ def Greifenhagen_M3():
                         2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
                         10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0]  # Displacement steps For Greifenhagen_M3
 
-    # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=7, initial_displacement=1, max_displacement=8, num_points=50, repetition_cycles=2)
-    DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=6, max_displacement=8, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading(num_cycles=7, initial_displacement=1, max_displacement=8, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading_linear(num_cycles=6, max_displacement=8, num_points=50, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Lu_SW11():
@@ -507,6 +517,7 @@ def Lu_SW11():
     fc = 20.7 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 379 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 392 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 6  # BE long reinforcement diameter (mm)
@@ -521,10 +532,10 @@ def Lu_SW11():
     loadF = 0.12
 
     # DisplacementStep = generate_cyclic_load(duration=24, sampling_rate=50, max_displacement=20)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=11, max_displacement=20, num_points=50, repetition_cycles=1)
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=12, initial_displacement=3.5, max_displacement=20, num_points=100, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(num_cycles=11, max_displacement=20, num_points=50, repetition_cycles=1)
+    DisplacementStep = generate_cyclic_loading(num_cycles=12, initial_displacement=3.5, max_displacement=20, num_points=100, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Test():
@@ -546,6 +557,7 @@ def Test():
     fc = 27.0 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 490 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 338 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 4  # BE long reinforcement diameter (mm)
@@ -568,13 +580,13 @@ def Test():
     loadF = 0.103
 
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
-    DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=12, max_displacement=70, num_points=36, repetition_cycles=3)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=8, max_displacement=36, num_points=50, repetition_cycles=3)
+    # DisplacementStep = generate_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading_linear(num_cycles=12, max_displacement=70, num_points=36, repetition_cycles=3)
+    # DisplacementStep = generate_cyclic_loading_exponential(num_cycles=6, initial_displacement=8, max_displacement=36, num_points=50, repetition_cycles=3)
 
     # DisplacementStep = generate_cyclic_load(duration=24, sampling_rate=50, max_displacement=50)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Lefas_SW22():
@@ -597,6 +609,7 @@ def Lefas_SW22():
     fc = 50.6 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 470 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 470 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 6  # BE long reinforcement diameter (mm)
@@ -621,14 +634,14 @@ def Lefas_SW22():
     loadF = 0.1
 
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
-    DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=12, max_displacement=18, num_points=36, repetition_cycles=3)
+    # DisplacementStep = generate_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading_linear(num_cycles=12, max_displacement=18, num_points=36, repetition_cycles=3)
 
-    # DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=8, max_displacement=36, num_points=50, repetition_cycles=3)
+    # DisplacementStep = generate_cyclic_loading_exponential(num_cycles=6, initial_displacement=8, max_displacement=36, num_points=50, repetition_cycles=3)
 
     # DisplacementStep = generate_cyclic_load(duration=24, sampling_rate=50, max_displacement=50)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Zhang_SW12():
@@ -648,6 +661,7 @@ def Zhang_SW12():
     fc = 19.7 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 352 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 379 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 6  # BE long reinforcement diameter (mm)
@@ -665,14 +679,14 @@ def Zhang_SW12():
     # DisplacementStep = [0.03896, 0.35013, 0.58328, 0.81715, 1.05071, 1.44133, 2.06725, 2.92427, 0.19562, 0.04141, -0.34748, -0.5023, -0.89211, -1.2039, -1.59462, -1.28355, -1.12924, -0.81847, -0.5073, -0.03927, 0.42785, 0.89507, 1.20665, 1.59656, 1.98708, 1.67621, 1.13128, 0.82041, 0.19715,
     # -0.3482, -0.738, -0.50159, -1.2041, -1.67244, -2.21901, -0.3533, -2.76537, -2.76721, -2.45665, -1.83338, -1.28783, -0.74208, -0.7429, 0.50597, 1.20696, 1.59615, 2.29907, 2.61157, 2.37913, 1.36535, 0.97717, 0.27588, -0.19042, -0.73647, -1.67295, -2.68755, -2.68898, -2.37842, -1.44347, -0.89864, 2.14445, 1.90957, 3.39251, 4.09533, 4.72094, 4.33215, 3.62984, 2.84962, 2.22543, 1.7576, 0.11963, -0.66018, -1.12669, -1.90681, -2.92182, -3.31163, -3.85871, -3.93867, -3.62852, -2.77108, -1.83563, -1.21185, 0.03692, 1.36423, 3.6277, 4.40803, 5.50178, 5.8924, 6.20571, 5.50412, 4.64587, 3.94397, 3.3201, 3.08705, 2.30621, 1.60411, 1.05795, 0.43346, -0.50302, -1.12638, -2.06296, -2.99995, -3.62434, -4.32756, -4.87474, -4.79876, -4.64536, -4.33398, -3.71021, 3.31714, -1.91487, 0.89588, 4.01873, 3.94132, 4.72196, 5.5028, 5.97154, 4.95755, 4.49054, 3.55447, 2.69653, 2.07255, 1.13668, 0.27803, -0.97064, -2.29795, -3.23483, -4.17233, -4.79753, -4.95378, -4.79998, -4.64587, -4.02251, -3.24177, -2.22717, -1.05621, 0.27089, 3.08215, 5.5028, 5.97144, 6.43989, 7.29966, 7.6141, 6.91231, 5.97644, 5.35246, 4.41497, 3.2433, 2.30652, 1.29253, -0.58777, -1.59707, -2.53344, -3.31337, -4.25086, -5.0317, -5.42192, -6.20327, -6.28313, -5.89505, -5.27128, -4.49105, -2.77384, -1.60319, -0.66671, 0.89486, 2.14415, 3.62862, 5.03435, 6.28476, 6.90955, 7.3784, 7.30232, 6.44437, 5.19519, 4.41497, 3.24371, 2.15027, 1.21369, 0.66855, -0.65876, -1.90824, -3.00168, -3.86105, -4.6422, -5.34542, -5.8922, -6.36074, -6.05089, -5.42732, -4.96, -4.02312, -3.00821, -2.22757, -1.36912, -0.19817, 1.44194, 2.53538, 3.86309, 5.19132, 6.36278, 7.45653, 8.08152, 8.86328, 9.17588, 9.17833, 7.69467, 6.68038, 5.97828, 5.11931, 4.18192, 3.40098, 2.77649, 1.99514, 1.05795, -0.34799, -1.28528, -2.45624, -3.6276, -4.79876, -5.50137, -6.20439, -6.75116, -7.14148, -7.61033, -8.15781, -8.15914, -7.9267, -7.14688, -5.81968, -4.49248, -2.85216, -1.44663, -0.11953, 1.91089, 4.02036, 5.42671, 9.41138, 8.08285, 8.78597, 9.25503, 8.86583, 8.00728, 7.46112, 6.36798, 5.74431, 4.49452, 3.32316, 1.99504, 0.82347, -0.19154, -1.44092, -2.61269, -3.62801, -4.40895, -5.18958, -6.04896, -6.59573, -7.37728, -8.15894, -7.77035, -7.06815, -6.13147, -4.88218, -3.55447, -2.46175, -1.44704, -0.19807, 1.52007, 4.56673, 5.81693, 6.75473, 8.23971, 9.95815, 10.4271, 10.7396, 10.81956, 10.82119, 10.19671, 8.94742, 8.16669, 6.99502, 5.82335, 4.96408, 3.47961, 2.22951, 0.66702, -0.19154, -1.51915, -3.23759, -4.40895, -5.34624, -6.28333, -6.90812, -7.92415, -8.62728, -9.40893, -9.95631, -9.87952, -9.4126, -8.78913, -7.53975, -6.21204, -4.88382, -3.71205, -2.69724, -1.36912, 0.81776, 2.77037, 4.64506, 5.6617, 0.50546, 8.39657, 9.56855, 10.50625, 11.05322, 10.35163, 9.96233, 9.18159, 8.32273, 6.99451, 6.13606, 4.96429, 3.87023, 3.01076, 2.07398, 0.74545, -0.19164, -1.44143, -3.00372, -4.25392, -5.89454, -6.67538, -7.53475, -8.15955, -8.70652, -9.33172, -9.8789, -9.80251, -9.10072, -8.24257, -6.68058, -5.35226, -3.94683, -2.85349, -1.68172, 0.2715, 2.45807, 4.09818, 7.14617, 8.47419, 10.42782, 11.52166, 12.61653, 12.69639, 12.15084, 11.37072, 0.98013, 8.87113, 7.30884, 6.13697, 4.49605, 2.93315, 1.76127, 0.51199, -2.06653, -3.62903, -5.1134, -6.28506, -7.30048, -8.316, -9.01882, -9.95662, -10.73838, -11.20753, -11.13104, -10.97612, -10.27422, -9.41576, -8.16597, -7.15045, -6.05701, -4.57234, -3.1663, -1.44755, 3.86462, 7.14688, 8.55343, 9.72541, 10.89748, 11.83549, 12.4609, 12.7737, 12.697, 12.07343, 11.2928, 10.43404, 9.26227, 8.16822, 6.29281, 4.9649, 3.55814, 1.99544, -0.03488, -1.83236, -3.47257, -5.26965, -6.6762, -7.76974, -8.70744, -9.72347, -10.7396, -11.20845, -10.97642, -10.43016, -9.25941, -8.47857, -7.15035, -6.13473, -5.11931, -3.79089, -2.30621, 1.13087, 2.53681, 4.48993, 6.05263, 7.85001, 9.02218, 10.27228, 11.36644, 12.30434, 13.08589, 14.024, 14.57159, 14.88552, 14.73049, 14.26266, -2.22309, 12.31005, 11.37276, 10.35734, 9.34172, 8.24787, 6.76299, 5.90352, 4.10604, 3.16854, 1.91844, -1.36341, -3.31663, -5.50371, -7.37932, -8.47286, -10.03607, -10.89575, -11.28627, -12.06782, -12.77166, -13.00756, -12.61867, -11.91678, -10.90228, -9.7304, -8.55853, 4.56867, -5.98042, -4.49574, -3.32397, -1.99555, -0.43224, 5.03721, 9.33519, 11.5234, 13.71211, 14.41565, 14.88501, 14.96435, 14.49663, 14.10661, 13.404, 12.46661, 11.13808, 10.20099, 9.2637, 8.09142, 6.45008, 5.66904, 4.49676, 2.85614, 1.91875, 0.1998, -1.05071, -3.94255, -6.83275, -8.31743, -9.72459, -10.9752, -11.67822, -12.45988, -13.16361, -12.77431, -12.38481, -11.13594, -9.72969, -8.32385, -7.38666, -5.90229, -4.26147, 7.85133, -1.5268, 0.42663, 2.38056, 8.71019, 11.99306, 13.39972, 14.49408, 15.43208, 16.05759, 16.52715, 16.21619, 15.98293, 15.12417, 13.9522, 13.0147, 11.60887, 10.437, 8.63992, 7.85857, 6.45161, 5.04506, 3.40342, 1.99677, 1.05927, -0.58104, -2.61279, -5.34777, -7.37993, -8.55211, -9.80292, -10.81864, -12.38216, -13.78912, -14.41473, -14.41605, -14.57414, -13.63756, -12.31005, -10.9037, -9.41933, -7.93507, -6.21622, -4.73124, -3.0898, -1.5269, 0.34962, 1.52098, 3.08399, 5.2724, 7.46071, 9.80537, 12.15044, 13.94792, 15.1203, 15.98028, 16.37121, 16.37254, 15.51439, 14.2649, 13.09324, 11.68699, 9.65514, 7.38901, 5.82672, 3.09082, 0.8248, -1.12853, -3.55131, -5.03619, -6.99012, -8.55323, -10.11695, -11.44538, -12.4612, -13.0862, -13.86806, -14.49367, -14.72988, -14.1061, -13.09109, -12.07598, -10.90381, -9.57569, -8.79495, -7.23194, -5.90362, -4.41864, -3.0898, -1.91712, -0.19745, 1.13118, 2.85012, 4.80375, 6.5227, 8.16403, 9.72714, 11.52503, 13.63542, 15.1205, 16.05851, 16.76214, 17.46567, 17.77848, 18.17032, 18.17175, 17.62569, 16.84496, 16.14204, 15.36079, 14.18892, 13.09497, 12.2358, 11.06342, 9.81332, 8.25042, 6.60909, 4.57672, 3.09164, 1.4502, 0.04386, -1.3629, -2.9255, -4.41048, -6.52097, -8.16281, -9.64789, -10.82017, -12.38318, -13.55566, -14.49367, -15.1972, -16.21404, -16.21568, -15.98263, -15.28042, -14.10876, -12.85866, -11.53074, -10.35877, -9.03024, -7.62359, -5.82641, -3.9504, -2.54344, -1.68397, -0.19858, 1.52078, 2.92723, 5.81968, 6.60123, 8.32079, 10.58764, 12.54218, 14.80933, 16.52868, 17.38857, 17.85752, 17.93738, 17.07913, 16.2988, 14.89245, 13.79871, 12.15768, 10.36081, 8.64104, 6.9221, 4.96786, 3.24799, 1.21562, -0.34728, -2.53579, -4.17682, -5.81784, -7.77198, -9.41342, -11.05547, -12.30597, -13.40013, -14.65084, -15.43269, -16.05861, -15.98212, -15.35794, -14.65563, -13.17105, -11.76501, -10.12429, -8.79587, -7.07641, -4.73175, -2.93437, -0.98064, 1.44245, 3.86544, 6.75769, 8.86818, 10.66607, 12.3077, 17.54543, 18.79614, 19.5781, 19.89111, 20.20524, 19.89356, 18.87814, 17.55073, 16.53521, 14.73783, 13.33128, 11.5338, 9.81414, 8.17311, 6.21928, 4.49962, 2.85788, 1.13821, -0.26875, -1.83134, -4.7242, -6.52178, -8.39708, -10.586, -13.08752, -14.72906, -16.13643, -17.30932, -17.54502, -17.31258, -17.0011, -15.67309, -14.65787, -13.09538, -11.84508, -10.20374, -8.48459, -6.92159, -4.88943, -3.63882, -1.99697, -0.74667, 0.97299, 3.1616, 5.2722, 7.14821, 8.6335, 10.04046, 11.60387, 16.29441, 18.32698, 19.8905, 20.28296, 19.81564, 19.19084, 18.01917, 16.76918, 15.98824, 14.89419, 13.48733, 11.29922, 9.57987, 7.07896, 5.20294, 3.87462, 1.92018, 0.27854, -1.9882, -5.66221, -7.53812, -9.023, -10.42975, -11.99347, -14.1827, -15.35518, -16.68453, -17.62325, -17.54706, -16.84506, -15.59496, -14.03257, -12.70486, -11.37633, -9.65677, -6.29628, -4.73307, -3.24799, -1.68488, 1.28539, 4.17784, 7.46112, 9.96254, 11.60377, 13.47998, 15.35651, 17.07637, 18.56166, 19.81268, 20.51631, 20.98557, 21.53316, 22.2376, 21.92674, 20.99046, 19.66224, 18.64672, 17.24038, 15.91174, 14.19208, 12.62969, 11.22273, 9.26859, 7.93986, 6.37645, 5.12594, 3.09327, 1.29518, -1.0502, -3.39537, -5.50565, -7.61614, -11.05536, -13.08783, -14.57353, -16.2937, -17.31014, -18.48303, -19.50028, -19.11108, -18.48701, -17.54981, -16.37835, -14.81545, -13.56555, -12.00306, -10.51798, -8.25124, -6.45365, -4.49931, -3.01392, -0.1996, 4.49095, 6.36706, 8.24338, 9.80659, 11.13563, 12.62112, 14.10661, 15.43575, 16.53011, 17.7028, 18.64101, 19.34444, 20.1264, 21.06482, 21.84698, 22.16101, 21.30256, 20.83503, 18.95953, 17.70974, 16.61579, 14.89612, 13.33342, 10.91023, 9.73754, 8.17423, 5.36001, 3.64055, 1.45153, -1.0502, -3.08297, -4.7243, -6.67875, -8.78944, -10.58753, -11.9948, -13.40227, -15.20016, -16.21649, -18.01459, -19.57871, -19.34658, -18.56635, -17.70698, -16.61324, -15.44116, -14.03512, -12.70659, -10.59641, -8.87685, -7.15698, -5.90627, -3.95183, -0.35533, 4.56928, 6.4456, 7.85266, 9.25941, 10.66658, 12.30832, 14.18474, 15.67043, 17.0778, 18.40715, 19.42338, 20.67439, 22.00405, 22.16193, 20.99057, 19.35005, 17.86598, 16.6936, 15.52153, 13.95873, 11.92647, 10.36315, 9.19057, 6.61113, 3.71837, 0.98156, -1.0506, -3.23942, -5.74135, -7.93007, -9.96264, -12.07384, -12.93393, -14.18443, -15.5919, -16.60793, -17.38969, -18.3281, -19.57994, -18.87814, -17.4721, -16.22271, -14.50387, -12.70618, -11.22181, -8.79872, -6.6099]
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
-    DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=12, max_displacement=21, num_points=36, repetition_cycles=3)
+    # DisplacementStep = generate_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading_linear(num_cycles=12, max_displacement=21, num_points=36, repetition_cycles=3)
 
-    # DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=8, max_displacement=36, num_points=50, repetition_cycles=3)
+    # DisplacementStep = generate_cyclic_loading_exponential(num_cycles=6, initial_displacement=8, max_displacement=36, num_points=50, repetition_cycles=3)
 
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(duration=24, sampling_rate=50, max_displacement=21)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(duration=24, sampling_rate=50, max_displacement=21)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Oesterle_R2():
@@ -692,6 +706,7 @@ def Oesterle_R2():
     fc = 46.4 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 449.7 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 520.9 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 8  # BE long reinforcement diameter (mm)
@@ -755,14 +770,11 @@ def Oesterle_R2():
     # DisplacementStep = [0.03896, 0.35013, 0.58328, 0.81715, 1.05071, 1.44133, 2.06725, 2.92427, 0.19562, 0.04141, -0.34748, -0.5023, -0.89211, -1.2039, -1.59462, -1.28355, -1.12924, -0.81847, -0.5073, -0.03927, 0.42785, 0.89507, 1.20665, 1.59656, 1.98708, 1.67621, 1.13128, 0.82041, 0.19715,
     # -0.3482, -0.738, -0.50159, -1.2041, -1.67244, -2.21901, -0.3533, -2.76537, -2.76721, -2.45665, -1.83338, -1.28783, -0.74208, -0.7429, 0.50597, 1.20696, 1.59615, 2.29907, 2.61157, 2.37913, 1.36535, 0.97717, 0.27588, -0.19042, -0.73647, -1.67295, -2.68755, -2.68898, -2.37842, -1.44347, -0.89864, 2.14445, 1.90957, 3.39251, 4.09533, 4.72094, 4.33215, 3.62984, 2.84962, 2.22543, 1.7576, 0.11963, -0.66018, -1.12669, -1.90681, -2.92182, -3.31163, -3.85871, -3.93867, -3.62852, -2.77108, -1.83563, -1.21185, 0.03692, 1.36423, 3.6277, 4.40803, 5.50178, 5.8924, 6.20571, 5.50412, 4.64587, 3.94397, 3.3201, 3.08705, 2.30621, 1.60411, 1.05795, 0.43346, -0.50302, -1.12638, -2.06296, -2.99995, -3.62434, -4.32756, -4.87474, -4.79876, -4.64536, -4.33398, -3.71021, 3.31714, -1.91487, 0.89588, 4.01873, 3.94132, 4.72196, 5.5028, 5.97154, 4.95755, 4.49054, 3.55447, 2.69653, 2.07255, 1.13668, 0.27803, -0.97064, -2.29795, -3.23483, -4.17233, -4.79753, -4.95378, -4.79998, -4.64587, -4.02251, -3.24177, -2.22717, -1.05621, 0.27089, 3.08215, 5.5028, 5.97144, 6.43989, 7.29966, 7.6141, 6.91231, 5.97644, 5.35246, 4.41497, 3.2433, 2.30652, 1.29253, -0.58777, -1.59707, -2.53344, -3.31337, -4.25086, -5.0317, -5.42192, -6.20327, -6.28313, -5.89505, -5.27128, -4.49105, -2.77384, -1.60319, -0.66671, 0.89486, 2.14415, 3.62862, 5.03435, 6.28476, 6.90955, 7.3784, 7.30232, 6.44437, 5.19519, 4.41497, 3.24371, 2.15027, 1.21369, 0.66855, -0.65876, -1.90824, -3.00168, -3.86105, -4.6422, -5.34542, -5.8922, -6.36074, -6.05089, -5.42732, -4.96, -4.02312, -3.00821, -2.22757, -1.36912, -0.19817, 1.44194, 2.53538, 3.86309, 5.19132, 6.36278, 7.45653, 8.08152, 8.86328, 9.17588, 9.17833, 7.69467, 6.68038, 5.97828, 5.11931, 4.18192, 3.40098, 2.77649, 1.99514, 1.05795, -0.34799, -1.28528, -2.45624, -3.6276, -4.79876, -5.50137, -6.20439, -6.75116, -7.14148, -7.61033, -8.15781, -8.15914, -7.9267, -7.14688, -5.81968, -4.49248, -2.85216, -1.44663, -0.11953, 1.91089, 4.02036, 5.42671, 9.41138, 8.08285, 8.78597, 9.25503, 8.86583, 8.00728, 7.46112, 6.36798, 5.74431, 4.49452, 3.32316, 1.99504, 0.82347, -0.19154, -1.44092, -2.61269, -3.62801, -4.40895, -5.18958, -6.04896, -6.59573, -7.37728, -8.15894, -7.77035, -7.06815, -6.13147, -4.88218, -3.55447, -2.46175, -1.44704, -0.19807, 1.52007, 4.56673, 5.81693, 6.75473, 8.23971, 9.95815, 10.4271, 10.7396, 10.81956, 10.82119, 10.19671, 8.94742, 8.16669, 6.99502, 5.82335, 4.96408, 3.47961, 2.22951, 0.66702, -0.19154, -1.51915, -3.23759, -4.40895, -5.34624, -6.28333, -6.90812, -7.92415, -8.62728, -9.40893, -9.95631, -9.87952, -9.4126, -8.78913, -7.53975, -6.21204, -4.88382, -3.71205, -2.69724, -1.36912, 0.81776, 2.77037, 4.64506, 5.6617, 0.50546, 8.39657, 9.56855, 10.50625, 11.05322, 10.35163, 9.96233, 9.18159, 8.32273, 6.99451, 6.13606, 4.96429, 3.87023, 3.01076, 2.07398, 0.74545, -0.19164, -1.44143, -3.00372, -4.25392, -5.89454, -6.67538, -7.53475, -8.15955, -8.70652, -9.33172, -9.8789, -9.80251, -9.10072, -8.24257, -6.68058, -5.35226, -3.94683, -2.85349, -1.68172, 0.2715, 2.45807, 4.09818, 7.14617, 8.47419, 10.42782, 11.52166, 12.61653, 12.69639, 12.15084, 11.37072, 0.98013, 8.87113, 7.30884, 6.13697, 4.49605, 2.93315, 1.76127, 0.51199, -2.06653, -3.62903, -5.1134, -6.28506, -7.30048, -8.316, -9.01882, -9.95662, -10.73838, -11.20753, -11.13104, -10.97612, -10.27422, -9.41576, -8.16597, -7.15045, -6.05701, -4.57234, -3.1663, -1.44755, 3.86462, 7.14688, 8.55343, 9.72541, 10.89748, 11.83549, 12.4609, 12.7737, 12.697, 12.07343, 11.2928, 10.43404, 9.26227, 8.16822, 6.29281, 4.9649, 3.55814, 1.99544, -0.03488, -1.83236, -3.47257, -5.26965, -6.6762, -7.76974, -8.70744, -9.72347, -10.7396, -11.20845, -10.97642, -10.43016, -9.25941, -8.47857, -7.15035, -6.13473, -5.11931, -3.79089, -2.30621, 1.13087, 2.53681, 4.48993, 6.05263, 7.85001, 9.02218, 10.27228, 11.36644, 12.30434, 13.08589, 14.024, 14.57159, 14.88552, 14.73049, 14.26266, -2.22309, 12.31005, 11.37276, 10.35734, 9.34172, 8.24787, 6.76299, 5.90352, 4.10604, 3.16854, 1.91844, -1.36341, -3.31663, -5.50371, -7.37932, -8.47286, -10.03607, -10.89575, -11.28627, -12.06782, -12.77166, -13.00756, -12.61867, -11.91678, -10.90228, -9.7304, -8.55853, 4.56867, -5.98042, -4.49574, -3.32397, -1.99555, -0.43224, 5.03721, 9.33519, 11.5234, 13.71211, 14.41565, 14.88501, 14.96435, 14.49663, 14.10661, 13.404, 12.46661, 11.13808, 10.20099, 9.2637, 8.09142, 6.45008, 5.66904, 4.49676, 2.85614, 1.91875, 0.1998, -1.05071, -3.94255, -6.83275, -8.31743, -9.72459, -10.9752, -11.67822, -12.45988, -13.16361, -12.77431, -12.38481, -11.13594, -9.72969, -8.32385, -7.38666, -5.90229, -4.26147, 7.85133, -1.5268, 0.42663, 2.38056, 8.71019, 11.99306, 13.39972, 14.49408, 15.43208, 16.05759, 16.52715, 16.21619, 15.98293, 15.12417, 13.9522, 13.0147, 11.60887, 10.437, 8.63992, 7.85857, 6.45161, 5.04506, 3.40342, 1.99677, 1.05927, -0.58104, -2.61279, -5.34777, -7.37993, -8.55211, -9.80292, -10.81864, -12.38216, -13.78912, -14.41473, -14.41605, -14.57414, -13.63756, -12.31005, -10.9037, -9.41933, -7.93507, -6.21622, -4.73124, -3.0898, -1.5269, 0.34962, 1.52098, 3.08399, 5.2724, 7.46071, 9.80537, 12.15044, 13.94792, 15.1203, 15.98028, 16.37121, 16.37254, 15.51439, 14.2649, 13.09324, 11.68699, 9.65514, 7.38901, 5.82672, 3.09082, 0.8248, -1.12853, -3.55131, -5.03619, -6.99012, -8.55323, -10.11695, -11.44538, -12.4612, -13.0862, -13.86806, -14.49367, -14.72988, -14.1061, -13.09109, -12.07598, -10.90381, -9.57569, -8.79495, -7.23194, -5.90362, -4.41864, -3.0898, -1.91712, -0.19745, 1.13118, 2.85012, 4.80375, 6.5227, 8.16403, 9.72714, 11.52503, 13.63542, 15.1205, 16.05851, 16.76214, 17.46567, 17.77848, 18.17032, 18.17175, 17.62569, 16.84496, 16.14204, 15.36079, 14.18892, 13.09497, 12.2358, 11.06342, 9.81332, 8.25042, 6.60909, 4.57672, 3.09164, 1.4502, 0.04386, -1.3629, -2.9255, -4.41048, -6.52097, -8.16281, -9.64789, -10.82017, -12.38318, -13.55566, -14.49367, -15.1972, -16.21404, -16.21568, -15.98263, -15.28042, -14.10876, -12.85866, -11.53074, -10.35877, -9.03024, -7.62359, -5.82641, -3.9504, -2.54344, -1.68397, -0.19858, 1.52078, 2.92723, 5.81968, 6.60123, 8.32079, 10.58764, 12.54218, 14.80933, 16.52868, 17.38857, 17.85752, 17.93738, 17.07913, 16.2988, 14.89245, 13.79871, 12.15768, 10.36081, 8.64104, 6.9221, 4.96786, 3.24799, 1.21562, -0.34728, -2.53579, -4.17682, -5.81784, -7.77198, -9.41342, -11.05547, -12.30597, -13.40013, -14.65084, -15.43269, -16.05861, -15.98212, -15.35794, -14.65563, -13.17105, -11.76501, -10.12429, -8.79587, -7.07641, -4.73175, -2.93437, -0.98064, 1.44245, 3.86544, 6.75769, 8.86818, 10.66607, 12.3077, 17.54543, 18.79614, 19.5781, 19.89111, 20.20524, 19.89356, 18.87814, 17.55073, 16.53521, 14.73783, 13.33128, 11.5338, 9.81414, 8.17311, 6.21928, 4.49962, 2.85788, 1.13821, -0.26875, -1.83134, -4.7242, -6.52178, -8.39708, -10.586, -13.08752, -14.72906, -16.13643, -17.30932, -17.54502, -17.31258, -17.0011, -15.67309, -14.65787, -13.09538, -11.84508, -10.20374, -8.48459, -6.92159, -4.88943, -3.63882, -1.99697, -0.74667, 0.97299, 3.1616, 5.2722, 7.14821, 8.6335, 10.04046, 11.60387, 16.29441, 18.32698, 19.8905, 20.28296, 19.81564, 19.19084, 18.01917, 16.76918, 15.98824, 14.89419, 13.48733, 11.29922, 9.57987, 7.07896, 5.20294, 3.87462, 1.92018, 0.27854, -1.9882, -5.66221, -7.53812, -9.023, -10.42975, -11.99347, -14.1827, -15.35518, -16.68453, -17.62325, -17.54706, -16.84506, -15.59496, -14.03257, -12.70486, -11.37633, -9.65677, -6.29628, -4.73307, -3.24799, -1.68488, 1.28539, 4.17784, 7.46112, 9.96254, 11.60377, 13.47998, 15.35651, 17.07637, 18.56166, 19.81268, 20.51631, 20.98557, 21.53316, 22.2376, 21.92674, 20.99046, 19.66224, 18.64672, 17.24038, 15.91174, 14.19208, 12.62969, 11.22273, 9.26859, 7.93986, 6.37645, 5.12594, 3.09327, 1.29518, -1.0502, -3.39537, -5.50565, -7.61614, -11.05536, -13.08783, -14.57353, -16.2937, -17.31014, -18.48303, -19.50028, -19.11108, -18.48701, -17.54981, -16.37835, -14.81545, -13.56555, -12.00306, -10.51798, -8.25124, -6.45365, -4.49931, -3.01392, -0.1996, 4.49095, 6.36706, 8.24338, 9.80659, 11.13563, 12.62112, 14.10661, 15.43575, 16.53011, 17.7028, 18.64101, 19.34444, 20.1264, 21.06482, 21.84698, 22.16101, 21.30256, 20.83503, 18.95953, 17.70974, 16.61579, 14.89612, 13.33342, 10.91023, 9.73754, 8.17423, 5.36001, 3.64055, 1.45153, -1.0502, -3.08297, -4.7243, -6.67875, -8.78944, -10.58753, -11.9948, -13.40227, -15.20016, -16.21649, -18.01459, -19.57871, -19.34658, -18.56635, -17.70698, -16.61324, -15.44116, -14.03512, -12.70659, -10.59641, -8.87685, -7.15698, -5.90627, -3.95183, -0.35533, 4.56928, 6.4456, 7.85266, 9.25941, 10.66658, 12.30832, 14.18474, 15.67043, 17.0778, 18.40715, 19.42338, 20.67439, 22.00405, 22.16193, 20.99057, 19.35005, 17.86598, 16.6936, 15.52153, 13.95873, 11.92647, 10.36315, 9.19057, 6.61113, 3.71837, 0.98156, -1.0506, -3.23942, -5.74135, -7.93007, -9.96264, -12.07384, -12.93393, -14.18443, -15.5919, -16.60793, -17.38969, -18.3281, -19.57994, -18.87814, -17.4721, -16.22271, -14.50387, -12.70618, -11.22181, -8.79872, -6.6099]
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=12, max_displacement=21, num_points=36, repetition_cycles=3)
+    # DisplacementStep = generate_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(num_cycles=12, max_displacement=21, num_points=36, repetition_cycles=3)
+    DisplacementStep = generate_cyclic_loading_exponential(num_cycles=7, initial_displacement=20, max_displacement=156, num_points=50, repetition_cycles=2)
 
-    DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=7, initial_displacement=20, max_displacement=156, num_points=50, repetition_cycles=2)
-
-    # DisplacementStep = generate_cyclic_load(duration=24, sampling_rate=50, max_displacement=23)
-
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Aejaz_SW1():
@@ -770,7 +782,6 @@ def Aejaz_SW1():
     global name
     name = 'Aejaz_SW1'
     # Wall Geometry
-    # 102.0, 4572.0, 1905.0, 140.0, 45.6, 463.7, 463.7, 0.0435, 0.0031, 0.08
     tw = 102 * mm  # Wall thickness
     hw = 3.600 * m  # Wall height
     lw = 1.25 * m  # Wall length
@@ -782,6 +793,7 @@ def Aejaz_SW1():
     fc = 35 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 540 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 540 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 5  # BE long reinforcement diameter (mm)
@@ -798,11 +810,11 @@ def Aejaz_SW1():
     loadF = 0.105
 
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=7, initial_displacement=10, max_displacement=105, num_points=100, repetition_cycles=1)
-    DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=7, max_displacement=100, num_points=50, repetition_cycles=1)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=8, max_displacement=105, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=7, initial_displacement=10, max_displacement=105, num_points=100, repetition_cycles=1)
+    DisplacementStep = generate_cyclic_loading_linear(num_cycles=7, max_displacement=100, num_points=50, repetition_cycles=1)
+    # DisplacementStep = generate_cyclic_loading_exponential(num_cycles=6, initial_displacement=8, max_displacement=105, num_points=50, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Alarcon_W1():
@@ -822,6 +834,7 @@ def Alarcon_W1():
     fc = 27.0 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 469 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 445 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 4  # BE long reinforcement diameter (mm)
@@ -836,22 +849,17 @@ def Alarcon_W1():
     loadF = 0.17
 
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=6, initial_displacement=2, max_displacement=39, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=6, max_displacement=32, num_points=37, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=4, max_displacement=37, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=6, initial_displacement=2, max_displacement=39, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(num_cycles=6, max_displacement=32, num_points=37, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_exponential(num_cycles=6, initial_displacement=4, max_displacement=37, num_points=50, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Farhad_RWB():
-    # fTESTS ON SLENDER DUCTILE STRUCTURAL WALLS
-    # DESIGNED ACCORDING TO NEW ZEALAND STANDARD
     global name
     name = 'Farhad_RWB'
     # Wall Geometry
-    #                            (tw,    hw,     lw,    lbe,   fc,   fyb,  fyw,   rouYb,  rouYw, loadF)
-
-    # 102.0, 4572.0, 1905.0, 140.0, 45.6, 463.7, 463.7, 0.0435, 0.0031, 0.08
     tw = 125 * mm  # Wall thickness
     hw = 5.0 * m  # Wall height
     lw = 2.0 * m  # Wall length
@@ -863,6 +871,7 @@ def Farhad_RWB():
     fc = 41.3 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 334 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 330 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 10  # BE long reinforcement diameter (mm)
@@ -877,13 +886,11 @@ def Farhad_RWB():
     loadF = 0.042 / 0.85
 
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=6, initial_displacement=8, max_displacement=42, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=6, max_displacement=32, num_points=37, repetition_cycles=2)
-    #DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=2, max_displacement=40, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=6, initial_displacement=8, max_displacement=42, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(num_cycles=6, max_displacement=32, num_points=37, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_exponential(num_cycles=6, initial_displacement=2, max_displacement=40, num_points=50, repetition_cycles=2)
 
-    # DisplacementStep = generate_cyclic_load(duration=24, sampling_rate=50, max_displacement=50)
-
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Baek_NS2L():
@@ -906,6 +913,7 @@ def Baek_NS2L():
     fc = 36.5 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 617 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 470 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 6  # BE long reinforcement diameter (mm)
@@ -920,24 +928,19 @@ def Baek_NS2L():
     loadF = 0.07 / 0.85
 
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=6, initial_displacement=8, max_displacement=60, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=6, max_displacement=32, num_points=37, repetition_cycles=2)
-    #DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=2, max_displacement=40, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=6, initial_displacement=8, max_displacement=60, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(num_cycles=6, max_displacement=32, num_points=37, repetition_cycles=2)
+    #DisplacementStep = generate_cyclic_loading_exponential(num_cycles=6, initial_displacement=2, max_displacement=40, num_points=50, repetition_cycles=2)
 
     # DisplacementStep = generate_cyclic_load(duration=24, sampling_rate=50, max_displacement=50)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Hube_W6():
-    # fTESTS ON SLENDER DUCTILE STRUCTURAL WALLS
-    # DESIGNED ACCORDING TO NEW ZEALAND STANDARD
     global name
     name = 'Hube_W6'
     # Wall Geometry
-    #                            (tw,    hw,     lw,    lbe,   fc,   fyb,  fyw,   rouYb,  rouYw, loadF)
-
-    # 102.0, 4572.0, 1905.0, 140.0, 45.6, 463.7, 463.7, 0.0435, 0.0031, 0.08
     tw = 100 * mm  # Wall thickness
     hw = 1.6 * m  # Wall height
     lw = 0.7 * m  # Wall length
@@ -949,6 +952,7 @@ def Hube_W6():
     fc = 27.5 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 470 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 469 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 4  # BE long reinforcement diameter (mm)
@@ -963,13 +967,11 @@ def Hube_W6():
     loadF = 0.18
 
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=6, initial_displacement=8, max_displacement=60, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=6, max_displacement=32, num_points=37, repetition_cycles=2)
-    #DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=2, max_displacement=40, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=6, initial_displacement=8, max_displacement=60, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(num_cycles=6, max_displacement=32, num_points=37, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_exponential(num_cycles=6, initial_displacement=2, max_displacement=40, num_points=50, repetition_cycles=2)
 
-    # DisplacementStep = generate_cyclic_load(duration=24, sampling_rate=50, max_displacement=50)
-
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def AR2_8():
@@ -989,6 +991,7 @@ def AR2_8():
     fc = 41.36 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 503.94 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 503.94 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 9  # BE long reinforcement diameter (mm)
@@ -1003,13 +1006,13 @@ def AR2_8():
     loadF = 0.080 / 0.85
 
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=6, initial_displacement=20, max_displacement=140, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=6, max_displacement=32, num_points=37, repetition_cycles=2)
-    #DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=6, initial_displacement=2, max_displacement=40, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=6, initial_displacement=20, max_displacement=140, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(num_cycles=6, max_displacement=32, num_points=37, repetition_cycles=2)
+    #DisplacementStep = generate_cyclic_loading_exponential(num_cycles=6, initial_displacement=2, max_displacement=40, num_points=50, repetition_cycles=2)
 
     # DisplacementStep = generate_cyclic_load(duration=24, sampling_rate=50, max_displacement=50)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Mosoarca_SW1():
@@ -1028,6 +1031,7 @@ def Mosoarca_SW1():
     fc = 50 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 400 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 400 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 6  # BE long reinforcement diameter (mm)
@@ -1044,9 +1048,9 @@ def Mosoarca_SW1():
     rouXw = 0.0090
     loadF = 60 / (0.85 * tw * lw * fc) * 1000
 
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=7, initial_displacement=2, max_displacement=27, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=7, initial_displacement=2, max_displacement=27, num_points=50, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Altin_S1():
@@ -1065,6 +1069,8 @@ def Altin_S1():
     fc = 15.5 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 425 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 320 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 5  # BE long reinforcement diameter (mm)
@@ -1079,9 +1085,9 @@ def Altin_S1():
     print('rouYw', rouYw)
     loadF = 0.005
 
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=7, initial_displacement=2, max_displacement=12, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=7, initial_displacement=2, max_displacement=12, num_points=50, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Rao_1():
@@ -1100,6 +1106,7 @@ def Rao_1():
     fc = 30 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 415 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 415 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 4  # BE long reinforcement diameter (mm)
@@ -1114,9 +1121,9 @@ def Rao_1():
     print('rouYw', rouYw)
     loadF = 0.020
 
-    DisplacementStep = generate_increasing_cyclic_loading(num_cycles=7, initial_displacement=2, max_displacement=70, num_points=100, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading(num_cycles=7, initial_displacement=2, max_displacement=70, num_points=100, repetition_cycles=2)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Bismarck():
@@ -1136,6 +1143,7 @@ def Bismarck():
     fc = 24.8 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 462.7 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 462.9 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 8  # BE long reinforcement diameter (mm)
@@ -1201,14 +1209,14 @@ def Bismarck():
     # DisplacementStep = [0.03896, 0.35013, 0.58328, 0.81715, 1.05071, 1.44133, 2.06725, 2.92427, 0.19562, 0.04141, -0.34748, -0.5023, -0.89211, -1.2039, -1.59462, -1.28355, -1.12924, -0.81847, -0.5073, -0.03927, 0.42785, 0.89507, 1.20665, 1.59656, 1.98708, 1.67621, 1.13128, 0.82041, 0.19715,
     # -0.3482, -0.738, -0.50159, -1.2041, -1.67244, -2.21901, -0.3533, -2.76537, -2.76721, -2.45665, -1.83338, -1.28783, -0.74208, -0.7429, 0.50597, 1.20696, 1.59615, 2.29907, 2.61157, 2.37913, 1.36535, 0.97717, 0.27588, -0.19042, -0.73647, -1.67295, -2.68755, -2.68898, -2.37842, -1.44347, -0.89864, 2.14445, 1.90957, 3.39251, 4.09533, 4.72094, 4.33215, 3.62984, 2.84962, 2.22543, 1.7576, 0.11963, -0.66018, -1.12669, -1.90681, -2.92182, -3.31163, -3.85871, -3.93867, -3.62852, -2.77108, -1.83563, -1.21185, 0.03692, 1.36423, 3.6277, 4.40803, 5.50178, 5.8924, 6.20571, 5.50412, 4.64587, 3.94397, 3.3201, 3.08705, 2.30621, 1.60411, 1.05795, 0.43346, -0.50302, -1.12638, -2.06296, -2.99995, -3.62434, -4.32756, -4.87474, -4.79876, -4.64536, -4.33398, -3.71021, 3.31714, -1.91487, 0.89588, 4.01873, 3.94132, 4.72196, 5.5028, 5.97154, 4.95755, 4.49054, 3.55447, 2.69653, 2.07255, 1.13668, 0.27803, -0.97064, -2.29795, -3.23483, -4.17233, -4.79753, -4.95378, -4.79998, -4.64587, -4.02251, -3.24177, -2.22717, -1.05621, 0.27089, 3.08215, 5.5028, 5.97144, 6.43989, 7.29966, 7.6141, 6.91231, 5.97644, 5.35246, 4.41497, 3.2433, 2.30652, 1.29253, -0.58777, -1.59707, -2.53344, -3.31337, -4.25086, -5.0317, -5.42192, -6.20327, -6.28313, -5.89505, -5.27128, -4.49105, -2.77384, -1.60319, -0.66671, 0.89486, 2.14415, 3.62862, 5.03435, 6.28476, 6.90955, 7.3784, 7.30232, 6.44437, 5.19519, 4.41497, 3.24371, 2.15027, 1.21369, 0.66855, -0.65876, -1.90824, -3.00168, -3.86105, -4.6422, -5.34542, -5.8922, -6.36074, -6.05089, -5.42732, -4.96, -4.02312, -3.00821, -2.22757, -1.36912, -0.19817, 1.44194, 2.53538, 3.86309, 5.19132, 6.36278, 7.45653, 8.08152, 8.86328, 9.17588, 9.17833, 7.69467, 6.68038, 5.97828, 5.11931, 4.18192, 3.40098, 2.77649, 1.99514, 1.05795, -0.34799, -1.28528, -2.45624, -3.6276, -4.79876, -5.50137, -6.20439, -6.75116, -7.14148, -7.61033, -8.15781, -8.15914, -7.9267, -7.14688, -5.81968, -4.49248, -2.85216, -1.44663, -0.11953, 1.91089, 4.02036, 5.42671, 9.41138, 8.08285, 8.78597, 9.25503, 8.86583, 8.00728, 7.46112, 6.36798, 5.74431, 4.49452, 3.32316, 1.99504, 0.82347, -0.19154, -1.44092, -2.61269, -3.62801, -4.40895, -5.18958, -6.04896, -6.59573, -7.37728, -8.15894, -7.77035, -7.06815, -6.13147, -4.88218, -3.55447, -2.46175, -1.44704, -0.19807, 1.52007, 4.56673, 5.81693, 6.75473, 8.23971, 9.95815, 10.4271, 10.7396, 10.81956, 10.82119, 10.19671, 8.94742, 8.16669, 6.99502, 5.82335, 4.96408, 3.47961, 2.22951, 0.66702, -0.19154, -1.51915, -3.23759, -4.40895, -5.34624, -6.28333, -6.90812, -7.92415, -8.62728, -9.40893, -9.95631, -9.87952, -9.4126, -8.78913, -7.53975, -6.21204, -4.88382, -3.71205, -2.69724, -1.36912, 0.81776, 2.77037, 4.64506, 5.6617, 0.50546, 8.39657, 9.56855, 10.50625, 11.05322, 10.35163, 9.96233, 9.18159, 8.32273, 6.99451, 6.13606, 4.96429, 3.87023, 3.01076, 2.07398, 0.74545, -0.19164, -1.44143, -3.00372, -4.25392, -5.89454, -6.67538, -7.53475, -8.15955, -8.70652, -9.33172, -9.8789, -9.80251, -9.10072, -8.24257, -6.68058, -5.35226, -3.94683, -2.85349, -1.68172, 0.2715, 2.45807, 4.09818, 7.14617, 8.47419, 10.42782, 11.52166, 12.61653, 12.69639, 12.15084, 11.37072, 0.98013, 8.87113, 7.30884, 6.13697, 4.49605, 2.93315, 1.76127, 0.51199, -2.06653, -3.62903, -5.1134, -6.28506, -7.30048, -8.316, -9.01882, -9.95662, -10.73838, -11.20753, -11.13104, -10.97612, -10.27422, -9.41576, -8.16597, -7.15045, -6.05701, -4.57234, -3.1663, -1.44755, 3.86462, 7.14688, 8.55343, 9.72541, 10.89748, 11.83549, 12.4609, 12.7737, 12.697, 12.07343, 11.2928, 10.43404, 9.26227, 8.16822, 6.29281, 4.9649, 3.55814, 1.99544, -0.03488, -1.83236, -3.47257, -5.26965, -6.6762, -7.76974, -8.70744, -9.72347, -10.7396, -11.20845, -10.97642, -10.43016, -9.25941, -8.47857, -7.15035, -6.13473, -5.11931, -3.79089, -2.30621, 1.13087, 2.53681, 4.48993, 6.05263, 7.85001, 9.02218, 10.27228, 11.36644, 12.30434, 13.08589, 14.024, 14.57159, 14.88552, 14.73049, 14.26266, -2.22309, 12.31005, 11.37276, 10.35734, 9.34172, 8.24787, 6.76299, 5.90352, 4.10604, 3.16854, 1.91844, -1.36341, -3.31663, -5.50371, -7.37932, -8.47286, -10.03607, -10.89575, -11.28627, -12.06782, -12.77166, -13.00756, -12.61867, -11.91678, -10.90228, -9.7304, -8.55853, 4.56867, -5.98042, -4.49574, -3.32397, -1.99555, -0.43224, 5.03721, 9.33519, 11.5234, 13.71211, 14.41565, 14.88501, 14.96435, 14.49663, 14.10661, 13.404, 12.46661, 11.13808, 10.20099, 9.2637, 8.09142, 6.45008, 5.66904, 4.49676, 2.85614, 1.91875, 0.1998, -1.05071, -3.94255, -6.83275, -8.31743, -9.72459, -10.9752, -11.67822, -12.45988, -13.16361, -12.77431, -12.38481, -11.13594, -9.72969, -8.32385, -7.38666, -5.90229, -4.26147, 7.85133, -1.5268, 0.42663, 2.38056, 8.71019, 11.99306, 13.39972, 14.49408, 15.43208, 16.05759, 16.52715, 16.21619, 15.98293, 15.12417, 13.9522, 13.0147, 11.60887, 10.437, 8.63992, 7.85857, 6.45161, 5.04506, 3.40342, 1.99677, 1.05927, -0.58104, -2.61279, -5.34777, -7.37993, -8.55211, -9.80292, -10.81864, -12.38216, -13.78912, -14.41473, -14.41605, -14.57414, -13.63756, -12.31005, -10.9037, -9.41933, -7.93507, -6.21622, -4.73124, -3.0898, -1.5269, 0.34962, 1.52098, 3.08399, 5.2724, 7.46071, 9.80537, 12.15044, 13.94792, 15.1203, 15.98028, 16.37121, 16.37254, 15.51439, 14.2649, 13.09324, 11.68699, 9.65514, 7.38901, 5.82672, 3.09082, 0.8248, -1.12853, -3.55131, -5.03619, -6.99012, -8.55323, -10.11695, -11.44538, -12.4612, -13.0862, -13.86806, -14.49367, -14.72988, -14.1061, -13.09109, -12.07598, -10.90381, -9.57569, -8.79495, -7.23194, -5.90362, -4.41864, -3.0898, -1.91712, -0.19745, 1.13118, 2.85012, 4.80375, 6.5227, 8.16403, 9.72714, 11.52503, 13.63542, 15.1205, 16.05851, 16.76214, 17.46567, 17.77848, 18.17032, 18.17175, 17.62569, 16.84496, 16.14204, 15.36079, 14.18892, 13.09497, 12.2358, 11.06342, 9.81332, 8.25042, 6.60909, 4.57672, 3.09164, 1.4502, 0.04386, -1.3629, -2.9255, -4.41048, -6.52097, -8.16281, -9.64789, -10.82017, -12.38318, -13.55566, -14.49367, -15.1972, -16.21404, -16.21568, -15.98263, -15.28042, -14.10876, -12.85866, -11.53074, -10.35877, -9.03024, -7.62359, -5.82641, -3.9504, -2.54344, -1.68397, -0.19858, 1.52078, 2.92723, 5.81968, 6.60123, 8.32079, 10.58764, 12.54218, 14.80933, 16.52868, 17.38857, 17.85752, 17.93738, 17.07913, 16.2988, 14.89245, 13.79871, 12.15768, 10.36081, 8.64104, 6.9221, 4.96786, 3.24799, 1.21562, -0.34728, -2.53579, -4.17682, -5.81784, -7.77198, -9.41342, -11.05547, -12.30597, -13.40013, -14.65084, -15.43269, -16.05861, -15.98212, -15.35794, -14.65563, -13.17105, -11.76501, -10.12429, -8.79587, -7.07641, -4.73175, -2.93437, -0.98064, 1.44245, 3.86544, 6.75769, 8.86818, 10.66607, 12.3077, 17.54543, 18.79614, 19.5781, 19.89111, 20.20524, 19.89356, 18.87814, 17.55073, 16.53521, 14.73783, 13.33128, 11.5338, 9.81414, 8.17311, 6.21928, 4.49962, 2.85788, 1.13821, -0.26875, -1.83134, -4.7242, -6.52178, -8.39708, -10.586, -13.08752, -14.72906, -16.13643, -17.30932, -17.54502, -17.31258, -17.0011, -15.67309, -14.65787, -13.09538, -11.84508, -10.20374, -8.48459, -6.92159, -4.88943, -3.63882, -1.99697, -0.74667, 0.97299, 3.1616, 5.2722, 7.14821, 8.6335, 10.04046, 11.60387, 16.29441, 18.32698, 19.8905, 20.28296, 19.81564, 19.19084, 18.01917, 16.76918, 15.98824, 14.89419, 13.48733, 11.29922, 9.57987, 7.07896, 5.20294, 3.87462, 1.92018, 0.27854, -1.9882, -5.66221, -7.53812, -9.023, -10.42975, -11.99347, -14.1827, -15.35518, -16.68453, -17.62325, -17.54706, -16.84506, -15.59496, -14.03257, -12.70486, -11.37633, -9.65677, -6.29628, -4.73307, -3.24799, -1.68488, 1.28539, 4.17784, 7.46112, 9.96254, 11.60377, 13.47998, 15.35651, 17.07637, 18.56166, 19.81268, 20.51631, 20.98557, 21.53316, 22.2376, 21.92674, 20.99046, 19.66224, 18.64672, 17.24038, 15.91174, 14.19208, 12.62969, 11.22273, 9.26859, 7.93986, 6.37645, 5.12594, 3.09327, 1.29518, -1.0502, -3.39537, -5.50565, -7.61614, -11.05536, -13.08783, -14.57353, -16.2937, -17.31014, -18.48303, -19.50028, -19.11108, -18.48701, -17.54981, -16.37835, -14.81545, -13.56555, -12.00306, -10.51798, -8.25124, -6.45365, -4.49931, -3.01392, -0.1996, 4.49095, 6.36706, 8.24338, 9.80659, 11.13563, 12.62112, 14.10661, 15.43575, 16.53011, 17.7028, 18.64101, 19.34444, 20.1264, 21.06482, 21.84698, 22.16101, 21.30256, 20.83503, 18.95953, 17.70974, 16.61579, 14.89612, 13.33342, 10.91023, 9.73754, 8.17423, 5.36001, 3.64055, 1.45153, -1.0502, -3.08297, -4.7243, -6.67875, -8.78944, -10.58753, -11.9948, -13.40227, -15.20016, -16.21649, -18.01459, -19.57871, -19.34658, -18.56635, -17.70698, -16.61324, -15.44116, -14.03512, -12.70659, -10.59641, -8.87685, -7.15698, -5.90627, -3.95183, -0.35533, 4.56928, 6.4456, 7.85266, 9.25941, 10.66658, 12.30832, 14.18474, 15.67043, 17.0778, 18.40715, 19.42338, 20.67439, 22.00405, 22.16193, 20.99057, 19.35005, 17.86598, 16.6936, 15.52153, 13.95873, 11.92647, 10.36315, 9.19057, 6.61113, 3.71837, 0.98156, -1.0506, -3.23942, -5.74135, -7.93007, -9.96264, -12.07384, -12.93393, -14.18443, -15.5919, -16.60793, -17.38969, -18.3281, -19.57994, -18.87814, -17.4721, -16.22271, -14.50387, -12.70618, -11.22181, -8.79872, -6.6099]
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=12, max_displacement=21, num_points=36, repetition_cycles=3)
+    # DisplacementStep = generate_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(num_cycles=12, max_displacement=21, num_points=36, repetition_cycles=3)
 
-    DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=7, initial_displacement=20, max_displacement=29, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading_exponential(num_cycles=7, initial_displacement=20, max_displacement=29, num_points=50, repetition_cycles=2)
 
     # DisplacementStep = generate_cyclic_load(duration=24, sampling_rate=50, max_displacement=23)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Kong_1():
@@ -1228,6 +1236,7 @@ def Kong_1():
     fc = 28.8 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 400.7 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 400.9 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 4  # BE long reinforcement diameter (mm)
@@ -1248,14 +1257,14 @@ def Kong_1():
     # DisplacementStep = [0.03896, 0.35013, 0.58328, 0.81715, 1.05071, 1.44133, 2.06725, 2.92427, 0.19562, 0.04141, -0.34748, -0.5023, -0.89211, -1.2039, -1.59462, -1.28355, -1.12924, -0.81847, -0.5073, -0.03927, 0.42785, 0.89507, 1.20665, 1.59656, 1.98708, 1.67621, 1.13128, 0.82041, 0.19715,
     # -0.3482, -0.738, -0.50159, -1.2041, -1.67244, -2.21901, -0.3533, -2.76537, -2.76721, -2.45665, -1.83338, -1.28783, -0.74208, -0.7429, 0.50597, 1.20696, 1.59615, 2.29907, 2.61157, 2.37913, 1.36535, 0.97717, 0.27588, -0.19042, -0.73647, -1.67295, -2.68755, -2.68898, -2.37842, -1.44347, -0.89864, 2.14445, 1.90957, 3.39251, 4.09533, 4.72094, 4.33215, 3.62984, 2.84962, 2.22543, 1.7576, 0.11963, -0.66018, -1.12669, -1.90681, -2.92182, -3.31163, -3.85871, -3.93867, -3.62852, -2.77108, -1.83563, -1.21185, 0.03692, 1.36423, 3.6277, 4.40803, 5.50178, 5.8924, 6.20571, 5.50412, 4.64587, 3.94397, 3.3201, 3.08705, 2.30621, 1.60411, 1.05795, 0.43346, -0.50302, -1.12638, -2.06296, -2.99995, -3.62434, -4.32756, -4.87474, -4.79876, -4.64536, -4.33398, -3.71021, 3.31714, -1.91487, 0.89588, 4.01873, 3.94132, 4.72196, 5.5028, 5.97154, 4.95755, 4.49054, 3.55447, 2.69653, 2.07255, 1.13668, 0.27803, -0.97064, -2.29795, -3.23483, -4.17233, -4.79753, -4.95378, -4.79998, -4.64587, -4.02251, -3.24177, -2.22717, -1.05621, 0.27089, 3.08215, 5.5028, 5.97144, 6.43989, 7.29966, 7.6141, 6.91231, 5.97644, 5.35246, 4.41497, 3.2433, 2.30652, 1.29253, -0.58777, -1.59707, -2.53344, -3.31337, -4.25086, -5.0317, -5.42192, -6.20327, -6.28313, -5.89505, -5.27128, -4.49105, -2.77384, -1.60319, -0.66671, 0.89486, 2.14415, 3.62862, 5.03435, 6.28476, 6.90955, 7.3784, 7.30232, 6.44437, 5.19519, 4.41497, 3.24371, 2.15027, 1.21369, 0.66855, -0.65876, -1.90824, -3.00168, -3.86105, -4.6422, -5.34542, -5.8922, -6.36074, -6.05089, -5.42732, -4.96, -4.02312, -3.00821, -2.22757, -1.36912, -0.19817, 1.44194, 2.53538, 3.86309, 5.19132, 6.36278, 7.45653, 8.08152, 8.86328, 9.17588, 9.17833, 7.69467, 6.68038, 5.97828, 5.11931, 4.18192, 3.40098, 2.77649, 1.99514, 1.05795, -0.34799, -1.28528, -2.45624, -3.6276, -4.79876, -5.50137, -6.20439, -6.75116, -7.14148, -7.61033, -8.15781, -8.15914, -7.9267, -7.14688, -5.81968, -4.49248, -2.85216, -1.44663, -0.11953, 1.91089, 4.02036, 5.42671, 9.41138, 8.08285, 8.78597, 9.25503, 8.86583, 8.00728, 7.46112, 6.36798, 5.74431, 4.49452, 3.32316, 1.99504, 0.82347, -0.19154, -1.44092, -2.61269, -3.62801, -4.40895, -5.18958, -6.04896, -6.59573, -7.37728, -8.15894, -7.77035, -7.06815, -6.13147, -4.88218, -3.55447, -2.46175, -1.44704, -0.19807, 1.52007, 4.56673, 5.81693, 6.75473, 8.23971, 9.95815, 10.4271, 10.7396, 10.81956, 10.82119, 10.19671, 8.94742, 8.16669, 6.99502, 5.82335, 4.96408, 3.47961, 2.22951, 0.66702, -0.19154, -1.51915, -3.23759, -4.40895, -5.34624, -6.28333, -6.90812, -7.92415, -8.62728, -9.40893, -9.95631, -9.87952, -9.4126, -8.78913, -7.53975, -6.21204, -4.88382, -3.71205, -2.69724, -1.36912, 0.81776, 2.77037, 4.64506, 5.6617, 0.50546, 8.39657, 9.56855, 10.50625, 11.05322, 10.35163, 9.96233, 9.18159, 8.32273, 6.99451, 6.13606, 4.96429, 3.87023, 3.01076, 2.07398, 0.74545, -0.19164, -1.44143, -3.00372, -4.25392, -5.89454, -6.67538, -7.53475, -8.15955, -8.70652, -9.33172, -9.8789, -9.80251, -9.10072, -8.24257, -6.68058, -5.35226, -3.94683, -2.85349, -1.68172, 0.2715, 2.45807, 4.09818, 7.14617, 8.47419, 10.42782, 11.52166, 12.61653, 12.69639, 12.15084, 11.37072, 0.98013, 8.87113, 7.30884, 6.13697, 4.49605, 2.93315, 1.76127, 0.51199, -2.06653, -3.62903, -5.1134, -6.28506, -7.30048, -8.316, -9.01882, -9.95662, -10.73838, -11.20753, -11.13104, -10.97612, -10.27422, -9.41576, -8.16597, -7.15045, -6.05701, -4.57234, -3.1663, -1.44755, 3.86462, 7.14688, 8.55343, 9.72541, 10.89748, 11.83549, 12.4609, 12.7737, 12.697, 12.07343, 11.2928, 10.43404, 9.26227, 8.16822, 6.29281, 4.9649, 3.55814, 1.99544, -0.03488, -1.83236, -3.47257, -5.26965, -6.6762, -7.76974, -8.70744, -9.72347, -10.7396, -11.20845, -10.97642, -10.43016, -9.25941, -8.47857, -7.15035, -6.13473, -5.11931, -3.79089, -2.30621, 1.13087, 2.53681, 4.48993, 6.05263, 7.85001, 9.02218, 10.27228, 11.36644, 12.30434, 13.08589, 14.024, 14.57159, 14.88552, 14.73049, 14.26266, -2.22309, 12.31005, 11.37276, 10.35734, 9.34172, 8.24787, 6.76299, 5.90352, 4.10604, 3.16854, 1.91844, -1.36341, -3.31663, -5.50371, -7.37932, -8.47286, -10.03607, -10.89575, -11.28627, -12.06782, -12.77166, -13.00756, -12.61867, -11.91678, -10.90228, -9.7304, -8.55853, 4.56867, -5.98042, -4.49574, -3.32397, -1.99555, -0.43224, 5.03721, 9.33519, 11.5234, 13.71211, 14.41565, 14.88501, 14.96435, 14.49663, 14.10661, 13.404, 12.46661, 11.13808, 10.20099, 9.2637, 8.09142, 6.45008, 5.66904, 4.49676, 2.85614, 1.91875, 0.1998, -1.05071, -3.94255, -6.83275, -8.31743, -9.72459, -10.9752, -11.67822, -12.45988, -13.16361, -12.77431, -12.38481, -11.13594, -9.72969, -8.32385, -7.38666, -5.90229, -4.26147, 7.85133, -1.5268, 0.42663, 2.38056, 8.71019, 11.99306, 13.39972, 14.49408, 15.43208, 16.05759, 16.52715, 16.21619, 15.98293, 15.12417, 13.9522, 13.0147, 11.60887, 10.437, 8.63992, 7.85857, 6.45161, 5.04506, 3.40342, 1.99677, 1.05927, -0.58104, -2.61279, -5.34777, -7.37993, -8.55211, -9.80292, -10.81864, -12.38216, -13.78912, -14.41473, -14.41605, -14.57414, -13.63756, -12.31005, -10.9037, -9.41933, -7.93507, -6.21622, -4.73124, -3.0898, -1.5269, 0.34962, 1.52098, 3.08399, 5.2724, 7.46071, 9.80537, 12.15044, 13.94792, 15.1203, 15.98028, 16.37121, 16.37254, 15.51439, 14.2649, 13.09324, 11.68699, 9.65514, 7.38901, 5.82672, 3.09082, 0.8248, -1.12853, -3.55131, -5.03619, -6.99012, -8.55323, -10.11695, -11.44538, -12.4612, -13.0862, -13.86806, -14.49367, -14.72988, -14.1061, -13.09109, -12.07598, -10.90381, -9.57569, -8.79495, -7.23194, -5.90362, -4.41864, -3.0898, -1.91712, -0.19745, 1.13118, 2.85012, 4.80375, 6.5227, 8.16403, 9.72714, 11.52503, 13.63542, 15.1205, 16.05851, 16.76214, 17.46567, 17.77848, 18.17032, 18.17175, 17.62569, 16.84496, 16.14204, 15.36079, 14.18892, 13.09497, 12.2358, 11.06342, 9.81332, 8.25042, 6.60909, 4.57672, 3.09164, 1.4502, 0.04386, -1.3629, -2.9255, -4.41048, -6.52097, -8.16281, -9.64789, -10.82017, -12.38318, -13.55566, -14.49367, -15.1972, -16.21404, -16.21568, -15.98263, -15.28042, -14.10876, -12.85866, -11.53074, -10.35877, -9.03024, -7.62359, -5.82641, -3.9504, -2.54344, -1.68397, -0.19858, 1.52078, 2.92723, 5.81968, 6.60123, 8.32079, 10.58764, 12.54218, 14.80933, 16.52868, 17.38857, 17.85752, 17.93738, 17.07913, 16.2988, 14.89245, 13.79871, 12.15768, 10.36081, 8.64104, 6.9221, 4.96786, 3.24799, 1.21562, -0.34728, -2.53579, -4.17682, -5.81784, -7.77198, -9.41342, -11.05547, -12.30597, -13.40013, -14.65084, -15.43269, -16.05861, -15.98212, -15.35794, -14.65563, -13.17105, -11.76501, -10.12429, -8.79587, -7.07641, -4.73175, -2.93437, -0.98064, 1.44245, 3.86544, 6.75769, 8.86818, 10.66607, 12.3077, 17.54543, 18.79614, 19.5781, 19.89111, 20.20524, 19.89356, 18.87814, 17.55073, 16.53521, 14.73783, 13.33128, 11.5338, 9.81414, 8.17311, 6.21928, 4.49962, 2.85788, 1.13821, -0.26875, -1.83134, -4.7242, -6.52178, -8.39708, -10.586, -13.08752, -14.72906, -16.13643, -17.30932, -17.54502, -17.31258, -17.0011, -15.67309, -14.65787, -13.09538, -11.84508, -10.20374, -8.48459, -6.92159, -4.88943, -3.63882, -1.99697, -0.74667, 0.97299, 3.1616, 5.2722, 7.14821, 8.6335, 10.04046, 11.60387, 16.29441, 18.32698, 19.8905, 20.28296, 19.81564, 19.19084, 18.01917, 16.76918, 15.98824, 14.89419, 13.48733, 11.29922, 9.57987, 7.07896, 5.20294, 3.87462, 1.92018, 0.27854, -1.9882, -5.66221, -7.53812, -9.023, -10.42975, -11.99347, -14.1827, -15.35518, -16.68453, -17.62325, -17.54706, -16.84506, -15.59496, -14.03257, -12.70486, -11.37633, -9.65677, -6.29628, -4.73307, -3.24799, -1.68488, 1.28539, 4.17784, 7.46112, 9.96254, 11.60377, 13.47998, 15.35651, 17.07637, 18.56166, 19.81268, 20.51631, 20.98557, 21.53316, 22.2376, 21.92674, 20.99046, 19.66224, 18.64672, 17.24038, 15.91174, 14.19208, 12.62969, 11.22273, 9.26859, 7.93986, 6.37645, 5.12594, 3.09327, 1.29518, -1.0502, -3.39537, -5.50565, -7.61614, -11.05536, -13.08783, -14.57353, -16.2937, -17.31014, -18.48303, -19.50028, -19.11108, -18.48701, -17.54981, -16.37835, -14.81545, -13.56555, -12.00306, -10.51798, -8.25124, -6.45365, -4.49931, -3.01392, -0.1996, 4.49095, 6.36706, 8.24338, 9.80659, 11.13563, 12.62112, 14.10661, 15.43575, 16.53011, 17.7028, 18.64101, 19.34444, 20.1264, 21.06482, 21.84698, 22.16101, 21.30256, 20.83503, 18.95953, 17.70974, 16.61579, 14.89612, 13.33342, 10.91023, 9.73754, 8.17423, 5.36001, 3.64055, 1.45153, -1.0502, -3.08297, -4.7243, -6.67875, -8.78944, -10.58753, -11.9948, -13.40227, -15.20016, -16.21649, -18.01459, -19.57871, -19.34658, -18.56635, -17.70698, -16.61324, -15.44116, -14.03512, -12.70659, -10.59641, -8.87685, -7.15698, -5.90627, -3.95183, -0.35533, 4.56928, 6.4456, 7.85266, 9.25941, 10.66658, 12.30832, 14.18474, 15.67043, 17.0778, 18.40715, 19.42338, 20.67439, 22.00405, 22.16193, 20.99057, 19.35005, 17.86598, 16.6936, 15.52153, 13.95873, 11.92647, 10.36315, 9.19057, 6.61113, 3.71837, 0.98156, -1.0506, -3.23942, -5.74135, -7.93007, -9.96264, -12.07384, -12.93393, -14.18443, -15.5919, -16.60793, -17.38969, -18.3281, -19.57994, -18.87814, -17.4721, -16.22271, -14.50387, -12.70618, -11.22181, -8.79872, -6.6099]
     # DisplacementStep = generate_cyclic_load(duration=7, sampling_rate=100, max_displacement=86)
-    # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
-    # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=12, max_displacement=21, num_points=36, repetition_cycles=3)
+    # DisplacementStep = generate_cyclic_loading(num_cycles=10, initial_displacement=5, max_displacement=86, num_points=50, repetition_cycles=2)
+    # DisplacementStep = generate_cyclic_loading_with_repetition(num_cycles=12, max_displacement=21, num_points=36, repetition_cycles=3)
 
-    DisplacementStep = generate_increasing_cyclic_loading_with_exponential_growth(num_cycles=7, initial_displacement=20, max_displacement=30, num_points=50, repetition_cycles=2)
+    DisplacementStep = generate_cyclic_loading_exponential(num_cycles=7, initial_displacement=20, max_displacement=30, num_points=50, repetition_cycles=2)
 
     # DisplacementStep = generate_cyclic_load(duration=24, sampling_rate=50, max_displacement=23)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 def Lefas_SW11():
@@ -1276,6 +1285,7 @@ def Lefas_SW11():
     fc = 0.7 * 52.9 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 480 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 480 * MPa  # Steel tension yield strength (+Tension, -Compression)
+    fx = fyw
 
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 6  # BE long reinforcement diameter (mm)
@@ -1292,18 +1302,18 @@ def Lefas_SW11():
     rouXw = 0.011
 
     loadF = 0.0000
-    DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=10,
-                                                                          max_displacement=10,
-                                                                          num_points=50,
-                                                                          repetition_cycles=1)
+    DisplacementStep = generate_cyclic_loading_linear(num_cycles=10,
+                                                      max_displacement=10,
+                                                      num_points=50,
+                                                      repetition_cycles=1)
 
-    return tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep
 
 
 # ------- Select Model for Validation -----------------------------------------------------------------------------------------------
 validation_model = Thomsen_and_Wallace_RW2()
 # validation_model = Thomsen_and_Wallace_RW1()
-# validation_model = Tran_and_Wallace_A15P10S78()
+validation_model = Tran_and_Wallace_A15P10S78()
 # validation_model = Tran_and_Wallace_A20P10S38()
 # validation_model = Dazio_WSH2()
 # validation_model = Dazio_WSH3()
@@ -1327,28 +1337,27 @@ validation_model = Thomsen_and_Wallace_RW2()
 # validation_model = Lefas_SW11()
 
 
-tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep = validation_model
+tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, DisplacementStep = validation_model
 
 
 #  ---------------- RUN CYCLIC ANALYSIS ---------------------------------------------------------------
-rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF, printProgression=True)
+rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, printProgression=True)
 rcmodel.run_gravity(printProgression=False)
-[x, y] = rcmodel.run_analysis(DisplacementStep, printProgression=False)
+[x, y] = rcmodel.run_analysis(DisplacementStep, analysis='cyclic', printProgression=True)
 rcmodel.reset_analysis()
 plotting(x, y, 'Displacement (mm)', 'Base Shear (kN)', f'{name}', save_fig=False, plotValidation=True)
 
 # ---------------- RUN PUSHOVER ANALYSIS ---------------------------------------------------------------
-# rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, rouXb, rouXw, loadF)
+# rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, printProgression=True)
 # rcmodel.run_gravity(printProgression=False)
-# [x, y] = rcmodel.run_analysis(DisplacementStep, pushover=True, printProgression=False)
+# [x, y] = rcmodel.run_analysis(DisplacementStep, analysis='pushover', printProgression=False)
 # rcmodel.reset_analysis()
 # plotting(x, y, 'Displacement (mm)', 'Base Shear (kN)', f'{name}', save_fig=False, plotValidation=True)
 
 
 # Find the index of the maximum y value
 max_y_index = np.argmax(y)
-# Get the corresponding x value
-max_x_value = x[max_y_index]
+max_x_value = x[max_y_index]  # Get the corresponding x value
 print('Maximum Base Shear:', np.max(y))
 print('Corresponding Displacement (x):', max_x_value)
 print('Aspect Ratio = ', hw/lw)

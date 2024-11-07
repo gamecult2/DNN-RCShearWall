@@ -3,12 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Constants
-eleH = 50  # Number of elements in height
-eleL = 50  # Number of elements in length
+eleH = 10  # Number of elements in height
+eleL = 8  # Number of elements in length
 crack_factor = 4
+eleL = 8  # Number of elements in length
 steps = 1000
-dt = 1
-
+dt = 20
 
 def load_data(file_path):
     return np.loadtxt(file_path, delimiter=None)
@@ -34,62 +34,66 @@ def process_data(step):
     return C1, s1, s2
 
 
-def plot_cracks(step):
+def plot_crack_pattern(step):
     C1, s1, s2 = process_data(step)
 
     plt.figure(figsize=(5, 8))
 
-    # x1 = [0, 70, 120, 170, 220, 270, 320, 370, 420, 470, 540]
-    # y1 = list(range(0, 2251, 50))
-    x1 = list(range(0, eleL + 1, 1))
-    y1 = list(range(0, eleH + 1, 1))
+    x1 = list(range(0, eleL+1, 1))
+    y1 = list(range(0, eleH+1, 1))
 
-    # Plot grid lines
+    # Draw mesh grid
     for y in y1:
-        plt.axhline(y, color='k', linewidth=0.5)
+        plt.plot(x1, [y] * len(x1), 'k-', linewidth=0.2)
     for x in x1:
-        plt.axvline(x, color='k', linewidth=0.5)
+        plt.plot([x] * len(y1), y1, 'k-', linewidth=0.2)
 
-    # Plot cracks
-    for j in range(1, eleL):
-        for i in range(1, eleH):
-            # print('C1', C1)
-            theta1 = C1[i][j][0]  # Assuming first value is the angle
-            if theta1 == 10:
-                continue
+    def plot_cracks(s_matrix, C1, c):
+        # Plot cracks
+        for j in range(1, eleL):
+            for i in range(1, eleH):
+                # print('C1', C1)
+                theta1 = C1[i][j][0]  # Assuming first value is the angle
+                if theta1 == 10:
+                    continue
 
-            x_center = (x1[j] + x1[j + 1]) / 2
-            # print('x_center', x_center)
-            y_center = (y1[i] + y1[i + 1]) / 2
-            # print('y_center', y_center)
-            x = np.linspace(x1[j], x1[j + 1], 100)
-            k = np.tan(theta1)
-            b = y_center - k * x_center
-            y = k * x + b
+                x_center = (x1[j] + x1[j + 1]) / 2
+                # print('x_center', x_center)
+                y_center = (y1[i] + y1[i + 1]) / 2
+                # print('y_center', y_center)
+                x = np.linspace(x1[j], x1[j + 1], 10)
+                k = np.tan(theta1)
+                b = y_center - k * x_center
+                y = k * x + b
 
-            mask = (y > y1[i]) & (y < y1[i + 1])
-            x, y = x[mask], y[mask]
+                mask = (y > y1[i]) & (y < y1[i + 1])
+                x, y = x[mask], y[mask]
 
-            if len(x) == 0:
-                continue
+                if len(x) == 0:
+                    continue
 
-            strain = max(s1[i][j][0], s2[i][j][0])  # Assuming first value is the strain
-            if strain < 5.0e-5 * crack_factor:
-                continue
-            elif strain < 1.0e-4 * crack_factor:
-                linewidth = 0.15
-            elif strain < 3.0e-4 * crack_factor:
-                linewidth = 0.45
-            elif strain < 1e-3 * crack_factor:
-                linewidth = 1.5
-            elif strain < 2.0e-3 * crack_factor:
-                linewidth = 3
-            else:
-                linewidth = 4
+                # strain = max(s1[i][j][0], s2[i][j][0])  # Assuming first value is the strain
+                strain = s_matrix[i][j][0]
+                if strain < 5.0e-5 * crack_factor:
+                    continue
+                elif strain < 1.0e-4 * crack_factor:
+                    linewidth = 0.15
+                elif strain < 3.0e-4 * crack_factor:
+                    linewidth = 0.45
+                elif strain < 1e-3 * crack_factor:
+                    linewidth = 1.5
+                elif strain < 2.0e-3 * crack_factor:
+                    linewidth = 3
+                else:
+                    linewidth = 4
 
-            plt.plot(x, y, 'r', linewidth=linewidth)
+                plt.plot(x, y, 'r', linewidth=linewidth)
 
-    plt.axis([0 - 2, eleL + 2, 0 - 1, eleH + 2])
+    # Plot both sets of cracks
+    plot_cracks(s1, C1, 'r-')
+    plot_cracks(s2, C1, 'b-')
+
+    plt.axis([0-2, eleL+2, 0-1, eleH+2])
     plt.xticks([])
     plt.yticks([])
     plt.axis('off')
@@ -115,7 +119,7 @@ def main():
     gif_frames = []
 
     for step in range(1, steps, dt):
-        fig = plot_cracks(step)
+        fig = plot_crack_pattern(step)
 
         # fig.savefig(f'./crack_svg/crack_{0.001 * step:.4f}ms.svg', format='svg', dpi=1200)
         fig.savefig(f'./crack_jpeg/crack_{0.001 * step:.4f}ms.jpg', format='jpeg', dpi=600)

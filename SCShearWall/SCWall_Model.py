@@ -6,16 +6,13 @@ import matplotlib.pyplot as plt
 import openseespy.opensees as ops
 from utils import *
 
-# import openseespy.postprocessing.Get_Rendering as opsplt
+import openseespy.postprocessing.Get_Rendering as opsplt
 # import vfo.vfo as vfo
 # import opsvis as opsv
 
 
 def reset_analysis():
-    """
-    Resets the analysis by setting time to 0,
-    removing the recorders and wiping the analysis.
-    """
+
     ops.setTime(0.0)  # Set the time in the Domain to zero
     ops.loadConst()  # Set the loads constant in the domain
     ops.remove('recorders')  # Remove all recorder objects.
@@ -23,58 +20,33 @@ def reset_analysis():
     ops.wipe()
 
 
-def build_model(tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, eleH=12, eleL=8, printProgression=True):
-    """
-    Builds a model based on the provided parameters.
-
-    Args:
-        tw: Thickness of the wall
-        hw: Height of the wall
-        lw: Length of the wall
-        lbe: Length of the flange
-        fc: Concrete Compressive Strength
-        fyb: Yield strength of the reinforcement in flange
-        fyw: Yield strength of the reinforcement in web
-        rouYb: Density of the reinforcement in flange
-        rouYw: Density of the reinforcement in web
-        loadF: Axial Load coefficient
-        numED: Number of Energy Dissipation
-        numPT: Number of PT cable
-        areaED: Area of Energy Dissipation
-        areaPT: Area of PT cable
-        fyPT: Yield strength of the PT cable
-        fyED: Yield strength of the Energy Dissipation
-        tenPT: Tensile strength of the PT cable
-        eleH: Number of elements in height (default: 10)
-        eleL: Number of elements in length (default: 6)
-        printProgression: Flag for printing progress (default: True)
-    """
+def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, eleH=3, eleL=10, printProgression=True):
 
     ops.wipe()
     ops.model('Basic', '-ndm', 2, '-ndf', 3)
 
-    # ----------------------------------------------------------------------------------------
     # Set geometry, ops.nodes, boundary conditions
-    # ----------------------------------------------------------------------------------------
-    lweb = lw - (2 * lbe)  # Length of the Web
+    lweb = lw - (2 * lbe)  # Web length
     eleBE = 2
     eleWeb = eleL - eleBE
     elelweb = lweb / eleWeb
+    Ag = tw * lweb + 2 * (tb * lbe)  # Wall area
 
-    # ----------------------------------------------------------------------------------------
     # Define Nodes (for MVLEM)
-    # ----------------------------------------------------------------------------------------
     for i in range(2, eleH + 2):
         ops.node(i, 0, (i - 1) * (hw / eleH))
-        # print('Node', i, 0, (i - 1) * (hw / eleH))
 
-    # ---------------------------------------------------------------------------------------
-    # Define Control Node and DOF
-    # ---------------------------------------------------------------------------------------
-    global controlNode, controlNodeDof
+    # Define control node and DOF
+    global controlNode, controlNodeDof, eH, eL
     controlNode = eleH + 1  # Control Node (TopNode)
     controlNodeDof = 1  # Control DOF 1 = X-direction
-    # print('controlNode', controlNode)
+    eH, eL = eleH, eleL
+
+    # Define Axial Load on Top Node in N according to (ACI 318-19 Section 22.4.2.2)
+    global Aload
+    Aload = 0.85 * abs(fc) * Ag * loadF # Axial load
+    if printProgression:
+        print('Axial load = ', Aload/1000)
 
     # Wall Base ENT Interface
     numENT = 9
@@ -170,60 +142,32 @@ def build_model(tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT
     # ---------------------------------------------------------------------------------------
     # Define Steel uni-axial materials
     # ---------------------------------------------------------------------------------------
-    sYb = 1
-    sYw = 2
-
-    # STEEL misc
+    IDsYb, IDsYw = 1, 2  # Steel ID
     Es = 200 * GPa  # Young's modulus
-
-    # STEEL Y BE (boundary element)
-    fyYbp = fyb  # fy - tension
-    fyYbn = fyb  # fy - compression
-    bybp = 0.01  # strain hardening - tension
-    bybn = 0.01  # strain hardening - compression
-
-    # STEEL Y WEB
-    fyYwp = fyw  # fy - tension
-    fyYwn = fyw  # fy - compression
-    bywp = 0.02  # strain hardening - tension
-    bywn = 0.02  # strain hardening - compression
-
-    # STEEL X
-    fyXp = fyw  # fy - tension
-    fyXn = fyw  # fy - compression
-    bXp = 0.02  # strain hardening - tension
-    bXn = 0.02  # strai n hardening - compression
-
-    # STEEL misc
-    Bs = 0.0111938  # strain-hardening ratio
-    R0 = 20.0  # initial value of curvature parameter
-    cR1 = 0.925  # control the transition from elastic to plastic branches
-    cR2 = 0.0015  # control the transition from elastic to plastic branches
+    Bs, R0, cR1, cR2 = 0.01, 20.0, 0.925, 0.0015  # Strain-hardening and curve parameters
+    byb = 0.01  # STEEL Y BE - strain hardening - tension & compression
+    byw = 0.02  # STEEL Y WEB - strain hardening - tension & compression
+    bX = 0.02   # STEEL X - strain hardening - tension & compression
 
     # Steel ED
-    matED = 3
+    IDmatED = 3
     fyED = fyED
 
     # Steel PT
-    matPT = 4
+    IDmatPT = 4
     fyPT = fyPT
-    a1 = 0
-    a2 = 1
-    a3 = 0
-    a4 = 1
+    a1, a2, a3, a4 = 0, 1, 0, 1
     sigInit = tenPT * MPa
 
     # SteelMPF model
-    ops.uniaxialMaterial('SteelMPF', sYb, fyYbp, fyYbn, Es, bybp, bybn, R0, cR1, cR2)  # Steel Y boundary
-    ops.uniaxialMaterial('SteelMPF', sYw, fyYwp, fyYwn, Es, bywp, bywn, R0, cR1, cR2)  # Steel Y web
-    ops.uniaxialMaterial('Steel02', matED, fyED, Es, Bs, R0, cR1, cR2)  # Steel ED
-    ops.uniaxialMaterial('Steel02', matPT, fyPT, Es, Bs, R0, cR1, cR2, a1, a2, a3, a4, sigInit)  # Steel PT
+    ops.uniaxialMaterial('SteelMPF', IDsYb, fyb, fyb, Es, byb, byb, R0, cR1, cR2)  # Steel Y boundary
+    ops.uniaxialMaterial('SteelMPF', IDsYw, fyw, fyw, Es, byw, byw, R0, cR1, cR2)  # Steel Y web
+    ops.uniaxialMaterial('Steel02', IDmatED, fyED, Es, Bs, R0, cR1, cR2)  # Steel ED
+    ops.uniaxialMaterial('Steel02', IDmatPT, fyPT, Es, Bs, R0, cR1, cR2, a1, a2, a3, a4, sigInit)  # Steel PT
 
-    # ---------------------------------------------------------------------------------------
     # Define "ConcreteCM" uni-axial materials
-    # ---------------------------------------------------------------------------------------
-    concWeb = 5
-    concBE = 6
+    IDconcWeb = 5
+    IDconcBE = 6
 
     # ----- unconfined concrete for WEB
     fc0 = abs(fc) * MPa  # Initial concrete strength
@@ -269,28 +213,26 @@ def build_model(tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT
     xcrp = 10000  # cracking strain - tension
     # fcC = 89.6318 * MPa
     # -------------------------- ConcreteCM model --------------------------------------------
-    ops.uniaxialMaterial('ConcreteCM', concWeb, fcU, ecU, EcU, rU, xcrnu, ftU, etU, rt, xcrp, '-GapClose', 0)  # Web (unconfined concrete)
-    ops.uniaxialMaterial('ConcreteCM', concBE, fcC, ecC, EcC, rC, xcrnc, ftC, etC, rt, xcrp, '-GapClose', 0)  # BE (confined concrete)
+    ops.uniaxialMaterial('ConcreteCM', IDconcWeb, fcU, ecU, EcU, rU, xcrnu, ftU, etU, rt, xcrp, '-GapClose', 0)  # Web (unconfined concrete)
+    ops.uniaxialMaterial('ConcreteCM', IDconcBE, fcC, ecC, EcC, rC, xcrnc, ftC, etC, rt, xcrp, '-GapClose', 0)  # BE (confined concrete)
     # print('--------------------------------------------------------------------------------------------------')
     # print('ConcreteCM', concWeb, fcU, ecU, EcU, ru, xcrnu, ftU, et, rt, xcrp, '-GapClose', 0)  # Web (unconfined concrete)
     # print('ConcreteCM', concBE, fcC, ecC, EcC, rc, xcrnc, ftC, et, rt, xcrp, '-GapClose', 0)  # BE (confined concrete)
 
-    # ----------------------------Shear spring for MVLEM-------------------------------------
+    # Shear Model for Section Aggregator to assign for MVLEM element shear spring
+    IDmatSpring = 7
     Ac = lw * tw  # Concrete Wall Area
     Gc = Ec0 / (2 * (1 + 0.2))  # Shear Modulus G = E / 2 * (1 + v)
     Kshear = Ac * Gc * (5 / 6)  # Shear stiffness k * A * G ---> k=5/6
-
-    # Shear Model for Section Aggregator to assign for MVLEM element shear spring
-    matSpring = 7
-    ops.uniaxialMaterial('Elastic', matSpring, Kshear)
+    ops.uniaxialMaterial('Elastic', IDmatSpring, Kshear)
 
     # Define ENT Material
-    matENT = 9
+    IDmatENT = 9
     # EENT = 5 * 32500.0 * lw * tw / (hw * numENT)
     # print('EENT', EENT)
     EENT = (4 * EcC * lw * tw / (lw / 4)) / numENT
     # print('EENT', EENT)
-    ops.uniaxialMaterial('ENT', matENT, EENT)
+    ops.uniaxialMaterial('ENT', IDmatENT, EENT)
 
     # ------------------------------
     #  Define SFI_MVLEM elements
@@ -298,17 +240,17 @@ def build_model(tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT
     MVLEM_thick = [tw] * eleL
     MVLEM_width = [lbe if i in (0, eleL - 1) else elelweb for i in range(eleL)]
     MVLEM_rho = [rouYb if i in (0, eleL - 1) else rouYw for i in range(eleL)]
-    MVLEM_matConcrete = [concBE if i in (0, eleL - 1) else concWeb for i in range(eleL)]
-    MVLEM_matSteel = [sYb if i in (0, eleL - 1) else sYw for i in range(eleL)]
+    MVLEM_matConcrete = [IDconcBE if i in (0, eleL - 1) else IDconcWeb for i in range(eleL)]
+    MVLEM_matSteel = [IDsYb if i in (0, eleL - 1) else IDsYw for i in range(eleL)]
 
     for i in range(eleH):
         # ------------------ MVLEM ----------------------------------------------
-        ops.element('MVLEM', (101 + i), 0.0, WallNode[i], WallNode[i + 1], eleL, 0.4, '-thick', *MVLEM_thick, '-width', *MVLEM_width, '-rho', *MVLEM_rho, '-matConcrete', *MVLEM_matConcrete, '-matSteel', *MVLEM_matSteel, '-matShear', matSpring)
+        ops.element('MVLEM', (101 + i), 0.0, WallNode[i], WallNode[i + 1], eleL, 0.4, '-thick', *MVLEM_thick, '-width', *MVLEM_width, '-rho', *MVLEM_rho, '-matConcrete', *MVLEM_matConcrete, '-matSteel', *MVLEM_matSteel, '-matShear', IDmatSpring)
         # print('element', 'MVLEM', (101+i), 0.0, WallNode[i], WallNode[i + 1], eleL, 0.4, '-thick', *MVLEM_thick, '-width', *MVLEM_width, '-rho', *MVLEM_rho, '-matConcrete', *MVLEM_matConcrete, '-matSteel', *MVLEM_matSteel, '-matShear', matSpring)
 
     # Define Element for ENT (Zero-Length element)
     for i in range(0, numENT):
-        ops.element('zeroLength', (601 + i), botENT[i], topENT[i], '-mat', matENT, '-dir', 2)
+        ops.element('zeroLength', (601 + i), botENT[i], topENT[i], '-mat', IDmatENT, '-dir', 2)
         # print('zeroLength', i + 601, botENT[i], topENT[i], '-mat', matENT, '-dir', 2)
 
     A = 1e5
@@ -323,7 +265,7 @@ def build_model(tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT
 
     # Define Elements for ED (Truss element between ED top and bottom nodes)
     for i in range(numED):
-        ops.element('truss', (201 + i), (200 + i), (300 + i), areaED, matED)
+        ops.element('truss', (201 + i), (200 + i), (300 + i), areaED, IDmatED)
         # print('ED-truss', 201+i, 200+i, 300+i, areaED, matED)
 
     # Define ED elements
@@ -334,7 +276,7 @@ def build_model(tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT
 
     # Define PT elements
     for i in range(numPT):
-        ops.element('truss', (301 + i), botPT[i], topPT[i], areaPT, matPT)
+        ops.element('truss', (301 + i), botPT[i], topPT[i], areaPT, IDmatPT)
         # print('PT-truss', 301+i, botPT[i], topPT[i], areaPT, matPT)
 
     # Define PT top rigid elements
@@ -343,16 +285,10 @@ def build_model(tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT
         ops.element('elasticBeamColumn', (311 + i), topPT[i], topPT[i + 1], A, E, Iz, geomTransfTag_PDelta)
         # print('PT-rigidColumn', 311 + i, topPT[i], topPT[i + 1], A, E, Iz, geomTransfTag_PDelta)
 
-    # ---------------------------------------------------------------------------------------
-    # Define Axial Load on Top Node
-    # ---------------------------------------------------------------------------------------
-    global Aload  # axial force in N according to ACI318-19 (not considering the reinforced steel at this point for simplicity)
-    Aload = 0.85 * abs(fc) * tw * lw * loadF
-    # print('Axial load fc(kN) = ', Aload / 1000)
-    # opsv.plot_model()
-    # plt.show()
+    opsv.plot_model()
+    plt.show()
     # opsplt.plot_model('nodes', 'elements')
-    # plt.show()
+    plt.show()
 
 
 def run_gravity(steps=10, printProgression=False):
@@ -374,72 +310,16 @@ def run_gravity(steps=10, printProgression=False):
         print("GRAVITY ANALYSIS DONE!")
 
 
-def run_pushover(MaxDisp=75, dispIncr=1, printProgression=False):
+def run_analysis(DisplacementStep, analysis='cyclic', printProgression=False):
     if printProgression:
-        tic = time.time()
-        print("RUNNING PUSHOVER ANALYSIS")
+        print(f"RUNNING {analysis.upper()} ANALYSIS")
 
-    ops.timeSeries('Linear', 3)  # create TimeSeries for gravity analysis
-    ops.pattern('Plain', 3, 3)
-    ops.load(controlNode, *[1.0, 0.0, 0.0])  # Apply a unit reference load in DOF=1 (nd    FX  FY  MZ)
+    # For pushover analysis, generate linear displacement steps
+    if analysis == 'pushover':
+        MaxDisp = max(DisplacementStep)
+        dispIncr = (max(DisplacementStep) / len(DisplacementStep))
+        DisplacementStep = [dispIncr * i for i in range(int(MaxDisp / dispIncr))]
 
-    NstepsPush = round(MaxDisp / dispIncr)
-
-    if printProgression:
-        print("Starting pushover analysis...")
-        print("   total steps: ", NstepsPush)
-    ops.constraints('Transformation')
-    ops.numberer("RCM")
-    ops.system("BandGeneral")
-    ops.test('NormDispIncr', 1e-8, 200)
-    ops.algorithm('KrylovNewton')
-    ops.analysis("Static")
-
-    maxUnconvergedSteps = 1
-    unconvergeSteps = 0
-    finishedSteps = 0
-    dataPush = np.zeros((NstepsPush + 1, 2))
-    dispImpo = np.zeros(NstepsPush + 1)
-
-    # Perform pushover analysis
-    for j in range(NstepsPush):
-        if unconvergeSteps > maxUnconvergedSteps:
-            break
-        ops.integrator("DisplacementControl", controlNode, controlNodeDof, dispIncr)  # Target node is controlNode and dof is 1
-        ok = ops.analyze(1)
-        if ok != 0:
-            # ------------------------ If not converged, reduce the increment -------------------------
-            unconvergeSteps += 1
-            Dts = 20  # Try 50x smaller increments
-            smallDincr = dispIncr / Dts
-            for k in range(1, Dts):
-                if printProgression:
-                    print(f'Small Step {k} -------->', f'smallDincr = ', smallDincr)
-                ops.integrator("DisplacementControl", controlNode, controlNodeDof, smallDincr)
-                ok = ops.analyze(1)
-            # ------------------------ If not converged --------------------------------------------
-            if ok != 0:
-                if printProgression:
-                    print("Problem running Pushover analysis for the model : Ending analysis ")
-
-        dispImpo += dispIncr
-        finishedSteps = j + 1
-        disp = ops.nodeDisp(controlNode, controlNodeDof)
-        baseShear = -ops.getLoadFactor(3) / 1000  # Convert to from N to kN
-        dataPush[j + 1, 0] = disp
-        dataPush[j + 1, 1] = baseShear
-
-        if printProgression:
-            print("step", j + 1, "/", NstepsPush, "   ", "Impos disp = ", round(dispImpo[j], 2), "---->  Real disp = ", str(round(disp, 2)), "---->  dispIncr = ", dispIncr)
-
-    if printProgression:
-        toc = time.time()
-        print('PUSHOVER ANALYSIS DONE IN {:1.2f} seconds'.format(toc - tic))
-
-    return [dataPush[0:finishedSteps, 0], -dataPush[0:finishedSteps, 1]]
-
-
-def run_cyclic(DisplacementStep, printProgression=True):
     ops.timeSeries('Linear', 2)
     ops.pattern('Plain', 2, 2)
     ops.load(controlNode, *[1.0, 0.0, 0.0])  # Apply lateral load based on first mode shape in x direction (EC8-1)

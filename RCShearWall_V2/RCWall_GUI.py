@@ -4,7 +4,7 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from keras import backend as K
+# from keras import backend as K
 # from keras.saving.save import load_model
 from utils import *
 from RCWall_Data_Processing import *
@@ -33,7 +33,7 @@ class ShearWallAnalysisApp(tk.Tk):
         self.title("RC Shear Wall Analysis with DNN")
         self.geometry("1200x800")
         # Data Folder Path
-        self.data_folder = Path("../RCWall_Data/Dataset_full")
+        self.data_folder = Path("RCWall_Data/Processed_Data/Data_19K")
 
         # Loaded Model Information
         # self.loaded_model = load_model("../DNN_Models/DNN_LSTM-AE(CYCLIC)300k", custom_objects={'r_square': r_square})
@@ -47,25 +47,26 @@ class ShearWallAnalysisApp(tk.Tk):
         # Variables
         self.load_type = tk.StringVar(value="RC")
         self.parameters = {
-            "Tw (mm)": tk.DoubleVar(value=102),
-            "Tb (mm)": tk.DoubleVar(value=102),
-            "Hw (mm)": tk.DoubleVar(value=3810),
-            "Lw (mm)": tk.DoubleVar(value=1220),
-            "Lbe (mm)": tk.DoubleVar(value=190),
-            "fc (MPa)": tk.DoubleVar(value=41.75),
-            "fyb (MPa)": tk.DoubleVar(value=434),
-            "fyw (MPa)": tk.DoubleVar(value=448),
-            "rouYb (%)": tk.DoubleVar(value=0.0294 * 100),
-            "rouYw (%)": tk.DoubleVar(value=0.003 * 100),
-            "rouXb (%)": tk.DoubleVar(value=0.0294 * 100),
-            "rouXw (%)": tk.DoubleVar(value=0.003 * 100),
-            "loadcoef": tk.DoubleVar(value=0.092)
+            "Tw": {"value": tk.DoubleVar(value=102), "unit": "mm"},
+            "Tb": {"value": tk.DoubleVar(value=102), "unit": "mm"},
+            "Hw": {"value": tk.DoubleVar(value=3810), "unit": "mm"},
+            "Lw": {"value": tk.DoubleVar(value=1220), "unit": "mm"},
+            "Lbe": {"value": tk.DoubleVar(value=190), "unit": "mm"},
+            "fc": {"value": tk.DoubleVar(value=41.75), "unit": "MPa"},
+            "fyb": {"value": tk.DoubleVar(value=434), "unit": "MPa"},
+            "fyw": {"value": tk.DoubleVar(value=448), "unit": "MPa"},
+            "rouYb": {"value": tk.DoubleVar(value=0.0294 * 100), "unit": "%"},
+            "rouYw": {"value": tk.DoubleVar(value=0.003 * 100), "unit": "%"},
+            "rouXb": {"value": tk.DoubleVar(value=0.0294 * 100), "unit": "%"},
+            "rouXw": {"value": tk.DoubleVar(value=0.003 * 100), "unit": "%"},
+            "loadcoef": {"value": tk.DoubleVar(value=0.092), "unit": None}
         }
+
         self.cyclic_params = {
-            "n": tk.IntVar(value=6),
-            "r": tk.IntVar(value=2),
-            "D0": tk.DoubleVar(value=5),
-            "Dm": tk.DoubleVar(value=80)
+            "n": {"value": tk.IntVar(value=6), "unit": None},
+            "r": {"value": tk.IntVar(value=2), "unit": None},
+            "D0": {"value": tk.DoubleVar(value=5), "unit": "mm"},
+            "Dm": {"value": tk.DoubleVar(value=80), "unit": "mm"}
         }
 
         # GUI Setup
@@ -95,27 +96,38 @@ class ShearWallAnalysisApp(tk.Tk):
 
         # Structural Design Parameters with Sliders
         param_ranges = {
-            "Tw (mm)": (90, 400),
-            "Tb (mm)": (90, 400),
-            "Hw (mm)": (1000, 6000),
-            "Lw (mm)": (540, 4000),
-            "Lbe (mm)": (54, 500),
-            "fc (MPa)": (20, 70),
-            "fyb (MPa)": (275, 650),
-            "fyw (MPa)": (275, 650),
-            "rouYb (%)": (0.5, 5.5),
-            "rouYw (%)": (0.2, 3.0),
-            "rouXb (%)": (0.5, 5.5),
-            "rouXw (%)": (0.2, 3.0),
-            "loadcoef": (0.01, 0.1)}
+            "Tw": {"range": (90, 400), "unit": "mm"},
+            "Tb": {"range": (90, 400), "unit": "mm"},
+            "Hw": {"range": (1000, 6000), "unit": "mm"},
+            "Lw": {"range": (540, 4000), "unit": "mm"},
+            "Lbe": {"range": (54, 500), "unit": "mm"},
+            "fc": {"range": (20, 70), "unit": "MPa"},
+            "fyb": {"range": (275, 650), "unit": "MPa"},
+            "fyw": {"range": (275, 650), "unit": "MPa"},
+            "rouYb": {"range": (0.5, 5.5), "unit": "%"},
+            "rouYw": {"range": (0.2, 3.0), "unit": "%"},
+            "rouXb": {"range": (0.5, 5.5), "unit": "%"},
+            "rouXw": {"range": (0.2, 3.0), "unit": "%"},
+            "loadcoef": {"range": (0.01, 0.1), "unit": None}
+        }
 
         # Structural Design Parameters
-        for param, var in self.parameters.items():
+        for param, details in self.parameters.items():
             param_frame = tk.Frame(frame)
             param_frame.pack(fill=tk.X, pady=2)
-            tk.Label(param_frame, text=param, width=15, anchor=tk.W).pack(side=tk.LEFT)
 
-            slider = tk.Scale(param_frame, showvalue=0, variable=var, from_=param_ranges[param][0], to=param_ranges[param][1], orient=tk.HORIZONTAL, length=200, resolution=0.1 if 'rou' in param else (0.001 if 'load' in param else 1))
+            # Display the parameter name with its unit, if available
+            param_label = f"{param} ({param_ranges[param]['unit']})" if param_ranges[param]["unit"] else param
+            tk.Label(param_frame, text=param_label, width=15, anchor=tk.W).pack(side=tk.LEFT)
+
+            # Get the variable and range for the parameter
+            var = details["value"]
+            from_, to = param_ranges[param]["range"]
+
+            # Set resolution based on parameter type
+            resolution = 0.1 if 'rou' in param else (0.001 if 'load' in param else 1)
+
+            slider = tk.Scale(param_frame, showvalue=0, variable=var, from_=from_, to=to, orient=tk.HORIZONTAL, length=200, resolution=resolution)
             slider.pack(side=tk.LEFT)
 
             entry = tk.Entry(param_frame, textvariable=var, width=8)
@@ -170,29 +182,11 @@ class ShearWallAnalysisApp(tk.Tk):
         self.canvas = FigureCanvasTkAgg(self.fig, master=parent)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-    def update_plots(self):
-        self.axes[0, 0].clear()
-        self.axes[1, 0].clear()
-        self.axes[0, 1].clear()
-        self.axes[1, 1].clear()
-
-        # Placeholder for actual model generation and calculations
-        self.axes[0, 0].set_title("RC Shear Wall Elevation")
-        self.plot_shear_wall_elevation(self.axes[0, 0])
-        self.axes[1, 0].set_title("RC Shear Wall Section")
-        self.plot_shear_wall_section(self.axes[1, 0])
-        self.axes[0, 1].set_title("Results Output")
-        self.plot_hysteresis_loop(self.axes[0, 1])
-        self.axes[1, 1].set_title("Cyclic Loading Protocol")
-        self.plot_cyclic_loading(self.axes[1, 1])
-
-        self.canvas.draw()
-
     def generate_cyclic_loading(self):
-        num_cycles = self.cyclic_params["n"].get()
-        repetition_cycles = self.cyclic_params["r"].get()
-        initial_displacement = self.cyclic_params["D0"].get()
-        max_displacement = self.cyclic_params["Dm"].get()
+        num_cycles = self.cyclic_params["n"]["value"].get()
+        repetition_cycles = self.cyclic_params["r"]["value"].get()
+        initial_displacement = self.cyclic_params["D0"]["value"].get()
+        max_displacement = self.cyclic_params["Dm"]["value"].get()
         num_points = math.ceil(500 / (num_cycles * repetition_cycles))
 
         time = np.linspace(0, num_cycles * repetition_cycles, num_points * num_cycles * repetition_cycles)[: 500]
@@ -211,21 +205,23 @@ class ShearWallAnalysisApp(tk.Tk):
 
         return displacement
 
+    # Plotting Part
+
     def plot_hysteresis_loop(self, ax):
         # Extract parameters
-        tw = self.parameters["Tw (mm)"].get()
-        tb = self.parameters["Tb (mm)"].get()
-        hw = self.parameters["Hw (mm)"].get()
-        lw = self.parameters["Lw (mm)"].get()
-        lbe = self.parameters["Lbe (mm)"].get()
-        fc = self.parameters["fc (MPa)"].get()
-        fyb = self.parameters["fyb (MPa)"].get()
-        fyw = self.parameters["fyw (MPa)"].get()
-        rouYb = self.parameters["rouYb (%)"].get()
-        rouYw = self.parameters["rouYw (%)"].get()
-        rouXb = self.parameters["rouXb (%)"].get()
-        rouXw = self.parameters["rouXw (%)"].get()
-        loadCoeff = self.parameters["loadcoef"].get()
+        tw = self.parameters["Tw"]["value"].get()
+        tb = self.parameters["Tb"]["value"].get()
+        hw = self.parameters["Hw"]["value"].get()
+        lw = self.parameters["Lw"]["value"].get()
+        lbe = self.parameters["Lbe"]["value"].get()
+        fc = self.parameters["fc"]["value"].get()
+        fyb = self.parameters["fyb"]["value"].get()
+        fyw = self.parameters["fyw"]["value"].get()
+        rouYb = self.parameters["rouYb"]["value"].get()
+        rouYw = self.parameters["rouYw"]["value"].get()
+        rouXb = self.parameters["rouXb"]["value"].get()
+        rouXw = self.parameters["rouXw"]["value"].get()
+        loadCoeff = self.parameters["loadcoef"]["value"].get()
 
         displacement = self.generate_cyclic_loading()
 
@@ -265,12 +261,12 @@ class ShearWallAnalysisApp(tk.Tk):
 
     def plot_shear_wall_elevation(self, ax):
         # Extract parameters
-        Tw = self.parameters["Tw (mm)"].get()
-        Lw = self.parameters["Lw (mm)"].get()
-        Hw = self.parameters["Hw (mm)"].get()
-        Lbe = self.parameters["Lbe (mm)"].get()
-        fc = self.parameters["fc (MPa)"].get()
-        loadcoef = self.parameters["loadcoef"].get()
+        Tw = self.parameters["Tw"]["value"].get()
+        Lw = self.parameters["Lw"]["value"].get()
+        Hw = self.parameters["Hw"]["value"].get()
+        Lbe = self.parameters["Lbe"]["value"].get()
+        fc = self.parameters["fc"]["value"].get()
+        loadcoef = self.parameters["loadcoef"]["value"].get()
 
         Lweb = Lw - (2 * Lbe)
         Aload = (0.85 * abs(fc) * Tw * Lw * loadcoef) / 1000
@@ -322,10 +318,10 @@ class ShearWallAnalysisApp(tk.Tk):
 
     def plot_shear_wall_section(self, ax):
         # Extract parameters
-        Tw = self.parameters["Tw (mm)"].get()
-        Tb = self.parameters["Tb (mm)"].get()
-        Lw = self.parameters["Lw (mm)"].get()
-        Lbe = self.parameters["Lbe (mm)"].get()
+        Tw = self.parameters["Tw"]["value"].get()
+        Tb = self.parameters["Tb"]["value"].get()
+        Lw = self.parameters["Lw"]["value"].get()
+        Lbe = self.parameters["Lbe"]["value"].get()
         Lweb = Lw - (2 * Lbe)
         half = True
 
@@ -363,6 +359,24 @@ class ShearWallAnalysisApp(tk.Tk):
         ax.set_ylim([-Tw, Tw + Tw])
         ax.set_xlabel("Length (mm)")
         ax.set_ylabel("Width (mm)")
+
+    def update_plots(self):
+        self.axes[0, 0].clear()
+        self.axes[1, 0].clear()
+        self.axes[0, 1].clear()
+        self.axes[1, 1].clear()
+
+        # Placeholder for actual model generation and calculations
+        self.axes[0, 0].set_title("RC Shear Wall Elevation")
+        self.plot_shear_wall_elevation(self.axes[0, 0])
+        self.axes[1, 0].set_title("RC Shear Wall Section")
+        self.plot_shear_wall_section(self.axes[1, 0])
+        self.axes[0, 1].set_title("Results Output")
+        self.plot_hysteresis_loop(self.axes[0, 1])
+        self.axes[1, 1].set_title("Cyclic Loading Protocol")
+        self.plot_cyclic_loading(self.axes[1, 1])
+
+        self.canvas.draw()
 
 
 if __name__ == "__main__":

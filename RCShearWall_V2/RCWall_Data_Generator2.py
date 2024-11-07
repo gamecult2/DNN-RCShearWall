@@ -2,25 +2,24 @@ import numpy as np
 from utils import *
 import random
 import math
-import csv
 import time
+import csv
 import os
 import sys
-from multiprocessing import Pool, cpu_count, current_process
+from multiprocessing import Pool, cpu_count
 
 import RCWall_Model_SFI as rcmodel
 from RCWall_Parameters_Range import parameter_ranges, loading_ranges
 from functions import generate_increasing_cyclic_loading_with_repetition
 
-# Define SEQUENCE_LENGTH as a global constant
 SEQUENCE_LENGTH = 501
 OUTPUT_DIR = "RCWall_Data"
+CHUNK_SIZE = 1  # Number of samples to write in a single CSV operation
 
 
 def generate_sample(instance_id, sample_index, run_index=4):
     # Initialize random seed
     random.seed(hash((instance_id, sample_index, run_index)) & 0xFFFFFFFF)
-    worker_id = current_process().name
 
     print(f"====== RUNNING SAMPLE \033[92mN° {sample_index}\033[0m in Core \033[92mN°{instance_id}\033[0m ======\n")
 
@@ -51,7 +50,7 @@ def generate_sample(instance_id, sample_index, run_index=4):
 
     parameter_values = [tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag]
 
-    # Run Cyclic Analysis
+    # Run cyclic analysis
     rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, printProgression=False)
     rcmodel.run_gravity()
     x1, y1 = rcmodel.run_analysis(DisplacementStep, analysis='cyclic', printProgression=False)
@@ -59,7 +58,7 @@ def generate_sample(instance_id, sample_index, run_index=4):
 
     # Ensure y1 length matches SEQUENCE_LENGTH for consistency
     if len(y1) == SEQUENCE_LENGTH:
-        return worker_id, parameter_values, DisplacementStep[:-1], np.concatenate((y1[:1], y1[2:]))
+        return parameter_values, DisplacementStep[:-1], np.concatenate((y1[:1], y1[2:]))
 
     return None
 
@@ -68,24 +67,34 @@ def process_samples(instance_id, start_index, end_index):
     valid_samples = []
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     file_path = os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_Data.csv")
-    # Print start and end sample IDs for this process
-    print(f"Worker {instance_id}: Start sample ID: {start_index}, End sample ID: {end_index - 1}")
 
+    for sample_index in range(start_index, end_index):
+        sample_result = generate_sample(instance_id, sample_index)
+        if sample_result is not None:
+            valid_samples.append(sample_result)
+
+            # Write chunk to CSV to reduce I/O operations
+            if len(valid_samples) >= CHUNK_SIZE:
+                write_to_csv(file_path, valid_samples)
+                valid_samples.clear()
+
+    # Write remaining samples in the last chunk
+    if valid_samples:
+        write_to_csv(file_path, valid_samples)
+
+    return len(valid_samples)
+
+
+def write_to_csv(file_path, data_chunk):
+    """Write a chunk of samples to CSV in a single operation."""
     with open(file_path, 'a', newline='') as file:
         writer = csv.writer(file)
-        chunk = []
-        for sample_index in range(start_index, end_index):
-            sample_result = generate_sample(instance_id, sample_index)
-            if sample_result is not None:
-                valid_samples += 1
-                chunk.append(sample_result[1])  # Add parameter_values to the chunk
-                writer.writerows(sample_result[1:])  # Write parameter_values, DisplacementStep, and y1
-
-    return valid_samples
+        for sample in data_chunk:
+            writer.writerows(sample)
 
 
 def run_parallel(num_samples, num_processes=cpu_count()):
-    """Run sample generation in parallel mode. Set num_processes to 1 for sequential execution."""
+    """Run sample generation in parallel."""
     samples_per_process = num_samples // num_processes
     start_time = time.time()
 

@@ -15,6 +15,7 @@ def Nouraldaim_Case2():
     name = 'Nouraldaim_Case2'
     # Wall Geometry ------------------------------------------------------------------
     tw = 125.0 * mm  # Wall thickness
+    tb = tw
     hw = 4.00 * m  # Wall height
     lw = 1.35 * m  # Wall length
     lbe = 125 * mm  # Boundary element length
@@ -24,7 +25,8 @@ def Nouraldaim_Case2():
     fc = 40 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 430 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 430 * MPa  # Steel tension yield strength (+Tension, -Compression)
-
+    fx = fyw
+    
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 4  # BE long reinforcement diameter (mm)
     YbeDiam = 10 * mm  # BE long reinforcement diameter (mm)
@@ -46,7 +48,7 @@ def Nouraldaim_Case2():
     # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=7, initial_displacement=6, max_displacement=86, num_points=50, repetition_cycles=2)
     DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=8, max_displacement=hw * 0.04, num_points=100, repetition_cycles=1)
 
-    return tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
 
 
 def PerezTW2():
@@ -55,6 +57,7 @@ def PerezTW2():
     name = 'Perez'
     # Wall Geometry ------------------------------------------------------------------
     tw = 152 * mm  # Wall thickness
+    tb = tw
     hw = 9.23 * m  # Wall height
     lw = 2.54 * m  # Wall length
     lbe = 650 * mm  # Boundary element length
@@ -64,7 +67,8 @@ def PerezTW2():
     fc = 100 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 434 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 448 * MPa  # Steel tension yield strength (+Tension, -Compression)
-
+    fx = fyw
+    
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 8  # BE long reinforcement diameter (mm)
     YbeDiam = 9.53  # BE long reinforcement diameter (mm)
@@ -89,7 +93,7 @@ def PerezTW2():
     DisplacementStep = generate_increasing_cyclic_loading(num_cycles=4, initial_displacement=216, max_displacement=180, num_points=100, repetition_cycles=1)
     # DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=6, max_displacement=180, num_points=100, repetition_cycles=1)
 
-    return tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
 
 
 def PerezTW3():
@@ -98,6 +102,7 @@ def PerezTW3():
     name = 'PerezTW3'
     # Wall Geometry ------------------------------------------------------------------
     tw = 152 * mm  # Wall thickness
+    tb = tw
     hw = 7.23 * m  # Wall height
     lw = 2.54 * m  # Wall length
     lbe = 650 * mm  # Boundary element length
@@ -107,7 +112,8 @@ def PerezTW3():
     fc = 50 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 434 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 448 * MPa  # Steel tension yield strength (+Tension, -Compression)
-
+    fx = fyw
+    
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 8  # BE long reinforcement diameter (mm)
     YbeDiam = 9.53  # BE long reinforcement diameter (mm)
@@ -132,7 +138,7 @@ def PerezTW3():
     # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=4, initial_displacement=216, max_displacement=hw * 0.04,, num_points=100, repetition_cycles=1)
     DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=4, max_displacement=hw * 0.02, num_points=100, repetition_cycles=1)
 
-    return tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
 
 
 def PerezTW5():
@@ -141,6 +147,7 @@ def PerezTW5():
     name = 'PerezTW5'
     # Wall Geometry ------------------------------------------------------------------
     tw = 152 * mm  # Wall thickness
+    tb = tw
     hw = 7.23 * m  # Wall height
     lw = 2.54 * m  # Wall length
     lbe = 682.625 * mm  # Boundary element length
@@ -150,7 +157,9 @@ def PerezTW5():
     fc = 70.1581 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 413.685 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 413.685 * MPa  # Steel tension yield strength (+Tension, -Compression)
-
+    fx = fyw
+    fx = fyw
+    
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 12  # BE long reinforcement diameter (mm)
     YbeDiam = 9.53  # BE long reinforcement diameter (mm)
@@ -175,7 +184,7 @@ def PerezTW5():
     # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=4, initial_displacement=216, max_displacement=hw * 0.04,, num_points=100, repetition_cycles=1)
     DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=8, max_displacement=hw * 0.06, num_points=50, repetition_cycles=1)
 
-    return tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
 
 
 def Smith():
@@ -184,6 +193,7 @@ def Smith():
     name = 'Smith'
     # Wall Geometry ------------------------------------------------------------------
     tw = 159 * mm  # Wall thickness
+    tb = tw
     hw = 5.48 * m  # Wall height
     lw = 2.43 * m  # Wall length
     lbe = 200 * mm  # Boundary element length
@@ -193,7 +203,8 @@ def Smith():
     fc = 50 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 430 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 430 * MPa  # Steel tension yield strength (+Tension, -Compression)
-
+    fx = fyw
+    
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 4  # BE long reinforcement diameter (mm)
     YbeDiam = 10  # BE long reinforcement diameter (mm)
@@ -216,7 +227,7 @@ def Smith():
     # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=10, initial_displacement=40, max_displacement=160, num_points=100, repetition_cycles=1)
     DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=6, max_displacement=hw * 0.0175, num_points=100, repetition_cycles=1)
 
-    return tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
 
 
 def Nouraldaim_Case3():
@@ -225,6 +236,7 @@ def Nouraldaim_Case3():
     name = 'Nouraldaim_Case3'
     # Wall Geometry ------------------------------------------------------------------
     tw = 200 * mm  # Wall thickness
+    tb = tw
     hw = 3.70 * m  # Wall height
     lw = 1.90 * m  # Wall length
     lbe = 190 * mm  # Boundary element length
@@ -234,7 +246,8 @@ def Nouraldaim_Case3():
     fc = 30 * MPa  # Concrete peak compressive stress (+Tension, -Compression)
     fyb = 461 * MPa  # Steel tension yield strength (+Tension, -Compression)
     fyw = 461 * MPa  # Steel tension yield strength (+Tension, -Compression)
-
+    fx = fyw
+    
     # ---- Steel in Y direction (BE + Web) -------------------------------------------
     YbeNum = 4  # BE long reinforcement diameter (mm)
     YbeDiam = 10  # BE long reinforcement diameter (mm)
@@ -257,23 +270,23 @@ def Nouraldaim_Case3():
     # DisplacementStep = generate_increasing_cyclic_loading(num_cycles=10, initial_displacement=40, max_displacement=160, num_points=100, repetition_cycles=1)
     DisplacementStep = generate_increasing_cyclic_loading_with_repetition(num_cycles=10, max_displacement=hw * 0.04, num_points=50, repetition_cycles=1)
 
-    return tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
+    return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep
 
 
 # ------- Select Model for Validation -----------------------------------------------------------------------------------------------
 validation_model = Nouraldaim_Case2()
-tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep = validation_model
+tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT, DisplacementStep = validation_model
 
 #  ---------------- RUN CYCLIC ANALYSIS ---------------------------------------------------------------
-rcmodel.build_model(tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT)
+rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT)
 rcmodel.run_gravity()
-[x, y] = rcmodel.run_cyclic(DisplacementStep, printProgression=True)
+[x, y] = rcmodel.run_analysis(DisplacementStep, analysis='cyclic', printProgression=False)
 rcmodel.reset_analysis()
 plotting(x, y, 'Displacement (mm)', 'Base Shear (kN)', f'Cyclic {name}', save_fig=False, plotValidation=False)
 
 # ---------------- RUN PUSHOVER ANALYSIS ---------------------------------------------------------------
-# rcmodel.build_model(tw, hw, lw, lbe, fc, fyb, fyw, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT)
+# rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, loadF, numED, numPT, areaED, areaPT, fyPT, fyED, tenPT)
 # rcmodel.run_gravity()
-# [x, y] = rcmodel.run_pushover(MaxDisp=max(DisplacementStep), dispIncr=(max(DisplacementStep) / 30), printProgression=False)
+# [x, y] = rcmodel.run_analysis(DisplacementStep, analysis='pushover', printProgression=False)
 # rcmodel.reset_analysis()
 # plotting(x, y, 'Displacement (mm)', 'Base Shear (kN)', f'Monotonic {name}', save_fig=False, plotValidation=False)
