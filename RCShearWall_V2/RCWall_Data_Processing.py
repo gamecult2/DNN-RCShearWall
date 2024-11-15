@@ -12,20 +12,23 @@ import pyarrow.parquet as pq
 
 
 def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, fit=False, save_scaler_path=None):
+
     # Check NOT fit (First Normalization) Then must load a scaler or scaler_filename
     if not fit and scaler is None and scaler_filename is None:
         raise ValueError("Either a scaler or a scaler filename must be provided for normalization when fit=False.")
 
+    data = np.asarray(data, dtype=np.float32) # Ensure input is numpy array
+
+    # Load or create scaler
     if scaler is None:
         if scaler_filename:
-            # Load the scaler if a filename is provided
             if not os.path.exists(scaler_filename):
                 raise FileNotFoundError(f"Scaler file '{scaler_filename}' not found.")
             scaler = joblib.load(scaler_filename)
         else:
-            # Create a new scaler if neither scaler nor scaler filename is provided
             scaler = MinMaxScaler(feature_range=range)
 
+    # Normalize data
     if sequence:
         data_reshaped = data.reshape(-1, 1)
 
@@ -57,6 +60,8 @@ def denormalize(data_scaled, scaler=None, scaler_filename=None, sequence=False):
     if scaler is None and scaler_filename is None:
         raise ValueError("Either a scaler or a scaler filename must be provided for denormalization.")
 
+    data_scaled = np.asarray(data_scaled, dtype=np.float32) # Ensure input is numpy array
+
     if sequence:
         data_reshaped = data_scaled.reshape(-1, 1)
 
@@ -77,7 +82,7 @@ def denormalize(data_scaled, scaler=None, scaler_filename=None, sequence=False):
 
 def load_data(data_size=100, sequence_length=500, normalize_data=True, analysis='CYCLIC', verbose=True):
     # ---------------------- Read Data  -------------------------------
-    data_folder = Path("RCWall_Data/Processed_Data/Data_30K")  # Base data folder
+    data_folder = Path("RCWall_Data/New_Data")  # Base data folder
     file_suffix = "Pushover" if analysis == 'PUSHOVER' else "Cyclic"
 
     # Read input and output data from Parquet files    # 310022
@@ -96,12 +101,12 @@ def load_data(data_size=100, sequence_length=500, normalize_data=True, analysis=
         NormOutShear, shear_scaler = normalize(OutShear, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/shear_{file_suffix.lower()}_scaler.joblib")
         if verbose:
             print("\nDataset Max and Mean values:")
-            # print("  Parameters:")
-            # print(f"    Max  : {np.round(np.max(InParams, axis=0), 0)}")  # Round to 2 decimal places
-            # print(f"    Min  : {np.round(np.min(InParams, axis=0), 2)}")
-            # print(f"  Displacement:")
-            # print(f"    Max  : {np.round(np.max(InDisp), 2)}")
-            # print(f"    Min  : {np.round(np.min(InDisp), 2)}")
+            print("  Parameters:")
+            print(f"    Max  : {np.round(np.max(InParams, axis=0), 0)}")  # Round to 2 decimal places
+            print(f"    Min  : {np.round(np.min(InParams, axis=0), 2)}")
+            print(f"  Displacement:")
+            print(f"    Max  : {np.round(np.max(InDisp), 2)}")
+            print(f"    Min  : {np.round(np.min(InDisp), 2)}")
             print(f"  Lateral Load:")
             print(f"    Max  : {np.round(np.max(OutShear), 2)}")
             print(f"    Min  : {np.round(np.min(OutShear), 2)}")

@@ -18,13 +18,15 @@ def reset_analysis():
     ops.wipe()
 
 
-def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, eleH=12, eleL=10, printProgression=True):
+def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, eleH=14, eleL=12, printProgression=True):
     ops.wipe()
     ops.model('Basic', '-ndm', 2, '-ndf', 3)
 
     # Geometry and material properties
+    eleBE = 2*2
+
     lweb = lw - (2 * lbe)  # Web length
-    eleBE = 2
+
     eleWeb = eleL - eleBE
     elelweb = lweb / eleWeb
     Ag = tw * lweb + 2 * (tb * lbe)  # Wall area
@@ -154,9 +156,13 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
     #  Define 'SFI-MVLEM' elements
     # --------------------------------------------------------------------------------
     # Set 'SFI-MVLEM' parameters thick, width, rho, matConcrete, matSteel
-    MVLEM_thick = [tb if i in (0, eleL - 1) else tw for i in range(eleL)]
-    MVLEM_width = [lbe if i in (0, eleL - 1) else elelweb for i in range(eleL)]
-    MVLEM_mat = [IDmatBE if i in (0, eleL - 1) else IDmatWeb for i in range(eleL)]
+    # MVLEM_thick = [tb if i in (0, eleL - 1) else tw for i in range(eleL)]
+    # MVLEM_width = [lbe if i in (0, eleL - 1) else elelweb for i in range(eleL)]
+    # MVLEM_mat = [IDmatBE if i in (0, eleL - 1) else IDmatWeb for i in range(eleL)]
+
+    MVLEM_thick = [tb if i in (0, 1, eleL - 2, eleL - 1) else tw for i in range(eleL)]
+    MVLEM_width = [lbe/2 if i in (0, 1, eleL - 2, eleL - 1) else elelweb for i in range(eleL)]
+    MVLEM_mat = [IDmatBE if i in (0, 1, eleL - 2, eleL - 1) else IDmatWeb for i in range(eleL)]
     # MVLEM_rho = [rouYb if i in (0, eleL - 1) else rouYw for i in range(eleL)]
     # MVLEM_matConcrete = [IDconcBE if i in (0, eleL - 1) else IDconcWeb for i in range(eleL)]
     # MVLEM_matSteel = [IDsYb if i in (0, eleL - 1) else IDsYw for i in range(eleL)]
@@ -205,15 +211,15 @@ def run_gravity(steps=10, printProgression=False):
         print("GRAVITY ANALYSIS DONE!")
 
 
-def run_analysis(DisplacementStep, analysis='cyclic', printProgression=True, enablePlotting=True):
+def run_analysis(displacement_step, analysis='cyclic', printProgression=True, enablePlotting=False):
     if printProgression:
         print(f"RUNNING {analysis.upper()} ANALYSIS")
 
     # For pushover analysis, generate linear displacement steps
     if analysis == 'pushover':
-        MaxDisp = max(DisplacementStep)
-        dispIncr = (max(DisplacementStep) / len(DisplacementStep))
-        DisplacementStep = [dispIncr * i for i in range(int(MaxDisp / dispIncr))]
+        MaxDisp = max(displacement_step)
+        dispIncr = (max(displacement_step) / len(displacement_step))
+        displacement_step = [dispIncr * i for i in range(int(MaxDisp / dispIncr))]
 
     '''
     for i in range(0, eH):
@@ -254,17 +260,20 @@ def run_analysis(DisplacementStep, analysis='cyclic', printProgression=True, ena
     ops.algorithm('KrylovNewton')  # KrylovNewton
     ops.analysis("Static")
 
-    Nsteps = len(DisplacementStep)
+    Nsteps = len(displacement_step)
     dispData = np.zeros(Nsteps + 1)
     loadData = np.zeros(Nsteps + 1)
     # forceData = np.zeros(Nsteps + 1)
 
-    strain_matrix_1 = [{} for _ in range(Nsteps)]
-    strain_matrix_2 = [{} for _ in range(Nsteps)]
-    crack_angles_1 = [{} for _ in range(Nsteps)]
-    crack_angles_2 = [{} for _ in range(Nsteps)]
-    max_crack_angle_1 = np.zeros((eH, eL, 2))  # Last dimension: [max_strain, corresponding_angle]
-    max_crack_angle_2 = np.zeros((eH, eL, 2))  # For second layer
+    # Initialize storage for current step data
+    strain_matrix_1 = np.zeros((Nsteps, eH, eL))
+    strain_matrix_2 = np.zeros((Nsteps, eH, eL))
+    crack_angles_1 = np.zeros((Nsteps, eH, eL))
+    crack_angles_2 = np.zeros((Nsteps, eH, eL))
+
+    # Initialize NumPy arrays for maximum values
+    max_crack_angle_1 = np.zeros((eH, eL, 2))  # [:,:,0] for strain, [:,:,1] for angle
+    max_crack_angle_2 = np.zeros((eH, eL, 2))
 
     # el_tags = ops.getEleTags()
     # nels = len(el_tags)
@@ -274,7 +283,7 @@ def run_analysis(DisplacementStep, analysis='cyclic', printProgression=True, ena
     finishedSteps = 0
     D0 = 0.0
     for j in range(Nsteps):
-        D1 = DisplacementStep[j]
+        D1 = displacement_step[j]
         Dincr = D1 - D0
         # start with 1 step per Dincr
         n_sub_steps = 1
@@ -352,67 +361,62 @@ def run_analysis(DisplacementStep, analysis='cyclic', printProgression=True, ena
         loadData[j + 1] = baseLoad
         # forceData[j + 1] = eleForce
 
-        '''
-        # Loop to store the response for each panel at each timestep        
+        # Loop to store the response for each panel at each timestep
         for i in range(eH):
             for k in range(eL):
                 panel_key = (i, k)
                 # Layer 1: Get strain/stress response and crack angle
                 crack_strain_1 = ops.eleResponse(i + 1, "RCPanel", k + 1, "strain_stress_concrete1")[0]
-                strain_matrix_1[j][panel_key] = crack_strain_1
+                strain_matrix_1[j, i, k] = crack_strain_1
 
                 # Layer 2: Get strain/stress response and crack angle
                 crack_strain_2 = ops.eleResponse(i + 1, "RCPanel", k + 1, "strain_stress_concrete2")[0]
-                strain_matrix_2[j][panel_key] = crack_strain_2
+                strain_matrix_2[j, i, k] = crack_strain_2
 
                 crack_angle_1, crack_angle_2 = ops.eleResponse(i + 1, "RCPanel", k + 1, "cracking_angles")
-                crack_angles_1[j][panel_key] = crack_angle_1
-                crack_angles_2[j][panel_key] = crack_angle_2
+                crack_angles_1[j, i, k] = crack_angle_1
+                crack_angles_2[j, i, k] = crack_angle_2
 
                 # maximum strains and corresponding angles if current strain is larger
                 if abs(crack_strain_1) > abs(max_crack_angle_1[i, k, 0]):
                     max_crack_angle_1[i, k, 0] = crack_strain_1
                     max_crack_angle_1[i, k, 1] = crack_angle_1
-
                 if abs(crack_strain_2) > abs(max_crack_angle_2[i, k, 0]):
                     max_crack_angle_2[i, k, 0] = crack_strain_2
                     max_crack_angle_2[i, k, 1] = crack_angle_2
 
-
-    # Create a DataFrame to store the maximum strains and angles
-    # data = {
-    #     "Max Strain 1": [max_crack_angle_1[i, k][0] for i in range(eH) for k in range(eL)],
-    #     "Angle 1": [max_crack_angle_1[i, k][1] for i in range(eH) for k in range(eL)],
-    #     "Max Strain 2": [max_crack_angle_2[i, k][0] for i in range(eH) for k in range(eL)],
-    #     "Angle 2": [max_crack_angle_2[i, k][1] for i in range(eH) for k in range(eL)]
-    # }
-    # df = pd.DataFrame(data)
-    # df.to_csv("max_strains_and_angles.csv", index=False)
+    # Convert the arrays to NumPy arrays and flatten them
+    max_cracks_1 = max_crack_angle_1[:, :, 0].flatten()
+    max_angles_1 = max_crack_angle_1[:, :, 1].flatten()
+    max_cracks_2 = max_crack_angle_2[:, :, 0].flatten()
+    max_angles_2 = max_crack_angle_2[:, :, 1].flatten()
 
     # Plotting section
-    if enablePlotting:
-        # Create and show panel response animation with both cracks
-        # fig = plot_max_strain_and_angles(max_strains_matrix_1, max_strains_matrix_2, eH, eL)
+    # if enablePlotting:
         # fig = plot_max_panel_response(eH, eL,
-        #                               max_crack_angle_1,
-        #                               max_crack_angle_2)
-
+        #                               max_cracks_1,
+        #                               max_angles_1,
+        #                               max_cracks_2,
+        #                               max_angles_2)
         # ani = plot_panel_response_animation(eH, eL, Nsteps,
         #                                     strain_matrix_1,
         #                                     strain_matrix_2,
         #                                     crack_angles_1,
         #                                     crack_angles_2)
 
-        plt.show()
+        # plt.show()
 
-        # Create and show deformation animation
         # ani2 = plot_deformation_animation(Eds, timeV)
         # plt.show()
-        # '''
-    # return [dispData[0:finishedSteps], loadData[0:finishedSteps]] # max_crack_angle_1, max_crack_angle_2
-    # Return dispData, loadData, and max strain-angle matrices
 
-    return [dispData[0:finishedSteps], loadData[0:finishedSteps]]
-    # , max_crack_angle_1, max_crack_angle_2]
+
+
+    # Stack the arrays vertically (each array as a column)
+    # combined_data = np.column_stack((max_cracks_1, max_angles_1, max_cracks_2, max_angles_2))
+    # np.savetxt('combined_data.csv', combined_data, delimiter=',', header='max_cracks_1,max_angles_1,max_cracks_2,max_angles_2', comments='')
+
+    # return [dispData[0:finishedSteps], loadData[0:finishedSteps]
+    return [dispData[0:finishedSteps], loadData[0:finishedSteps], max_cracks_1, max_angles_1, max_cracks_2, max_angles_2]
+
 
 

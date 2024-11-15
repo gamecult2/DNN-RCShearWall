@@ -560,17 +560,17 @@ class LSTM_AE_Model(nn.Module):
         self.sequence_length = sequence_length
 
         # self.lstm = nn.LSTM(input_size, hidden_size, num_layers=num_layers, batch_first=batch_first, dropout=dropout)
-        self.lstm_encoder1 = nn.LSTM(num_features_input_displacement + num_features_input_parameters, 200, batch_first=True)
-        self.lstm_encoder2 = nn.LSTM(200, 50, batch_first=True)
+        self.lstm_encoder1 = nn.LSTM(num_features_input_displacement + num_features_input_parameters, 300, batch_first=True)
+        self.lstm_encoder2 = nn.LSTM(300, 100, batch_first=True)
 
-        self.lstm_decoder1 = nn.LSTM(50, 200, batch_first=True)
-        self.lstm_decoder2 = nn.LSTM(200, num_features_input_displacement, batch_first=True)
+        self.lstm_decoder1 = nn.LSTM(100, 300, batch_first=True)
+        self.lstm_decoder2 = nn.LSTM(300, num_features_input_displacement, batch_first=True)
 
-        self.dense1 = nn.Linear(num_features_input_displacement, 200)
+        self.dense1 = nn.Linear(num_features_input_displacement, 300)
         self.dropout1 = nn.Dropout(0.2)
-        self.dense2 = nn.Linear(200, 100)
+        self.dense2 = nn.Linear(300, 200)
         self.dropout2 = nn.Dropout(0.2)
-        self.output = nn.Linear(100, 1)
+        self.output = nn.Linear(200, 1)
 
     def forward(self, parameters_input, displacement_input):
         # print('parameters_input', parameters_input.shape)
@@ -666,17 +666,17 @@ class LLaMA2_Model(nn.Module):
 
 
 # Define hyperparameters
-DATA_SIZE = 1000
+DATA_SIZE = 1100
 SEQUENCE_LENGTH = 500
 NUM_FEATURES_INPUT_DISPLACEMENT = 1
-NUM_FEATURES_INPUT_PARAMETERS = 13
+NUM_FEATURES_INPUT_PARAMETERS = 16
 ANALYSIS = 'CYCLIC'
 TEST_SIZE = 0.20
 VAL_SIZE = 0.20
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
-EPOCHS = 100
-PATIENCE = 5
+EPOCHS = 200
+PATIENCE = 50
 
 # Load and preprocess data
 (InParams, InDisp, OutShear), (param_scaler, disp_scaler, shear_scaler) = load_data(DATA_SIZE,
@@ -699,10 +699,10 @@ test_loader = DataLoader(TensorDataset(X_param_test, X_disp_test, Y_shear_test),
 
 
 # Initialize model, loss, and optimizer
-# model = LSTM_AE_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
+model = LSTM_AE_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
 # model = Transformer_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
 # model = Informer_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
-model = xLSTM_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
+# model = xLSTM_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
 # model = LLaMA2_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
 
 # model = torch.compile(model)

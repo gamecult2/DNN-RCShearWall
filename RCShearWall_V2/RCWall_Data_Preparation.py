@@ -24,36 +24,33 @@ def save_data(filename, data, file_type='csv'):
     """Saves data to a file in the specified format (CSV or Parquet)."""
     os.makedirs(os.path.dirname(filename), exist_ok=True)  # Ensure the directory exists
     if file_type == 'csv':
-        with open(filename, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerows(data)
+        pd.DataFrame(data).to_csv(filename, index=False, header=False)
     elif file_type == 'parquet':
-        df = pd.DataFrame(data)
-        df.to_parquet(filename, index=False)
+        pd.DataFrame(data).to_parquet(filename, index=False)
 
 
-def process_data():
+def process_data(folder, filename, output_files, file_formats, processed_data_dir):
     # Read CSV file
-    df = open_csv_file(f"{FOLDER}/{FILENAME}")
-    data_points = split_rows(df)
+    data_points = split_rows(open_csv_file(os.path.join(folder, filename)))
 
     # Save Inputs & Outputs to both CSV and Parquet files
-    for name, row_index in OUTPUT_FILES.items():
+    for name, row_index in output_files.items():
         data = extract_values(data_points, row_index)
-        for file_format in FILE_FORMATS:
-            output_file = f"{FOLDER}/Processed_Data/Data_30K/{name}.{file_format}"
+        for file_format in file_formats:
+            output_file = os.path.join(folder, processed_data_dir, f"{name}.{file_format}")
             save_data(output_file, data, file_format)
 
 
 if __name__ == "__main__":
     # Configuration
     FOLDER = "RCWall_Data"
-    FILENAME = "Original_Data/Original_Data_30K.csv"
+    FILENAME = "Original_Data/Filtered_Data.csv"
     FILE_FORMATS = ['csv', 'parquet']
     OUTPUT_FILES = {
         'InputParameters': 0,
         'InputCyclicDisplacement': 1,
         'OutputCyclicShear': 2
     }
-    process_data()
+    PROCESSED_DATA_DIR = "Processed_Data/Data"
+    process_data(FOLDER, FILENAME, OUTPUT_FILES, FILE_FORMATS, PROCESSED_DATA_DIR)
     print("Processing completed successfully!")

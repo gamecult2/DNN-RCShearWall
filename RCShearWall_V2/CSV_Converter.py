@@ -2,10 +2,10 @@ import os
 import pandas as pd
 
 # Set the directory containing CSV files
-csv_folder = 'RCWall_Data/Processed_Data/Data_19K'
+csv_folder = 'RCWall_Data/'
 
 # Set the directory where you want to save Parquet files
-parquet_folder = 'RCWall_Data/Processed_Data/Data_19K'
+parquet_folder = 'RCWall_Data/New_Data'
 
 # Ensure the output directory exists, if not create it
 if not os.path.exists(parquet_folder):

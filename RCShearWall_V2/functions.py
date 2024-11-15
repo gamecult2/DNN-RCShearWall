@@ -338,11 +338,15 @@ def plot_max_strain_and_angles(max_strains_matrix_1, max_strains_matrix_2, eH, e
     return fig
 
 
-def plot_max_panel_response(eH, eL, max_strains_matrix_1, max_strains_matrix_2):
+def plot_max_panel_response(eH, eL, max_cracks_1, max_angles_1, max_cracks_2, max_angles_2, ):
     from matplotlib.lines import Line2D
 
+    # Reshape the flattened arrays back to their original shape
+    max_strains_matrix_1 = np.reshape(np.column_stack((max_cracks_1, max_angles_1)), (eH, eL, 2))
+    max_strains_matrix_2 = np.reshape(np.column_stack((max_cracks_2, max_angles_2)), (eH, eL, 2))
+
     # Initialize the figure
-    fig, ax = plt.subplots(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(eH, eL))
 
     # Create grid data using average of maximum strains from both layers
     grid_data = np.maximum(max_strains_matrix_1[:, :, 0], max_strains_matrix_2[:, :, 0])
@@ -364,9 +368,9 @@ def plot_max_panel_response(eH, eL, max_strains_matrix_1, max_strains_matrix_2):
 
     def create_crack_line(center_x, center_y, angle, length, thickness, color):
         """Create a crack line with the given properties"""
-        if np.isnan(angle):
-            return Line2D([], [], color=color)
-
+        if np.isnan(angle) or angle == 10:
+            # Skip the line if angle is NaN or 10
+            return None
         # Calculate line endpoints
         dx = length * np.cos(angle) / 2
         dy = length * np.sin(angle) / 2
@@ -393,8 +397,10 @@ def plot_max_panel_response(eH, eL, max_strains_matrix_1, max_strains_matrix_2):
             line1 = create_crack_line(k, i, max_angle1, 0.9, max_strain1, 'red')
             line2 = create_crack_line(k, i, max_angle2, 0.9, max_strain2, 'blue')
 
-            ax.add_line(line1)
-            ax.add_line(line2)
+            if line1:
+                ax.add_line(line1)
+            if line2:
+                ax.add_line(line2)
 
     # Add legend
     legend_elements = [Line2D([0], [0], color='red', label='Max Crack 1'),
