@@ -208,11 +208,11 @@ class LSTM_AE:
 
 
 # Define hyperparameters
-DATA_SIZE = 30000
-SEQUENCE_LENGTH = 500
-NUM_FEATURES_INPUT_DISPLACEMENT = 1
-NUM_FEATURES_INPUT_PARAMETERS = 13
-PUSHOVER = False
+DATA_SIZE = 6664
+SEQUENCE_LENGTH = 200
+DISPLACEMENT_FEATURES = 1
+PARAMETERS_FEATURES = 17
+ANALYSIS = 'CYCLIC'
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
 EPOCHS = 100
@@ -226,9 +226,13 @@ NUM_DECODER_LAYERS = 2
 DFF = 256
 DROPOUT_RATE = 0.1
 
-data, scalers = load_data(DATA_SIZE, SEQUENCE_LENGTH, NORMALIZE_DATA=True, save_normalized_data=False, pushover=PUSHOVER)
-InParams, InDisp, OutShear = data
-param_scaler, disp_scaler, shear_scaler = scalers
+# Load and preprocess data
+(InParams, InDisp, OutShear), (param_scaler, disp_scaler, shear_scaler) = load_data(DATA_SIZE,
+                                                                                    SEQUENCE_LENGTH,
+                                                                                    PARAMETERS_FEATURES,
+                                                                                    True,
+                                                                                    ANALYSIS)
+
 
 # ---------------------- Split Data -------------------------------
 # Split data into training, validation, and testing sets (X: Inputs & Y: Outputs)
@@ -236,10 +240,10 @@ X_param_train, X_param_test, X_disp_train, X_disp_test, Y_shear_train, Y_shear_t
     InParams, InDisp, OutShear, test_size=TEST_SIZE, random_state=42)
 
 # ---------------------- Build the model ------------------------------------------
-model = LSTM_AE(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).model
-# model = Bi_LSTM(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).model
+model = LSTM_AE(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).model
+# model = Bi_LSTM(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).model
 # model = TransformerWithPositionalEncoding(
-#     NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH,
+#     PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH,
 #     D_MODEL, NUM_HEADS, NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, DFF, DROPOUT_RATE).model
 
 

@@ -24,6 +24,7 @@ from LLaMA2.model import *
 from RCWall_Data_Processing import *
 from utils.earlystopping import EarlyStopping
 
+
 # Determine the device (GPU if available, else CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"PyTorch version: {torch.__version__}")
@@ -38,7 +39,6 @@ def r2_score(output, target):
     r2 = 1 - (ss_res / ss_tot)
     return r2
 
-
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_seq_length=500):
         super().__init__()
@@ -52,7 +52,6 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x):
         return x + self.pe[:, :x.size(1)]
-
 
 class Transformer_Model(nn.Module):
     def __init__(self, num_features_params, num_features_disp, sequence_length,
@@ -154,14 +153,14 @@ class PositionalEncoding(nn.Module):
 
 
 class Transformer_Model(nn.Module):
-    def __init__(self, num_features_input_parameters, num_features_input_displacement, sequence_length,
+    def __init__(self, parameters_features, displacement_features, sequence_length,
                  d_model=256, nhead=4, num_encoder_layers=2, num_decoder_layers=2, dim_feedforward=512, dropout=0.0):
         super(Transformer_Model, self).__init__()
         self.sequence_length = sequence_length
         self.d_model = d_model
 
         # Input embedding layers
-        self.input_embedding = nn.Linear(num_features_input_displacement + num_features_input_parameters, d_model)
+        self.input_embedding = nn.Linear(displacement_features + parameters_features, d_model)
         self.positional_encoding = PositionalEncoding(d_model)
 
         # Transformer layers
@@ -227,17 +226,17 @@ class Transformer_Model(nn.Module):
 '''
 
 class Informer_Model(nn.Module):
-    def __init__(self, num_features_input_parameters, num_features_input_displacement, sequence_length,
+    def __init__(self, parameters_features, displacement_features, sequence_length,
                  d_model=256, n_heads=4, e_layers=2, d_layers=2, d_ff=512,
                  dropout=0.0, attn='prob', embed='fixed', freq='h', activation='gelu',
-                 output_attention=False, distil=True, mix=True, device=torch.device('cuda:0')):
+                 output_attention=False, distil=True, mix=True, device=torch.device('cpu')):
         super(Informer_Model, self).__init__()
         self.sequence_length = sequence_length
         self.d_model = d_model
         self.device = device
 
-        enc_in = num_features_input_parameters + num_features_input_displacement
-        dec_in = num_features_input_parameters + num_features_input_displacement
+        enc_in = parameters_features + displacement_features
+        dec_in = parameters_features + displacement_features
         c_out = 1
         out_len = sequence_length
 
@@ -309,9 +308,8 @@ class Informer_Model(nn.Module):
 
         return output_shear
 
-
 # class xLSTM_Model(nn.Module):
-#     def __init__(self, num_features_input_parameters, num_features_input_displacement, sequence_length):
+#     def __init__(self, parameters_features, displacement_features, sequence_length):
 #         super(xLSTM_Model, self).__init__()
 #         self.sequence_length = sequence_length
 #         self.norm = nn.LayerNorm(200)
@@ -321,22 +319,22 @@ class Informer_Model(nn.Module):
 #
 #         '''
 #         # #  xLSTM encoder
-#         self.lstm_encoder1 = xLSTMBlock(num_features_input_displacement + num_features_input_parameters, 200, num_layers=1, lstm_type="slstm")
+#         self.lstm_encoder1 = xLSTMBlock(displacement_features + parameters_features, 200, num_layers=1, lstm_type="slstm")
 #         self.lstm_encoder2 = xLSTMBlock(200, 50, num_layers=1, lstm_type="slstm")
 #         # # xLSTM decoder
 #         self.lstm_decoder1 = xLSTMBlock(50, 200, num_layers=1, lstm_type="slstm")
-#         self.lstm_decoder2 = xLSTMBlock(200, num_features_input_displacement, num_layers=1, lstm_type="slstm")
+#         self.lstm_decoder2 = xLSTMBlock(200, displacement_features, num_layers=1, lstm_type="slstm")
 #         '''
 #         #  xLSTM encoder
-#         self.lstm_encoder1 = sLSTM(num_features_input_displacement + num_features_input_parameters, 200, num_layers=2)
+#         self.lstm_encoder1 = sLSTM(displacement_features + parameters_features, 200, num_layers=2)
 #         self.lstm_encoder2 = sLSTM(200, 50, num_layers=1)
 #
 #         # xLSTM decoder
 #         self.lstm_decoder1 = sLSTM(50, 200, num_layers=1)
-#         self.lstm_decoder2 = sLSTM(200, num_features_input_displacement, num_layers=2)
+#         self.lstm_decoder2 = sLSTM(200, displacement_features, num_layers=2)
 #
 #         # Adjusting dimensions
-#         self.dense1 = nn.Linear(num_features_input_displacement, 200)
+#         self.dense1 = nn.Linear(displacement_features, 200)
 #         self.dropout1 = nn.Dropout(0.2)
 #         self.dense2 = nn.Linear(200, 100)
 #         self.dropout2 = nn.Dropout(0.2)
@@ -381,7 +379,6 @@ class Informer_Model(nn.Module):
 #
 #         return output_shear
 
-
 class ResidualBlock(nn.Module):
     def __init__(self, input_size, hidden_size, dropout=0.1):
         super().__init__()
@@ -399,7 +396,6 @@ class ResidualBlock(nn.Module):
         out = self.dropout(out)
         out = self.layer_norm(out + residual)
         return out
-
 
 class ExtendedLSTMCell(nn.Module):
     def __init__(self, input_size, hidden_size, dropout=0.1):
@@ -452,7 +448,6 @@ class ExtendedLSTMCell(nn.Module):
         h = o * torch.tanh(c)
 
         return h, c
-
 
 class xLSTM_Model2(nn.Module):
     def __init__(self, num_features_params, sequence_length,
@@ -553,20 +548,19 @@ class xLSTM_Model2(nn.Module):
         outputs = torch.stack(outputs, dim=1)
         return outputs.squeeze(-1)
 
-
 class LSTM_AE_Model(nn.Module):
-    def __init__(self, num_features_input_parameters, num_features_input_displacement, sequence_length):
+    def __init__(self, parameters_features, displacement_features, sequence_length):
         super(LSTM_AE_Model, self).__init__()
         self.sequence_length = sequence_length
 
         # self.lstm = nn.LSTM(input_size, hidden_size, num_layers=num_layers, batch_first=batch_first, dropout=dropout)
-        self.lstm_encoder1 = nn.LSTM(num_features_input_displacement + num_features_input_parameters, 300, batch_first=True)
-        self.lstm_encoder2 = nn.LSTM(300, 100, batch_first=True)
+        self.lstm_encoder1 = nn.LSTM(displacement_features + parameters_features, 300, batch_first=True)
+        self.lstm_encoder2 = nn.LSTM(300, 50, batch_first=True)
 
-        self.lstm_decoder1 = nn.LSTM(100, 300, batch_first=True)
-        self.lstm_decoder2 = nn.LSTM(300, num_features_input_displacement, batch_first=True)
+        self.lstm_decoder1 = nn.LSTM(50, 300, batch_first=True)
+        self.lstm_decoder2 = nn.LSTM(300, displacement_features, batch_first=True)
 
-        self.dense1 = nn.Linear(num_features_input_displacement, 300)
+        self.dense1 = nn.Linear(displacement_features, 300)
         self.dropout1 = nn.Dropout(0.2)
         self.dense2 = nn.Linear(300, 200)
         self.dropout2 = nn.Dropout(0.2)
@@ -609,9 +603,84 @@ class LSTM_AE_Model(nn.Module):
 
         return output_shear
 
+class LSTM_AE_Model2(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length):
+        super(LSTM_AE_Model2, self).__init__()
+        self.sequence_length = sequence_length
+
+        # Encoder
+        self.lstm_encoder1 = nn.LSTM(displacement_features + parameters_features, 300, batch_first=True)
+        self.lstm_encoder2 = nn.LSTM(300, 50, batch_first=True)
+
+        # Decoder
+        self.lstm_decoder1 = nn.LSTM(50, 300, batch_first=True)
+        self.lstm_decoder2 = nn.LSTM(300, displacement_features, batch_first=True)
+
+        # Dense layers with modified architecture
+        self.dense1 = nn.Linear(displacement_features, 300)
+        self.batch_norm1 = nn.BatchNorm1d(300)
+        self.dropout1 = nn.Dropout(0.1)
+
+        self.dense2 = nn.Linear(300, 200)
+        self.batch_norm2 = nn.BatchNorm1d(200)
+        self.dropout2 = nn.Dropout(0.1)
+
+        # Modified output layer for better small value handling
+        self.pre_output = nn.Linear(200, 50)
+        self.output = nn.Linear(50, 1)
+
+        # Activation for small values
+        self.small_activation = nn.ReLU()  # or custom activation
+
+    def small_value_activation(self, x):
+        # Custom activation function for small values
+        return x * torch.sigmoid(x)  # Smooth transition near zero
+
+    def forward(self, parameters_input, displacement_input):
+        # Distribute parameters
+        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
+
+        # Concatenate inputs
+        concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
+
+        # Encoding
+        lstm_out, _ = self.lstm_encoder1(concatenated_tensor)
+        encoded_sequence, _ = self.lstm_encoder2(lstm_out)
+
+        # Decoding
+        lstm_out, _ = self.lstm_decoder1(encoded_sequence)
+        decoded_sequence, _ = self.lstm_decoder2(lstm_out)
+
+        # Dense layers with batch normalization
+        batch_size = decoded_sequence.size(0)
+        time_steps = decoded_sequence.size(1)
+
+        # Reshape for batch norm
+        x = decoded_sequence.reshape(-1, decoded_sequence.size(-1))
+
+        x = self.dense1(x)
+        x = self.batch_norm1(x)
+        x = torch.sigmoid(x)
+        x = self.dropout1(x)
+
+        x = self.dense2(x)
+        x = self.batch_norm2(x)
+        x = torch.sigmoid(x)
+        x = self.dropout2(x)
+
+        # Pre-output processing
+        x = self.pre_output(x)
+        x = self.small_value_activation(x)  # Custom activation for small values
+        # x = self.small_activation(x)
+
+        # Final output
+        output_shear = self.output(x)
+        output_shear = output_shear.reshape(batch_size, -1)
+
+        return output_shear
 
 class LLaMA2_Model(nn.Module):
-    def __init__(self, num_features_input_parameters, num_features_input_displacement, sequence_length):
+    def __init__(self, parameters_features, displacement_features, sequence_length):
         super().__init__()
         self.sequence_length = sequence_length
 
@@ -631,7 +700,7 @@ class LLaMA2_Model(nn.Module):
             multiple_of=256
         )
 
-        self.input_embedding = nn.Linear(num_features_input_displacement + num_features_input_parameters, dim)
+        self.input_embedding = nn.Linear(displacement_features + parameters_features, dim)
         self.dropout = nn.Dropout(0.1)  # Fixed dropout rate
 
         self.layers = nn.ModuleList([EncoderBlock(config) for _ in range(config.n_layers)])
@@ -664,23 +733,23 @@ class LLaMA2_Model(nn.Module):
 
         return output.squeeze(-1)
 
-
 # Define hyperparameters
-DATA_SIZE = 1100
-SEQUENCE_LENGTH = 500
-NUM_FEATURES_INPUT_DISPLACEMENT = 1
-NUM_FEATURES_INPUT_PARAMETERS = 16
+DATA_SIZE = 6664
+SEQUENCE_LENGTH = 200
+DISPLACEMENT_FEATURES = 1
+PARAMETERS_FEATURES = 17
 ANALYSIS = 'CYCLIC'
 TEST_SIZE = 0.20
 VAL_SIZE = 0.20
 BATCH_SIZE = 32
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0001
 EPOCHS = 200
 PATIENCE = 50
 
 # Load and preprocess data
 (InParams, InDisp, OutShear), (param_scaler, disp_scaler, shear_scaler) = load_data(DATA_SIZE,
                                                                                     SEQUENCE_LENGTH,
+                                                                                    PARAMETERS_FEATURES, 
                                                                                     True,
                                                                                     ANALYSIS)
 
@@ -699,11 +768,11 @@ test_loader = DataLoader(TensorDataset(X_param_test, X_disp_test, Y_shear_test),
 
 
 # Initialize model, loss, and optimizer
-model = LSTM_AE_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
-# model = Transformer_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
-# model = Informer_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
-# model = xLSTM_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
-# model = LLaMA2_Model(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).to(device)
+# model = LSTM_AE_Model2(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+model = Transformer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = Informer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = xLSTM_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = LLaMA2_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 
 # model = torch.compile(model)
 criterion = nn.MSELoss()
@@ -721,13 +790,13 @@ for epoch in range(EPOCHS):
     model.train()
     epoch_train_loss, epoch_train_r2 = 0.0, 0.0
 
-    for batch_param, batch_disp, batch_shear in train_loader:  # tqdm(train_loader, desc="Batch", leave=False):
+    for batch_param, batch_disp, batch_shear in train_loader:
         optimizer.zero_grad(set_to_none=True)  # More efficient than zero_grad()
-        outputs = model(batch_param, batch_disp)
+        outputs = model(batch_param, batch_disp) # Forward pass
         loss = criterion(outputs, batch_shear)
         r2 = r2_score(batch_shear.cpu(), outputs.cpu())
-        loss.backward()
-        nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Gradient clipping
+        loss.backward() # Backward pass
+        # nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Gradient clipping
         optimizer.step()
 
         epoch_train_loss += loss.item()
@@ -744,7 +813,6 @@ for epoch in range(EPOCHS):
     val_loss, val_r2 = 0.0, 0.0
     with torch.no_grad():
         for batch_param, batch_disp, batch_shear in val_loader:
-
             val_outputs = model(batch_param, batch_disp)
             val_loss += criterion(val_outputs, batch_shear).item()
             val_r2 += r2_score(batch_shear.cpu(), val_outputs.cpu())
@@ -769,9 +837,9 @@ model.load_state_dict(torch.load(f"checkpoints/{type(model).__name__}.pt", weigh
 # Final test evaluation
 model.eval()
 test_loss = test_r2 = 0
+
 with torch.no_grad():
     for batch_param, batch_disp, batch_shear in test_loader:
-
         test_outputs = model(batch_param, batch_disp)
         test_loss += criterion(test_outputs, batch_shear).item()
         test_r2 += r2_score(test_outputs, batch_shear).item()
@@ -782,8 +850,6 @@ with torch.no_grad():
 print(f'Final Model Performance - Test Loss: {test_loss:.4f}, Test R2: {test_r2:.4f}')
 
 # Plotting
-
-
 def plot_metric(train_data, val_data, best_epoch, ylabel, title):
     plt.figure(figsize=(10, 6))
     epochs = range(1, len(train_data) + 1)
@@ -815,10 +881,16 @@ with torch.no_grad():
     predicted_shear = model(new_input_parameters, new_input_displacement)
 
 # Move tensors to CPU for plotting
-new_input_parameters = denormalize(new_input_parameters.cpu().numpy(), param_scaler, sequence=False)
-new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
-real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
-predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
+# new_input_parameters = denormalize(new_input_parameters.cpu().numpy(), param_scaler, sequence=False)
+# new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
+# real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
+# predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
+
+# Move tensors to CPU for plotting and denormalization
+new_input_parameters = denormalize2(new_input_parameters.cpu().numpy(), param_scaler, scaling_strategy='robust')
+new_input_displacement = denormalize2(new_input_displacement.cpu().numpy(), disp_scaler, scaling_strategy='log_minmax', handle_small_values=True, small_value_threshold=1e-3)
+real_shear = denormalize2(real_shear.cpu().numpy(), shear_scaler, scaling_strategy='log_minmax', handle_small_values=True, small_value_threshold=1e-3)
+predicted_shear = denormalize2(predicted_shear.cpu().numpy(), shear_scaler, scaling_strategy='log_minmax', handle_small_values=True, small_value_threshold=1e-3)
 
 # Plotting code
 for i in range(test_index):
