@@ -124,8 +124,9 @@ def generate_parameters():
     loadF = round(np.random.uniform(*parameter_ranges['loadF']), 4)
 
     analysis = np.random.choice(['cyclic', 'pushover'], p=[0.70, 0.30])
+    protocol = 0 if analysis == 'cyclic' else 1
 
-    parameter_values = [tw, tb, hw, lw, ar, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag]
+    parameter_values = [tw, tb, hw, lw, ar, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag, protocol]
 
     return parameter_values, analysis
 
