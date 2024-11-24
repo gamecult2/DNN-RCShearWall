@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 import math
 from tqdm import tqdm
+from pytorch_lightning.callbacks.progress import TQDMProgressBar
 import os
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from scipy.stats import pearsonr
@@ -16,14 +17,13 @@ from xLSTM.model import xLSTM
 from xLSTM.block import xLSTMBlock
 from xLSTM.mlstm import mLSTM
 from xLSTM.slstm import sLSTM
-
 from informer.model import Informer
-
 from LLaMA2.model import *
 
 from RCWall_Data_Processing import *
 from utils.earlystopping import EarlyStopping
 
+from DNNModels import *
 
 # Determine the device (GPU if available, else CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -39,6 +39,7 @@ def r2_score(output, target):
     r2 = 1 - (ss_res / ss_tot)
     return r2
 
+'''
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_seq_length=500):
         super().__init__()
@@ -52,10 +53,11 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x):
         return x + self.pe[:, :x.size(1)]
+'''
 
 class Transformer_Model(nn.Module):
     def __init__(self, num_features_params, num_features_disp, sequence_length,
-                 d_model=128, nhead=4, num_encoder_layers=2, num_decoder_layers=2,
+                 d_model=256, nhead=8, num_encoder_layers=2, num_decoder_layers=2,
                  dim_feedforward=1024, dropout=0.1):
         super().__init__()
 
@@ -63,7 +65,7 @@ class Transformer_Model(nn.Module):
         self.d_model = d_model  # Changed to 256 to be divisible by nhead=8
 
         # Combined input features (displacement + parameters)
-        total_features = num_features_params + 1  # +1 for displacement
+        total_features = num_features_params + num_features_disp  # +1 for displacement
 
         # Input embedding
         self.input_embedding = nn.Sequential(
@@ -136,6 +138,8 @@ class Transformer_Model(nn.Module):
         predictions = predictions.squeeze(-1)  # [batch_size, seq_length]
 
         return predictions
+
+
 '''
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_len=5000):
@@ -225,6 +229,7 @@ class Transformer_Model(nn.Module):
         return output_shear
 '''
 
+
 class Informer_Model(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length,
                  d_model=256, n_heads=4, e_layers=2, d_layers=2, d_ff=512,
@@ -308,76 +313,78 @@ class Informer_Model(nn.Module):
 
         return output_shear
 
-# class xLSTM_Model(nn.Module):
-#     def __init__(self, parameters_features, displacement_features, sequence_length):
-#         super(xLSTM_Model, self).__init__()
-#         self.sequence_length = sequence_length
-#         self.norm = nn.LayerNorm(200)
-#         self.norm2 = nn.LayerNorm(1)
-#         self.activation = nn.GELU()
-#         self.dropout_layer = nn.Dropout(0.1)
-#
-#         '''
-#         # #  xLSTM encoder
-#         self.lstm_encoder1 = xLSTMBlock(displacement_features + parameters_features, 200, num_layers=1, lstm_type="slstm")
-#         self.lstm_encoder2 = xLSTMBlock(200, 50, num_layers=1, lstm_type="slstm")
-#         # # xLSTM decoder
-#         self.lstm_decoder1 = xLSTMBlock(50, 200, num_layers=1, lstm_type="slstm")
-#         self.lstm_decoder2 = xLSTMBlock(200, displacement_features, num_layers=1, lstm_type="slstm")
-#         '''
-#         #  xLSTM encoder
-#         self.lstm_encoder1 = sLSTM(displacement_features + parameters_features, 200, num_layers=2)
-#         self.lstm_encoder2 = sLSTM(200, 50, num_layers=1)
-#
-#         # xLSTM decoder
-#         self.lstm_decoder1 = sLSTM(50, 200, num_layers=1)
-#         self.lstm_decoder2 = sLSTM(200, displacement_features, num_layers=2)
-#
-#         # Adjusting dimensions
-#         self.dense1 = nn.Linear(displacement_features, 200)
-#         self.dropout1 = nn.Dropout(0.2)
-#         self.dense2 = nn.Linear(200, 100)
-#         self.dropout2 = nn.Dropout(0.2)
-#         self.output = nn.Linear(100, 1)
-#
-#     def forward(self, parameters_input, displacement_input):
-#         # Repeat parameters for each time step
-#         distributed_parameters = parameters_input.unsqueeze(1).repeat(1, displacement_input.shape[1], 1)
-#         # print('distributed_parameters', distributed_parameters.shape)
-#
-#         # Concatenate displacement and parameters
-#         concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
-#         # print('concatenated_tensor', concatenated_tensor.shape)
-#
-#         # Encoding
-#         lstm_out, _ = self.lstm_encoder1(concatenated_tensor)
-#         lstm_out = self.activation(lstm_out)
-#         # print('lstm_out activation', lstm_out.shape)
-#         # lstm_out = self.norm(lstm_out)
-#         # print('lstm_out norm', lstm_out.shape)
-#         # encoded_sequence, _ = self.lstm_encoder2(lstm_out)
-#         # encoded_sequence = self.activation(encoded_sequence)
-#         #
-#         # # Decoding
-#         # lstm_out, _ = self.lstm_decoder1(encoded_sequence)
-#         # lstm_out = self.activation(lstm_out)
-#
-#         decoded_sequence, _ = self.lstm_decoder2(lstm_out)
-#         decoded_sequence = self.activation(decoded_sequence)
-#         # Dense layers
-#         x = self.dense1(decoded_sequence)
-#         x = torch.tanh(x)
-#         x = self.dropout1(x)
-#         x = self.dense2(x)
-#         x = torch.tanh(x)
-#         x = self.dropout2(x)
-#
-#         # Output layer
-#         output_shear = self.output(x)
-#         # print('output_shear', output_shear.shape)
-#         output_shear = output_shear.reshape(output_shear.size(0), -1)
-#
-#         return output_shear
+
+class xLSTM_Model(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length):
+        super(xLSTM_Model, self).__init__()
+        self.sequence_length = sequence_length
+        self.norm = nn.LayerNorm(200)
+        self.norm2 = nn.LayerNorm(1)
+        self.activation = nn.GELU()
+        self.dropout_layer = nn.Dropout(0.1)
+
+        '''
+        # #  xLSTM encoder
+        self.lstm_encoder1 = xLSTMBlock(displacement_features + parameters_features, 200, num_layers=1, lstm_type="slstm")
+        self.lstm_encoder2 = xLSTMBlock(200, 50, num_layers=1, lstm_type="slstm")
+        # # xLSTM decoder
+        self.lstm_decoder1 = xLSTMBlock(50, 200, num_layers=1, lstm_type="slstm")
+        self.lstm_decoder2 = xLSTMBlock(200, displacement_features, num_layers=1, lstm_type="slstm")
+        '''
+        #  xLSTM encoder
+        self.lstm_encoder1 = sLSTM(displacement_features + parameters_features, 200, num_layers=2)
+        self.lstm_encoder2 = sLSTM(200, 50, num_layers=1)
+
+        # xLSTM decoder
+        self.lstm_decoder1 = sLSTM(50, 200, num_layers=1)
+        self.lstm_decoder2 = sLSTM(200, displacement_features, num_layers=2)
+
+        # Adjusting dimensions
+        self.dense1 = nn.Linear(displacement_features, 200)
+        self.dropout1 = nn.Dropout(0.2)
+        self.dense2 = nn.Linear(200, 100)
+        self.dropout2 = nn.Dropout(0.2)
+        self.output = nn.Linear(100, 1)
+
+    def forward(self, parameters_input, displacement_input):
+        # Repeat parameters for each time step
+        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, displacement_input.shape[1], 1)
+        # print('distributed_parameters', distributed_parameters.shape)
+
+        # Concatenate displacement and parameters
+        concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
+        # print('concatenated_tensor', concatenated_tensor.shape)
+
+        # Encoding
+        lstm_out, _ = self.lstm_encoder1(concatenated_tensor)
+        lstm_out = self.activation(lstm_out)
+        # print('lstm_out activation', lstm_out.shape)
+        # lstm_out = self.norm(lstm_out)
+        # print('lstm_out norm', lstm_out.shape)
+        # encoded_sequence, _ = self.lstm_encoder2(lstm_out)
+        # encoded_sequence = self.activation(encoded_sequence)
+        #
+        # # Decoding
+        # lstm_out, _ = self.lstm_decoder1(encoded_sequence)
+        # lstm_out = self.activation(lstm_out)
+
+        decoded_sequence, _ = self.lstm_decoder2(lstm_out)
+        decoded_sequence = self.activation(decoded_sequence)
+        # Dense layers
+        x = self.dense1(decoded_sequence)
+        x = torch.tanh(x)
+        x = self.dropout1(x)
+        x = self.dense2(x)
+        x = torch.tanh(x)
+        x = self.dropout2(x)
+
+        # Output layer
+        output_shear = self.output(x)
+        # print('output_shear', output_shear.shape)
+        output_shear = output_shear.reshape(output_shear.size(0), -1)
+
+        return output_shear
+
 
 class ResidualBlock(nn.Module):
     def __init__(self, input_size, hidden_size, dropout=0.1):
@@ -396,6 +403,7 @@ class ResidualBlock(nn.Module):
         out = self.dropout(out)
         out = self.layer_norm(out + residual)
         return out
+
 
 class ExtendedLSTMCell(nn.Module):
     def __init__(self, input_size, hidden_size, dropout=0.1):
@@ -448,6 +456,7 @@ class ExtendedLSTMCell(nn.Module):
         h = o * torch.tanh(c)
 
         return h, c
+
 
 class xLSTM_Model2(nn.Module):
     def __init__(self, num_features_params, sequence_length,
@@ -548,6 +557,7 @@ class xLSTM_Model2(nn.Module):
         outputs = torch.stack(outputs, dim=1)
         return outputs.squeeze(-1)
 
+
 class LSTM_AE_Model(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length):
         super(LSTM_AE_Model, self).__init__()
@@ -603,6 +613,7 @@ class LSTM_AE_Model(nn.Module):
 
         return output_shear
 
+
 class LSTM_AE_Model2(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length):
         super(LSTM_AE_Model2, self).__init__()
@@ -639,10 +650,12 @@ class LSTM_AE_Model2(nn.Module):
     def forward(self, parameters_input, displacement_input):
         # Distribute parameters
         distributed_parameters = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
-
+        print('distributed_parameters', distributed_parameters.shape)
+        print('displacement_input', displacement_input.shape)
+        print('displacement_input.unsqueeze(-1)', displacement_input.unsqueeze(-1).shape)
         # Concatenate inputs
         concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
-
+        print('concatenated_tensor', concatenated_tensor.shape)
         # Encoding
         lstm_out, _ = self.lstm_encoder1(concatenated_tensor)
         encoded_sequence, _ = self.lstm_encoder2(lstm_out)
@@ -678,6 +691,7 @@ class LSTM_AE_Model2(nn.Module):
         output_shear = output_shear.reshape(batch_size, -1)
 
         return output_shear
+
 
 class LLaMA2_Model(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length):
@@ -733,46 +747,56 @@ class LLaMA2_Model(nn.Module):
 
         return output.squeeze(-1)
 
+
+
 # Define hyperparameters
-DATA_SIZE = 1100
-SEQUENCE_LENGTH = 200
+DATA_FOLDER = "RCWall_Data/Run_Full/FullData"
+DATA_SIZE = 1000
+SEQUENCE_LENGTH = 500
 DISPLACEMENT_FEATURES = 1
 PARAMETERS_FEATURES = 17
 ANALYSIS = 'CYCLIC'
-TEST_SIZE = 0.20
-VAL_SIZE = 0.20
+TEST_SIZE = 0.15
+VAL_SIZE = 0.15
 BATCH_SIZE = 32
 LEARNING_RATE = 0.0001
-EPOCHS = 200
-PATIENCE = 50
+EPOCHS = 5
+PATIENCE = 3
 
 # Load and preprocess data
 (InParams, InDisp, OutShear), (param_scaler, disp_scaler, shear_scaler) = load_data(DATA_SIZE,
                                                                                     SEQUENCE_LENGTH,
-                                                                                    PARAMETERS_FEATURES, 
+                                                                                    PARAMETERS_FEATURES,
+                                                                                    DATA_FOLDER,
                                                                                     True,
                                                                                     ANALYSIS)
 
 # Split and convert data
-(X_param_train, X_disp_train, Y_shear_train, X_param_val, X_disp_val, Y_shear_val, X_param_test, X_disp_test, Y_shear_test) = split_and_convert((InParams, InDisp, OutShear),
-                                                                                                                                                TEST_SIZE,
-                                                                                                                                                VAL_SIZE,
-                                                                                                                                                42,
-                                                                                                                                                device,
-                                                                                                                                                True )
+splits = split_and_convert((InParams, InDisp, OutShear), TEST_SIZE, VAL_SIZE, 42, device, True)
+
+(X_param_train, X_disp_train, Y_shear_train,
+ X_param_val, X_disp_val, Y_shear_val,
+ X_param_test, X_disp_test, Y_shear_test) = splits
+
 
 # Create DataLoaders
 train_loader = DataLoader(TensorDataset(X_param_train, X_disp_train, Y_shear_train), BATCH_SIZE, shuffle=True)
 val_loader = DataLoader(TensorDataset(X_param_val, X_disp_val, Y_shear_val), BATCH_SIZE, shuffle=False)
 test_loader = DataLoader(TensorDataset(X_param_test, X_disp_test, Y_shear_test), BATCH_SIZE, shuffle=False)
 
-
 # Initialize model, loss, and optimizer
-model = LSTM_AE_Model2(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = LSTM_AE_Model2(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = Transformer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = Informer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = xLSTM_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LLaMA2_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = AttentionLSTM_AEModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = InformerModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = LLaMAInspiredModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = xLSTMModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = TimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+model = TimeSeriesTransformer()
+
 
 # model = torch.compile(model)
 criterion = nn.MSELoss()
@@ -784,18 +808,165 @@ torchinfo.summary(model)
 train_losses, val_losses, train_r2_scores, val_r2_scores = [], [], [], []
 best_val_loss = float("inf")  # Track the best validation loss
 best_epoch = 0  # Track the epoch number corresponding to the best validation loss
-
+'''
 # Training phase
 for epoch in range(EPOCHS):
     model.train()
     epoch_train_loss, epoch_train_r2 = 0.0, 0.0
 
-    for batch_param, batch_disp, batch_shear in train_loader:
-        optimizer.zero_grad(set_to_none=True)  # More efficient than zero_grad()
-        outputs = model(batch_param, batch_disp) # Forward pass
+    # Progress bar for training with real-time metrics
+    train_loader_tqdm = tqdm(
+        train_loader,
+        desc=f"Epoch {epoch + 1}/{EPOCHS} [Train]",
+        bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | "
+                    "Batch Loss: {postfix[0][batch_loss]:.4f} | Batch R²: {postfix[0][batch_r2]:.4f}"),
+        postfix=[{"batch_loss": 0.0, "batch_r2": 0.0}],
+        leave=False  # Clear the progress bar after completion
+    )
+
+    for batch_param, batch_disp, batch_shear in train_loader_tqdm:
+        optimizer.zero_grad(set_to_none=True)
+        outputs = model(batch_param, batch_disp)  # Forward pass
         loss = criterion(outputs, batch_shear)
         r2 = r2_score(batch_shear.cpu(), outputs.cpu())
-        loss.backward() # Backward pass
+        loss.backward()  # Backward pass
+        optimizer.step()
+
+        # Update epoch metrics
+        epoch_train_loss += loss.item()
+        epoch_train_r2 += r2.item()
+
+        # Update progress bar with real-time batch metrics
+        train_loader_tqdm.postfix[0]["batch_loss"] = loss.item()
+        train_loader_tqdm.postfix[0]["batch_r2"] = r2.item()
+        train_loader_tqdm.update(1)
+
+    # Calculate average training loss and R² for the epoch
+    epoch_train_loss /= len(train_loader)
+    epoch_train_r2 /= len(train_loader)
+    train_losses.append(epoch_train_loss)
+    train_r2_scores.append(epoch_train_r2)
+
+    # Validation phase
+    model.eval()
+    val_loss, val_r2 = 0.0, 0.0
+
+    # Progress bar for validation with real-time metrics
+    val_loader_tqdm = tqdm(
+        val_loader,
+        desc=f"Epoch {epoch + 1}/{EPOCHS} [Val]",
+        bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | "
+                    "Batch Loss: {postfix[0][batch_loss]:.4f} | Batch R²: {postfix[0][batch_r2]:.4f}"),
+        postfix=[{"batch_loss": 0.0, "batch_r2": 0.0}],
+        leave=False  # Clear the progress bar after completion
+    )
+
+    with torch.no_grad():
+        for batch_param, batch_disp, batch_shear in val_loader_tqdm:
+            val_outputs = model(batch_param, batch_disp)
+            batch_loss = criterion(val_outputs, batch_shear).item()
+            batch_r2 = r2_score(batch_shear.cpu(), val_outputs.cpu())
+
+            # Update validation metrics
+            val_loss += batch_loss
+            val_r2 += batch_r2
+
+            # Update progress bar with real-time batch metrics
+            val_loader_tqdm.postfix[0]["batch_loss"] = batch_loss
+            val_loader_tqdm.postfix[0]["batch_r2"] = batch_r2
+            val_loader_tqdm.update(1)
+
+    # Calculate average validation loss and R² for the epoch
+    val_loss /= len(val_loader)
+    val_r2 /= len(val_loader)
+    val_losses.append(val_loss)
+    val_r2_scores.append(val_r2)
+
+    # Print epoch summary
+    tqdm.write(f'Epoch [{epoch + 1}/{EPOCHS}], Train Loss: {epoch_train_loss:.4f}, Train R²: {epoch_train_r2:.4f}, Val Loss: {val_loss:.4f}, Val R²: {val_r2:.4f}')
+
+    # Early Stopping
+    if early_stopping(val_loss, model):
+        print("Early stopping triggered")
+        break
+'''
+progress_bar = TQDMProgressBar()
+for epoch in range(EPOCHS):
+    model.train()
+    epoch_train_loss, epoch_train_r2 = 0.0, 0.0
+
+    # Configure training progress bar using TQDM
+    pbar = progress_bar.train_progress_bar(
+        trainer=None,  # We're not using a trainer
+        total=len(train_loader),
+        leave=False
+    )
+
+    for batch_idx, (batch_param, batch_disp, batch_shear) in enumerate(train_loader):
+        optimizer.zero_grad(set_to_none=True)
+        outputs = model(batch_param, batch_disp)
+        loss = criterion(outputs, batch_shear)
+        r2 = r2_score(batch_shear.cpu(), outputs.cpu())
+        loss.backward()
+        optimizer.step()
+
+        batch_loss = loss.item()
+        batch_r2 = r2.item()
+        epoch_train_loss += batch_loss
+        epoch_train_r2 += batch_r2
+
+        # Update progress bar
+        pbar.update(1)
+        pbar.set_postfix({
+            'loss': f'{batch_loss:.4f}',
+            'r2': f'{batch_r2:.4f}'
+        })
+
+    pbar.close()
+    epoch_train_loss /= len(train_loader)
+    epoch_train_r2 /= len(train_loader)
+
+    # Validation phase
+    model.eval()
+    val_loss, val_r2 = 0.0, 0.0
+    with torch.no_grad():
+        val_pbar = progress_bar.val_progress_bar(
+            trainer=None,
+            total=len(val_loader),
+            leave=False
+        )
+
+        for batch_param, batch_disp, batch_shear in val_loader:
+            val_outputs = model(batch_param, batch_disp)
+            val_loss += criterion(val_outputs, batch_shear).item()
+            val_r2 += r2_score(batch_shear.cpu(), val_outputs.cpu())
+            val_pbar.update(1)
+
+        val_pbar.close()
+        val_loss /= len(val_loader)
+        val_r2 /= len(val_loader)
+
+    # Print epoch summary
+    print(f'Epoch [{epoch + 1}/{EPOCHS}] Train Loss: {epoch_train_loss:.4f}, Train R2: {epoch_train_r2:.4f}, '
+          f'Val Loss: {val_loss:.4f}, Val R2: {val_r2:.4f}')
+
+    if early_stopping(val_loss, model):
+        print("Early stopping triggered")
+        break
+
+'''
+# Training phase
+for epoch in range(EPOCHS):
+    model.train()
+    epoch_train_loss, epoch_train_r2 = 0.0, 0.0
+
+    # for batch_param, batch_disp, batch_shear in tqdm(train_loader, desc=f"Epoch {epoch + 1}/{EPOCHS} - Training", leave=False):
+    for batch_param, batch_disp, batch_shear in train_loader:
+        optimizer.zero_grad(set_to_none=True)  # More efficient than zero_grad()
+        outputs = model(batch_param, batch_disp)  # Forward pass
+        loss = criterion(outputs, batch_shear)
+        r2 = r2_score(batch_shear.cpu(), outputs.cpu())
+        loss.backward()  # Backward pass
         # nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Gradient clipping
         optimizer.step()
 
@@ -828,6 +999,7 @@ for epoch in range(EPOCHS):
     if early_stopping(val_loss, model):
         print("Early stopping triggered")
         break
+'''  # Old Trainer with no Progress
 
 # Restore best weights
 best_epoch = np.argmin(val_losses) + 1  # +1 because epochs are 1-indexed
@@ -848,6 +1020,7 @@ with torch.no_grad():
     test_r2 /= len(test_loader)
 
 print(f'Final Model Performance - Test Loss: {test_loss:.4f}, Test R2: {test_r2:.4f}')
+
 
 # Plotting
 def plot_metric(train_data, val_data, best_epoch, ylabel, title):

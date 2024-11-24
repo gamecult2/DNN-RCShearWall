@@ -42,9 +42,11 @@ class SynchronizedDataWriter:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.file_locks = {}
-        self.buffer_size = 10  # Number of samples to buffer before writing
+        self.buffer_size = 1
+        # Add sample counter to maintain order
+        self.sample_counter = 0
+        # Add sample index to each buffer entry
         self.buffers = {
-            'data': [],
             'parameters': [],
             'displacement': [],
             'shear': [],
@@ -73,27 +75,32 @@ class SynchronizedDataWriter:
             return
 
         filepath = self._get_filepath(file_type)
+        # Sort buffer by sample index before writing
+        sorted_buffer = sorted(self.buffers[file_type], key=lambda x: x[0])
+        # Remove sample index before writing
+        data_to_write = [row[0:] for row in sorted_buffer]
+
         with self._get_file_lock(file_type):
             with open(filepath, 'a', newline='') as f:
                 writer = csv.writer(f)
-                writer.writerows(self.buffers[file_type])
-            self.buffers[file_type] = []
+                writer.writerows(data_to_write)
+        self.buffers[file_type] = []
 
     def add_sample(self, sample_data):
         parameter_values, displacement, shear, c1, a1, c2, a2 = sample_data
+        current_index = self.sample_counter
 
-        # Add to respective buffers
-        self.buffers['parameters'].append(parameter_values)
-        self.buffers['displacement'].append(displacement)
-        self.buffers['shear'].append(shear)
-        # self.buffers['c1_a1'].extend([c1, a1])
-        # self.buffers['c2_a2'].extend([c2, a2])
-        self.buffers['c1'].append(c1)
-        self.buffers['a1'].append(a1)
-        self.buffers['c2'].append(c2)
-        self.buffers['a2'].append(a2)
+        # Add sample index to each buffer entry
+        self.buffers['parameters'].append([current_index] + parameter_values)
+        self.buffers['displacement'].append([current_index] + displacement)
+        self.buffers['shear'].append([current_index] + shear)
+        self.buffers['c1'].append([current_index] + c1)
+        self.buffers['a1'].append([current_index] + a1)
+        self.buffers['c2'].append([current_index] + c2)
+        self.buffers['a2'].append([current_index] + a2)
 
-        # Write buffers if they reach the threshold
+        self.sample_counter += 1
+
         if len(self.buffers['parameters']) >= self.buffer_size:
             for file_type in self.buffers:
                 self._write_buffer(file_type)
@@ -104,10 +111,72 @@ class SynchronizedDataWriter:
             self._write_buffer(file_type)
 
 
+def split_combined_file(instance_id):
+    """Split the combined data file into separate files for each data type."""
+    combined_file = os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_Data.csv")
+
+    # Define output files for each data type
+    output_files = {
+        'Parameters': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_Parameters.csv"),
+        'Displacement': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_Displacement.csv"),
+        'Shear': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_Shear.csv"),
+        'C1': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_C1.csv"),
+        'A1': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_A1.csv"),
+        'C2': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_C2.csv"),
+        'A2': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_A2.csv")
+    }
+
+    # Create file writers
+    writers = {}
+    files = {}
+
+    try:
+        # Open all output files
+        for data_type, filepath in output_files.items():
+            files[data_type] = open(filepath, 'w', newline='')
+            writers[data_type] = csv.writer(files[data_type])
+
+        # Read and split the combined file
+        with open(combined_file, 'r', newline='') as infile:
+            reader = csv.reader(infile)
+
+            # Read all rows from the combined file
+            rows = list(reader)
+
+            # Process each block (7 rows per block)
+            num_rows = len(rows)
+            for i in range(0, num_rows, 7):  # Step by 7 rows for each block
+                if i + 6 < num_rows:  # Ensure there are enough rows for a full block
+                    parameter_values = rows[i]
+                    displacement = rows[i + 1]
+                    shear = rows[i + 2]
+                    c1 = rows[i + 3]
+                    a1 = rows[i + 4]
+                    c2 = rows[i + 5]
+                    a2 = rows[i + 6]
+
+                    # Write each block to the respective file
+                    writers['Parameters'].writerows([[value] for value in parameter_values])
+                    writers['Displacement'].writerows([[value] for value in displacement])
+                    writers['Shear'].writerows([[value] for value in shear])
+                    writers['C1'].writerow([c1])
+                    writers['A1'].writerow([a1])
+                    writers['C2'].writerow([c2])
+                    writers['A2'].writerow([a2])
+
+    finally:
+        # Close all files
+        for file in files.values():
+            file.close()
+
+    # Optionally remove the combined file
+    # os.remove(combined_file)
+
+
 def generate_parameters():
     """Generate random parameters based on defined ranges."""
     tw = round(np.random.uniform(*parameter_ranges['tw']))
-    tb = round(np.random.uniform(tw, parameter_ranges['tb'][1]))
+    tb = round(np.random.uniform(tw, tw * 2))
     lw = round(np.random.uniform(tw * 6, parameter_ranges['lw'][1]) / 10) * 10
     ar = round(np.random.uniform(*parameter_ranges['ar']), 1)
     hw = round(lw * ar, 2)
@@ -152,7 +221,7 @@ def generate_loading():
     return displacement_step
 
 
-def analyse_sample(instance_id, sample_index, run_index=6):
+def analyse_sample(instance_id, sample_index, run_index=2):
     """Generate a single simulation sample."""
     np.random.seed(hash((instance_id, sample_index, run_index)) & 0xFFFFFFFF)
     worker_id = current_process().name
@@ -164,7 +233,7 @@ def analyse_sample(instance_id, sample_index, run_index=6):
     displacement_step = generate_loading()
 
     # Extract parameters for model building
-    tw, tb, hw, lw, ar, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag = parameter_values
+    tw, tb, hw, lw, ar, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag, protocol = parameter_values
 
     # Run Cyclic Analysis
     eleH, eleL = 14, 12
@@ -186,6 +255,7 @@ def analyse_sample(instance_id, sample_index, run_index=6):
 
     # return parameter_values, displacement_step[:-1], np.concatenate((y1[:1], y1[2:])), c1, a1, c2, a2
     return parameter_values, np.concatenate((x1[:1], x1[2:])), np.concatenate((y1[:1], y1[2:])), c1, a1, c2, a2
+
 
 '''
 def process_samples(instance_id, start_index, end_index):
@@ -243,19 +313,48 @@ def process_samples(instance_id, start_index, end_index):
 '''
 
 
-def process_samples(instance_id, start_index, end_index, data_writer):
-    """Process a batch of samples with synchronized writing."""
+def process_samples(instance_id, start_index, end_index):
+    """Process samples and write to worker-specific files."""
     valid_samples = 0
 
-    for sample_index in range(start_index, end_index):
-        sample_result = analyse_sample(instance_id, sample_index)
-        if sample_result is not None:
-            data_writer.add_sample(sample_result)
-            valid_samples += 1
-            print(f"Total valid samples: {valid_samples}")
+    # Create single combined file for this worker
+    combined_file_path = os.path.join(OUTPUT_DIR, f"FullData/Worker_{instance_id}_Data.csv")
+    cyclic_file_path = os.path.join(OUTPUT_DIR, f"CyclicData/Cyclic_{instance_id}_Data.csv")
+    monotonic_file_path = os.path.join(OUTPUT_DIR, f"MonotonicData/Monotonic_{instance_id}_Data.csv")
 
-    data_writer.flush()
-    return valid_samples
+    # Ensure output directory exists
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    with open(combined_file_path, 'w', newline='') as combined_file, \
+            open(cyclic_file_path, 'w', newline='') as cyclic_file, \
+            open(monotonic_file_path, 'w', newline='') as monotonic_file:
+
+        combined_writer = csv.writer(combined_file)
+        cyclic_writer = csv.writer(cyclic_file)
+        monotonic_writer = csv.writer(monotonic_file)
+        try:
+            for sample_index in range(start_index, end_index):
+                sample_result = analyse_sample(instance_id, sample_index)
+
+                if sample_result is not None:
+                    parameter_values, displacement, shear, c1, a1, c2, a2 = sample_result
+                    combined_writer.writerows(sample_result[:])
+
+                    # Check the last value of parameter_values
+                    if parameter_values[-1] == 0:
+                        cyclic_writer.writerows(sample_result[:])  # Save to cyclic file
+                    elif parameter_values[-1] == 1:
+                        monotonic_writer.writerows(sample_result[:])  # Save to monotonic file
+
+                    valid_samples += 1
+                    if valid_samples % 100 == 0:
+                        logger.info(f"Worker {instance_id}: Completed {valid_samples} valid samples")
+
+        except Exception as e:
+            logger.error(f"Error in worker {instance_id}: {str(e)}")
+            raise
+
+    return valid_samples, instance_id
 
 
 def run_parallel(num_samples, num_processes=cpu_count()):
@@ -264,30 +363,32 @@ def run_parallel(num_samples, num_processes=cpu_count()):
     start_time = time.time()
     logger.info(f"Starting parallel simulation with {num_processes} processes")
 
-    # Create a shared data writer
-    data_writer = SynchronizedDataWriter(OUTPUT_DIR)
-
+    # Create and run the process pool within the Manager context
     with Pool(processes=num_processes) as pool:
         results = pool.starmap(
             process_samples,
-            [(i, i * samples_per_process, (i + 1) * samples_per_process, data_writer)
-             for i in range(num_processes)]
+            [(i, i * samples_per_process, (i + 1) * samples_per_process) for i in range(num_processes)]
         )
 
-    total_time = time.time() - start_time
-    logger.info(f"Simulation completed in {total_time:.2f} seconds with "
-                f"{sum(results)} valid samples")
+        valid_samples = sum(result[0] for result in results)
+        total_time = time.time() - start_time
+        logger.info(f"Simulation completed in {total_time:.2f} seconds with {valid_samples} valid samples")
 
-    return sum(results), total_time
+        return valid_samples, total_time
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+
     if len(sys.argv) == 3:
         num_samples = int(sys.argv[1])
         num_processes = int(sys.argv[2])
     else:
-        num_samples = 3000
-        num_processes = cpu_count()
+        num_samples = 32
+        num_processes = 16  # cpu_count()
 
     logger.info(f"Starting simulation with {num_samples} samples using {num_processes} processes")
     valid_samples, execution_time = run_parallel(num_samples, num_processes)

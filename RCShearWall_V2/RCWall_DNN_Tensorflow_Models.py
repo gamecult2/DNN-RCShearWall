@@ -27,9 +27,9 @@ def r_square(y_true, y_pred):
 
 
 class TransformerWithPositionalEncoding:
-    def __init__(self, num_features_input_parameters, num_features_input_displacement, sequence_length, d_model, num_heads, num_encoder_layers, num_decoder_layers, dff, dropout_rate=0.1):
-        self.num_features_input_parameters = num_features_input_parameters
-        self.num_features_input_displacement = num_features_input_displacement
+    def __init__(self, PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, sequence_length, d_model, num_heads, num_encoder_layers, num_decoder_layers, dff, dropout_rate=0.1):
+        self.PARAMETERS_FEATURES = PARAMETERS_FEATURES
+        self.DISPLACEMENT_FEATURES = DISPLACEMENT_FEATURES
         self.sequence_length = sequence_length
         self.d_model = d_model
         self.num_heads = num_heads
@@ -54,8 +54,8 @@ class TransformerWithPositionalEncoding:
 
 
     def build_model(self):
-        parameters_input = Input(shape=(self.num_features_input_parameters,), name='parameters_input')
-        displacement_input = Input(shape=(self.sequence_length, self.num_features_input_displacement), name='displacement_input')
+        parameters_input = Input(shape=(self.PARAMETERS_FEATURES,), name='parameters_input')
+        displacement_input = Input(shape=(self.sequence_length, self.DISPLACEMENT_FEATURES), name='displacement_input')
 
         # Positional encoding
         pos_encoding = self.get_positional_encoding(self.sequence_length, self.d_model)
@@ -126,16 +126,16 @@ class TransformerWithPositionalEncoding:
 
 
 class Bi_LSTM:
-    def __init__(self, num_features_input_parameters, num_features_input_displacement, sequence_length):
-        self.num_features_input_parameters = num_features_input_parameters
-        self.num_features_input_displacement = num_features_input_displacement
+    def __init__(self, PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, sequence_length):
+        self.PARAMETERS_FEATURES = PARAMETERS_FEATURES
+        self.DISPLACEMENT_FEATURES = DISPLACEMENT_FEATURES
         self.sequence_length = sequence_length
         self.model = self.build_model()
 
     def build_model(self):
-        parameters_input = Input(shape=(self.num_features_input_parameters,), name='parameters_input')
+        parameters_input = Input(shape=(self.PARAMETERS_FEATURES,), name='parameters_input')
 
-        displacement_input = Input(shape=(self.sequence_length, self.num_features_input_displacement), name='displacement_input')
+        displacement_input = Input(shape=(self.sequence_length, self.DISPLACEMENT_FEATURES), name='displacement_input')
 
         distributed_parameters = RepeatVector(self.sequence_length)(parameters_input)
 
@@ -166,16 +166,16 @@ class Bi_LSTM:
 
 
 class LSTM_AE:
-    def __init__(self, num_features_input_parameters, num_features_input_displacement, sequence_length):
-        self.num_features_input_parameters = num_features_input_parameters
-        self.num_features_input_displacement = num_features_input_displacement
+    def __init__(self, PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, sequence_length):
+        self.PARAMETERS_FEATURES = PARAMETERS_FEATURES
+        self.DISPLACEMENT_FEATURES = DISPLACEMENT_FEATURES
         self.sequence_length = sequence_length
         self.model = self.build_model()
 
     def build_model(self):
-        parameters_input = Input(shape=(self.num_features_input_parameters,), name='parameters_input')
+        parameters_input = Input(shape=(self.PARAMETERS_FEATURES,), name='parameters_input')
 
-        displacement_input = Input(shape=(self.sequence_length, self.num_features_input_displacement), name='displacement_input')
+        displacement_input = Input(shape=(self.sequence_length, self.DISPLACEMENT_FEATURES), name='displacement_input')
 
         distributed_parameters = RepeatVector(self.sequence_length)(parameters_input)
 
@@ -188,7 +188,7 @@ class LSTM_AE:
 
         # LSTM layer for decoding
         lstm_decoder = LSTM(200, return_sequences=True, activation='tanh')(encoded_sequence)
-        decoded_sequence = LSTM(self.num_features_input_displacement, return_sequences=True, activation='tanh')(lstm_decoder)
+        decoded_sequence = LSTM(self.DISPLACEMENT_FEATURES, return_sequences=True, activation='tanh')(lstm_decoder)
 
         # Dense layer with 200 units
         dense1 = Dense(200, activation='tanh')(decoded_sequence)
@@ -210,9 +210,9 @@ class LSTM_AE:
 # Define hyperparameters
 DATA_SIZE = 30000
 SEQUENCE_LENGTH = 500
-NUM_FEATURES_INPUT_DISPLACEMENT = 1
-NUM_FEATURES_INPUT_PARAMETERS = 13
-PUSHOVER = False
+DISPLACEMENT_FEATURES = 1
+PARAMETERS_FEATURES = 17
+ANALYSIS = 'CYCLIC'
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
 EPOCHS = 100
@@ -226,7 +226,12 @@ NUM_DECODER_LAYERS = 2
 DFF = 256
 DROPOUT_RATE = 0.1
 
-data, scalers = load_data(DATA_SIZE, SEQUENCE_LENGTH, NORMALIZE_DATA=True, save_normalized_data=False, pushover=PUSHOVER)
+data, scalers = load_data(DATA_SIZE,
+                          SEQUENCE_LENGTH,
+                          PARAMETERS_FEATURES,
+                          True,
+                          ANALYSIS)
+
 InParams, InDisp, OutShear = data
 param_scaler, disp_scaler, shear_scaler = scalers
 
@@ -236,10 +241,10 @@ X_param_train, X_param_test, X_disp_train, X_disp_test, Y_shear_train, Y_shear_t
     InParams, InDisp, OutShear, test_size=TEST_SIZE, random_state=42)
 
 # ---------------------- Build the model ------------------------------------------
-model = LSTM_AE(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).model
-# model = Bi_LSTM(NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH).model
+model = LSTM_AE(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).model
+# model = Bi_LSTM(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).model
 # model = TransformerWithPositionalEncoding(
-#     NUM_FEATURES_INPUT_PARAMETERS, NUM_FEATURES_INPUT_DISPLACEMENT, SEQUENCE_LENGTH,
+#     PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH,
 #     D_MODEL, NUM_HEADS, NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, DFF, DROPOUT_RATE).model
 
 

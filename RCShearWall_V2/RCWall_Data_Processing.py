@@ -7,8 +7,8 @@ import os
 # from RCWall_Cyclic_Parameters import *
 import joblib
 from pathlib import Path  # For path handling
-import pyarrow as pa
-import pyarrow.parquet as pq
+# import pyarrow as pa
+# import pyarrow.parquet as pq
 
 
 def log_transform(data, epsilon=1e-10):
@@ -23,7 +23,6 @@ def inverse_log_transform(data, epsilon=1e-10):
 
 
 def normalize2(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, fit=False, save_scaler_path=None, scaling_strategy='minmax', handle_small_values=True, small_value_threshold=1e-3):
-
     if not fit and scaler is None and scaler_filename is None:
         raise ValueError("Either a scaler or a scaler filename must be provided for normalization when fit=False.")
 
@@ -179,9 +178,14 @@ def denormalize(data_scaled, scaler=None, scaler_filename=None, sequence=False):
     return data_restored
 
 
-def load_data(data_size=100, sequence_length=500, input_parameters=17, normalize_data=True, analysis='CYCLIC', verbose=True):
+def load_data(data_size=100, sequence_length=500, input_parameters=17, data_folder="RCWall_Data/ProcessedData/FullData", normalize_data=True, analysis='CYCLIC', verbose=True):
     # ---------------------- Read Data  -------------------------------
-    data_folder = Path("RCWall_Data/New_Data")  # Base data folder
+    # Define data and scaler folders
+    data_folder = Path(data_folder)
+    scaler_folder = data_folder / "Scaler"
+    scaler_folder.mkdir(parents=True, exist_ok=True)  # Create folder if it doesn't exist
+
+    # Determine file suffix based on analysis type
     file_suffix = "Pushover" if analysis == 'PUSHOVER' else "Cyclic"
 
     # Read input and output data from Parquet files    # 310022
@@ -202,37 +206,26 @@ def load_data(data_size=100, sequence_length=500, input_parameters=17, normalize
         NormInParams, param_scaler = normalize2(InParams, sequence=False, range=(0, 1), scaling_strategy='robust', fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
         NormInDisp, disp_scaler = normalize2(InDisp, sequence=True, range=(-1, 1), scaling_strategy='log_minmax', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / f"Scaler/disp_{file_suffix.lower()}_scaler.joblib")
         NormOutShear, shear_scaler = normalize2(OutShear, sequence=True, range=(-1, 1), scaling_strategy='log_minmax', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / f"Scaler/shear_{file_suffix.lower()}_scaler.joblib")
+
         if verbose:
             print("\nDataset Max and Mean values:")
             print("  Parameters:")
-            print(f"    Max  : {np.round(np.max(InParams, axis=0), 0)}")  # Round to 2 decimal places
-            print(f"    Min  : {np.round(np.min(InParams, axis=0), 2)}")
+            print("    Max  :", ", ".join(f"{val:.2f}" for val in np.max(InParams, axis=0)))
+            print("    Min  :", ", ".join(f"{val:.2f}" for val in np.min(InParams, axis=0)))
             print(f"  Displacement:")
             print(f"    Max  : {np.round(np.max(InDisp), 2)}")
             print(f"    Min  : {np.round(np.min(InDisp), 2)}")
             print(f"  Lateral Load:")
             print(f"    Max  : {np.round(np.max(OutShear), 2)}")
             print(f"    Min  : {np.round(np.min(OutShear), 2)}")
+
         return (NormInParams, NormInDisp, NormOutShear), (param_scaler, disp_scaler, shear_scaler)
     else:
         return (InParams, InDisp, OutShear), (InParams, InDisp, OutShear)
 
 
+'''
 def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device='cuda', verbose=True):
-    """Splits data into train, validation, and test sets, then converts to PyTorch tensors.
-
-      Args:
-        data: A tuple of numpy arrays (X_param, X_disp, Y_shear).
-        test_size: The proportion of data to use for testing.
-        val_size: The proportion of data to use for validation.
-        random_state: The random state for the train_test_split.
-        device: The device to move tensors to (e.g., 'cpu', 'cuda').
-
-      Returns:
-        A tuple of PyTorch tensors: (X_param_train, X_disp_train, Y_shear_train,
-                                    X_param_val, X_disp_val, Y_shear_val,
-                                    X_param_test, X_disp_test, Y_shear_test)
-      """
     # Input validation
     if not len(data) == 3:
         raise ValueError(f"Expected 3 arrays in data tuple, got {len(data)}")
@@ -267,3 +260,37 @@ def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device
         X_param_val, X_disp_val, Y_shear_val,
         X_param_test, X_disp_test, Y_shear_test
     )
+'''
+
+
+def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device='cuda', verbose=True):
+    # Ensure all arrays have the same number of samples
+    n_samples = len(data[0])
+    for array in data:
+        if len(array) != n_samples:
+            raise ValueError("All input arrays must have the same number of samples")
+
+    # Convert all arrays to PyTorch tensors
+    tensors = [torch.tensor(array, dtype=torch.float32, device=device) for array in data]
+
+    # Split into Test and Temporary
+    temp_splits = train_test_split(*tensors, test_size=test_size, random_state=random_state)
+    test_splits = temp_splits[1::2]  # Extract Test dataset
+    temp_splits = temp_splits[0::2]  # Extract Temporary dataset
+
+    # Split Temporary into Training and Validation
+    train_val_splits = train_test_split(*temp_splits, test_size=val_size / (1 - test_size), random_state=random_state)
+    val_splits = train_val_splits[1::2]  # Extract Validation set
+    train_splits = train_val_splits[0::2]   # Extract Training set
+
+    if verbose:
+        print(f"\nDataset splits:")
+        print(f"  Training   : {len(train_splits[0])} -- ({100 * len(train_splits[0]) / n_samples:.1f}%)")
+        print(f"  Validation : {len(val_splits[0])} -- ({100 * len(val_splits[0]) / n_samples:.1f}%)")
+        print(f"  Testing    : {len(test_splits[0])} -- ({100 * len(test_splits[0]) / n_samples:.1f}%)")
+
+        print(f"\nDataset splits shape:")
+        for i, train_split in enumerate(train_splits):
+            print(f"  Training {i+1} shape: {train_split.shape}")
+
+    return (*train_splits, *val_splits, *test_splits)

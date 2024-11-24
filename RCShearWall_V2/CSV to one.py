@@ -1,9 +1,36 @@
 import csv
 import os
 
-# Define output file path
-folder = "RCWall_Data/Original_Full_Data"
-output_file = f"{folder}/Full_DataBase.csv"
+
+# Ask the user to select the folder to process
+print("Select the folder to process:")
+print("1 - Full Data")
+print("2 - Cyclic Data")
+print("3 - Monotonic Data")
+choice = input("Enter your choice (1, 2, or 3): ").strip()
+
+# Define folder and output file paths based on the user's choice  ---   Run_Full  -----    Run_1    -----   Run_2
+if choice == "1":
+    folder = r"K:\RCShearWall_V2\RCWall_Data\Run_2\FullData"
+    output_file = r"RCWall_Data\OriginalData\Run_2\FullData\Full_Data.csv"
+elif choice == "2":
+    folder = r"K:\RCShearWall_V2\RCWall_Data\Run_2\CyclicData"
+    output_file = r"RCWall_Data\OriginalData\Run_2\CyclicData\Cyclic_Data.csv"
+elif choice == "3":
+    folder = r"K:\RCShearWall_V2\RCWall_Data\Run_2\MonotonicData"
+    output_file = r"RCWall_Data\OriginalData\Run_2\MonotonicData\Monotonic_Data.csv"
+else:
+    print("Invalid choice. Exiting the program.")
+    exit()
+
+# Check if the output file already exists
+if os.path.exists(output_file):
+    print(f"Output file already exists: {output_file}")
+    print("Operation aborted to avoid overwriting existing data.")
+    exit()
+
+# Ensure the output folder exists
+os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
 # Iterate through files in the directory
 all_files = [f for f in os.listdir(folder) if f.endswith(".csv")]
