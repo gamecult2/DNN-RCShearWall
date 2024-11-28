@@ -18,6 +18,13 @@ def r_square(y_true, y_pred):
     ss_tot = torch.sum((y_true - torch.mean(y_true)) ** 2)
     return 1 - ss_res / (ss_tot + 1e-6)
 
+def r2_score(output, target):
+    target_mean = torch.mean(target)
+    ss_tot = torch.sum((target - target_mean) ** 2)
+    ss_res = torch.sum((target - output) ** 2)
+    r2 = 1 - (ss_res / ss_tot)
+    return r2
+
 
 # Positional Encoding for Transformer
 # class PositionalEncoding(nn.Module):

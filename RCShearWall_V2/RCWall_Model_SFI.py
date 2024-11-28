@@ -182,13 +182,15 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
         ops.element('E_SFI', i + 1, *[i + 1, i + 2], eleL, 0.4, '-thick', *MVLEM_thick, '-width', *MVLEM_width, '-mat', *MVLEM_mat)
         if printProgression:
             print('E_SFI', i + 1, *[i + 1, i + 2], eleL, 0.4, '-thick', *MVLEM_thick, '-width', *MVLEM_width, '-mat', *MVLEM_mat)
-
-    parameter_values = [tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, round(rouYb, 4), round(rouYw, 4), round(rouXb, 4), round(rouXw, 4), loadF]
+    Ag = tw * (lw - (2 * lbe)) + 2 * (tb * lbe)  # Calculate Ag based on provided formula
+    ar = hw/lw
+    # parameter_values = [tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, round(rouYb, 4), round(rouYw, 4), round(rouXb, 4), round(rouXw, 4), loadF, Ag]
+    parameter_values = [tw, tb, hw, lw, ar, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag]
 
 
     if printProgression:
         print('--------------------------------------------------------------------------------------------------')
-        print("\033[92mModel Built Successfully --> Using the following parameters :", parameter_values, "\033[0m")
+        print("\033[92mModel Built Successfully --> Using the following parameters :", parameter_values,  "\033[0m")
         print('--------------------------------------------------------------------------------------------------')
 
 

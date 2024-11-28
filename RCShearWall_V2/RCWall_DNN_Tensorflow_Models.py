@@ -1,22 +1,22 @@
 from keras.metrics import MeanAbsoluteError, MeanSquaredError, RootMeanSquaredError
 import keras.callbacks
 import matplotlib.pyplot as plt
-from keras.layers import Input, RepeatVector, concatenate, Bidirectional, LSTM, Dense, Dropout, Flatten, LayerNormalization, Add, MultiHeadAttention
+from keras.layers import Input, RepeatVector, concatenate, Bidirectional, LSTM, Dense, Dropout, Flatten, LayerNormalization, Add, MultiHeadAttention, Conv1D
 from keras.models import Model
+import tensorflow.keras.layers as layers
 from keras.optimizers import Adam, SGD
 from keras import backend as K
 from keras.regularizers import l2
 import tensorflow as tf
 from RCWall_Data_Processing import *
 
-
 # Allocate space for Bidirectional(LSTM)
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 
 # Activate the GPU
 tf.config.list_physical_devices(device_type=None)
-physical_devices = tf.config.list_physical_devices('GPU')
-print("Num GPUs:", len(physical_devices))
+device = tf.config.list_physical_devices('GPU')
+print("Num GPUs:", len(device))
 
 
 # Define R2 metric
@@ -24,6 +24,146 @@ def r_square(y_true, y_pred):
     SS_res = K.sum(K.square(y_true - y_pred))
     SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
     return 1 - SS_res / (SS_tot + K.epsilon())
+
+
+class TimeSeriesTransformer(Model):
+    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=200):
+        """
+        Initialize the TimeSeriesTransformer as a Keras Model.
+
+        Args:
+            parameters_features (int): Number of input parameter features
+            displacement_features (int): Number of displacement features
+            sequence_length (int): Length of the input time series sequence
+            d_model (int, optional): Dimensionality of the model. Defaults to 200.
+        """
+        super(TimeSeriesTransformer, self).__init__()
+        self.parameters_features = parameters_features
+        self.displacement_features = displacement_features
+        self.sequence_length = sequence_length
+        self.d_model = d_model
+
+        # Parameter Processing Branch
+        self.param_encoder = tf.keras.Sequential([
+            Dense(d_model // 2),
+            LayerNormalization(),
+            tf.keras.layers.Activation('gelu'),
+            Dropout(0.1)
+        ])
+
+        # Time Series Processing Branch
+        self.series_encoder = tf.keras.Sequential([
+            Dense(d_model // 2),
+            LayerNormalization(),
+            tf.keras.layers.Activation('gelu'),
+            Dropout(0.1)
+        ])
+
+        # Positional Encoding
+        self.positional_encoding = self._create_positional_encoding(d_model, sequence_length)
+
+        # Processing Blocks
+        self.processing_blocks = [
+            self._create_processing_block(d_model) for _ in range(3)
+        ]
+
+        # Output Generation
+        self.output_layer = tf.keras.Sequential([
+            Dense(d_model * 2, activation='gelu'),
+            Dropout(0.1),
+            Dense(d_model * 4, activation='gelu'),
+            Dropout(0.1),
+            Dense(d_model * 2, activation='gelu'),
+            Dropout(0.1),
+            Dense(displacement_features)
+        ])
+
+        # Temporal Smoothing
+        self.temporal_smoother = Conv1D(
+            filters=displacement_features,
+            kernel_size=5,
+            padding='same',
+            groups=displacement_features
+        )
+
+    def _create_positional_encoding(self, d_model, max_len):
+        """Create positional encoding matrix."""
+        position = np.arange(max_len)[:, np.newaxis]
+        div_term = np.exp(np.arange(0, d_model, 2) * -(np.log(10000.0) / d_model))
+        pe = np.zeros((max_len, d_model))
+        pe[:, 0::2] = np.sin(position * div_term)
+        pe[:, 1::2] = np.cos(position * div_term)
+        return tf.constant(pe, dtype=tf.float32)
+
+    def _create_processing_block(self, d_model):
+        """Create a processing block with multi-head attention and LSTM."""
+        return {
+            'attention': MultiHeadAttention(num_heads=4, key_dim=d_model // 4),
+            'norm1': LayerNormalization(),
+            'lstm1': LSTM(d_model, return_sequences=True),
+            'norm2': LayerNormalization(),
+            'lstm2': LSTM(d_model, return_sequences=True),
+            'norm3': LayerNormalization()
+        }
+
+    def call(self, inputs, training=False):
+        """
+        Forward pass of the model.
+
+        Args:
+            inputs (tuple): Tuple of (parameters, time_series)
+            training (bool): Whether the model is in training mode
+
+        Returns:
+            tf.Tensor: Transformed time series
+        """
+        parameters, time_series = inputs
+
+        # Expand parameters to match sequence length
+        params_expanded = tf.repeat(
+            tf.expand_dims(parameters, 1),
+            repeats=self.sequence_length,
+            axis=1
+        )
+        params_encoded = self.param_encoder(params_expanded, training=training)
+
+        # Process time series
+        series_encoded = self.series_encoder(
+            tf.expand_dims(time_series, axis=-1),
+            training=training
+        )
+
+        # Combine features
+        combined = tf.concat([params_encoded, series_encoded], axis=-1)
+
+        # Add positional encoding
+        combined += self.positional_encoding[:combined.shape[1], :combined.shape[-1]]
+
+        # Process through main blocks
+        x = combined
+        for block in self.processing_blocks:
+            # Multi-head attention
+            attn_output = block['attention'](x, x)
+            x = block['norm1'](x + attn_output)
+
+            # First LSTM
+            lstm_output = block['lstm1'](x)
+            x = block['norm2'](x + lstm_output)
+
+            # Second LSTM
+            lstm_output = block['lstm2'](x)
+            x = block['norm3'](x + lstm_output)
+
+        # Generate output sequence
+        output = self.output_layer(x, training=training)
+
+        # Apply temporal smoothing
+        smoothed_output = tf.transpose(
+            self.temporal_smoother(tf.transpose(output, perm=[0, 2, 1])),
+            perm=[0, 2, 1]
+        )
+
+        return tf.squeeze(smoothed_output, axis=-1)
 
 
 class TransformerWithPositionalEncoding:
@@ -51,7 +191,6 @@ class TransformerWithPositionalEncoding:
 
         pos_encoding = angle_rads[np.newaxis, ...]
         return tf.cast(pos_encoding, dtype=tf.float32)
-
 
     def build_model(self):
         parameters_input = Input(shape=(self.PARAMETERS_FEATURES,), name='parameters_input')
@@ -226,14 +365,26 @@ NUM_DECODER_LAYERS = 2
 DFF = 256
 DROPOUT_RATE = 0.1
 
-data, scalers = load_data(DATA_SIZE,
-                          SEQUENCE_LENGTH,
-                          PARAMETERS_FEATURES,
-                          True,
-                          ANALYSIS)
+# Define hyperparameters
+DATA_FOLDER = "RCWall_Data/Run_Full/FullData"
+DATA_SIZE = 200000
+SEQUENCE_LENGTH = 500
+DISPLACEMENT_FEATURES = 1
+PARAMETERS_FEATURES = 17
+TEST_SIZE = 0.10
+VAL_SIZE = 0.15
+BATCH_SIZE = 32
+LEARNING_RATE = 0.0001
+EPOCHS = 20
+PATIENCE = 5
 
-InParams, InDisp, OutShear = data
-param_scaler, disp_scaler, shear_scaler = scalers
+# Load and preprocess data
+(InParams, InDisp, OutShear), (param_scaler, disp_scaler, shear_scaler) = load_data(DATA_SIZE,
+                                                                                    SEQUENCE_LENGTH,
+                                                                                    PARAMETERS_FEATURES,
+                                                                                    DATA_FOLDER,
+                                                                                    True,
+                                                                                    True)
 
 # ---------------------- Split Data -------------------------------
 # Split data into training, validation, and testing sets (X: Inputs & Y: Outputs)
@@ -241,18 +392,21 @@ X_param_train, X_param_test, X_disp_train, X_disp_test, Y_shear_train, Y_shear_t
     InParams, InDisp, OutShear, test_size=TEST_SIZE, random_state=42)
 
 # ---------------------- Build the model ------------------------------------------
-model = LSTM_AE(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).model
+# model = LSTM_AE(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).model
 # model = Bi_LSTM(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).model
 # model = TransformerWithPositionalEncoding(
 #     PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH,
 #     D_MODEL, NUM_HEADS, NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, DFF, DROPOUT_RATE).model
 
+model = TimeSeriesTransformer(PARAMETERS_FEATURES,
+                              DISPLACEMENT_FEATURES,
+                              SEQUENCE_LENGTH)
 
 # --------------------- Compile the model -----------------------------------------
 # Define Adam and SGD optimizers
 adam_optimizer = Adam(LEARNING_RATE)
 sgd_optimizer = SGD(LEARNING_RATE, momentum=0.9)
-model.compile(optimizer=adam_optimizer, loss='mse', metrics=[r_square])  # metrics=[MeanAbsoluteError(), MeanSquaredError(), RootMeanSquaredError(), r_square])
+model.compile(optimizer=adam_optimizer, loss='mse', metrics=[RootMeanSquaredError()])  # metrics=[MeanAbsoluteError(), MeanSquaredError(), RootMeanSquaredError(), r_square])
 
 # ---------------------- Print Model summary ---------------------------------------------
 model.summary()
