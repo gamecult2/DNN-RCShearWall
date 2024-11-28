@@ -4,6 +4,7 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 # from keras import backend as K
 # from keras.saving.save import load_model
 from utils import *
@@ -19,13 +20,6 @@ from RCWall_Data_Processing import *
 # print("Num GPUs:", len(physical_devices))
 
 
-# Define R2 metric
-def r_square(y_true, y_pred):
-    SS_res = K.sum(K.square(y_true - y_pred))
-    SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
-    return 1 - SS_res / (SS_tot + K.epsilon())
-
-
 class ShearWallAnalysisApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -37,12 +31,13 @@ class ShearWallAnalysisApp(tk.Tk):
 
         # Loaded Model Information
         # self.loaded_model = load_model("../DNN_Models/DNN_LSTM-AE(CYCLIC)300k", custom_objects={'r_square': r_square})
+        # self.loaded_model = model.load_state_dict(torch.load(f"checkpoints/{type(model).__name__}.pt", weights_only=True))
         self.model_info = 'LSTM-AE'  # Use 'self.model_info' for clarity
 
         # Scaler Paths
         self.param_scaler = self.data_folder / 'Scaler/param_scaler.joblib'
-        self.disp_cyclic_scaler = self.data_folder / 'Scaler/disp_cyclic_scaler.joblib'
-        self.shear_cyclic_scaler = self.data_folder / 'Scaler/shear_cyclic_scaler.joblib'
+        self.disp_cyclic_scaler = self.data_folder / 'Scaler/disp_scaler.joblib'
+        self.shear_cyclic_scaler = self.data_folder / 'Scaler/shear_scaler.joblib'
 
         # Variables
         self.load_type = tk.StringVar(value="RC")

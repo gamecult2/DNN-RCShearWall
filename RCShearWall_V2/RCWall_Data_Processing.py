@@ -7,6 +7,8 @@ import os
 # from RCWall_Cyclic_Parameters import *
 import joblib
 from pathlib import Path  # For path handling
+
+
 # import pyarrow as pa
 # import pyarrow.parquet as pq
 
@@ -90,7 +92,7 @@ def normalize2(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=
         return data_scaled, scaler
 
 
-def denormalize2(data, scaler, scaling_strategy='minmax', handle_small_values=True, small_value_threshold=1e-3):
+def denormalize3(data, scaler, scaling_strategy='minmax', handle_small_values=True, small_value_threshold=1e-3):
     """
     Denormalize the data using the provided scaler
     """
@@ -110,8 +112,58 @@ def denormalize2(data, scaler, scaling_strategy='minmax', handle_small_values=Tr
     return data_denorm
 
 
+def denormalize2(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, scaling_strategy='minmax', handle_small_values=True, small_value_threshold=1e-3):
+    if scaler is None and scaler_filename is None:
+        raise ValueError("Either a scaler or a scaler filename must be provided for denormalization.")
+
+    data = np.asarray(data, dtype=np.float32)
+
+    # Load scaler if not provided
+    if scaler is None:
+        if scaler_filename and os.path.exists(scaler_filename):
+            scaler = joblib.load(scaler_filename)
+        else:
+            raise ValueError("Unable to load scaler from the provided filename.")
+
+    # Reshape if sequence
+    if sequence:
+        original_shape = data.shape
+        data_reshaped = data.reshape(-1, 1)
+    else:
+        data_reshaped = data
+
+    # Inverse transform the scaled data
+    data_inverse = scaler.inverse_transform(data_reshaped)
+
+    # Undo transformations based on scaling strategy
+    if scaling_strategy == 'log_minmax':
+        # Use the specific inverse log transform
+        data_restored = inverse_log_transform(data_inverse)
+    elif scaling_strategy == 'symmetric_log':
+        # Undo symmetric log transform
+        data_restored = np.sign(data_inverse) * (np.exp(np.abs(data_inverse)) - 1)
+    else:
+        data_restored = data_inverse
+
+    # Special handling for small values if enabled
+    if handle_small_values:
+        small_mask = np.abs(data_restored) < small_value_threshold
+        if np.any(small_mask):
+            # Scale back small values while preserving their sign and relative scale
+            data_restored[small_mask] = (
+                    np.sign(data_restored[small_mask]) *
+                    small_value_threshold *
+                    np.abs(data_restored[small_mask]) / small_value_threshold
+            )
+
+    # Reshape back if sequence
+    if sequence:
+        data_restored = data_restored.reshape(original_shape)
+
+    return data_restored
+
+
 def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, fit=False, save_scaler_path=None):
-    # Check NOT fit (First Normalization) Then must load a scaler or scaler_filename
     if not fit and scaler is None and scaler_filename is None:
         raise ValueError("Either a scaler or a scaler filename must be provided for normalization when fit=False.")
 
@@ -125,6 +177,7 @@ def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=F
             scaler = joblib.load(scaler_filename)
         else:
             scaler = MinMaxScaler(feature_range=range)
+            # scaler = RobustScaler()
 
     # Normalize data
     if sequence:
@@ -178,20 +231,17 @@ def denormalize(data_scaled, scaler=None, scaler_filename=None, sequence=False):
     return data_restored
 
 
-def load_data(data_size=100, sequence_length=500, input_parameters=17, data_folder="RCWall_Data/ProcessedData/FullData", normalize_data=True, analysis='CYCLIC', verbose=True):
+def load_data(data_size=100, sequence_length=500, input_parameters=17, data_folder="RCWall_Data/ProcessedData/FullData", normalize_data=True, verbose=True):
     # ---------------------- Read Data  -------------------------------
     # Define data and scaler folders
     data_folder = Path(data_folder)
     scaler_folder = data_folder / "Scaler"
     scaler_folder.mkdir(parents=True, exist_ok=True)  # Create folder if it doesn't exist
 
-    # Determine file suffix based on analysis type
-    file_suffix = "Pushover" if analysis == 'PUSHOVER' else "Cyclic"
-
-    # Read input and output data from Parquet files    # 310022
+    # Read input and output data from Parquet files
     InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=float)
-    InDisp = pd.read_parquet(data_folder / f"Input{file_suffix}Displacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
-    OutShear = pd.read_parquet(data_folder / f"Output{file_suffix}Shear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
+    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
+    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
     if verbose:
         print(f"\nDataset shape:")
         print("  Parameters    :", InParams.shape)
@@ -199,13 +249,19 @@ def load_data(data_size=100, sequence_length=500, input_parameters=17, data_fold
         print("  Lateral Load  :", OutShear.shape)
 
     if normalize_data:
-        # NormInParams, param_scaler = normalize(InParams, sequence=False, range=(0, 1), fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
-        # NormInDisp, disp_scaler = normalize(InDisp, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/disp_{file_suffix.lower()}_scaler.joblib")
-        # NormOutShear, shear_scaler = normalize(OutShear, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/shear_{file_suffix.lower()}_scaler.joblib")
+        # NormInParams, param_scaler = normalize(InParams, sequence=True, range=(0, 1), fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
+        # NormInDisp, disp_scaler = normalize(InDisp, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/disp_scaler.joblib")
+        # NormOutShear, shear_scaler = normalize(OutShear, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/shear_scaler.joblib")
 
         NormInParams, param_scaler = normalize2(InParams, sequence=False, range=(0, 1), scaling_strategy='robust', fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
-        NormInDisp, disp_scaler = normalize2(InDisp, sequence=True, range=(-1, 1), scaling_strategy='log_minmax', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / f"Scaler/disp_{file_suffix.lower()}_scaler.joblib")
-        NormOutShear, shear_scaler = normalize2(OutShear, sequence=True, range=(-1, 1), scaling_strategy='log_minmax', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / f"Scaler/shear_{file_suffix.lower()}_scaler.joblib")
+        NormInDisp, disp_scaler = normalize2(InDisp, sequence=True, range=(-1, 1), scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / "Scaler/disp_scaler.joblib")
+        NormOutShear, shear_scaler = normalize2(OutShear, sequence=True, range=(-1, 1), scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / "Scaler/shear_scaler.joblib")
+
+        save_normalized_data = False
+        if save_normalized_data:
+            pd.DataFrame(NormInParams).to_csv(data_folder / f"Normalized/InputParameters.csv", index=False)
+            pd.DataFrame(NormInDisp).to_csv(data_folder / f"Normalized/InputDisplacement.csv", index=False)
+            pd.DataFrame(NormOutShear).to_csv(data_folder / f"Normalized/OutputShear.csv", index=False)
 
         if verbose:
             print("\nDataset Max and Mean values:")
@@ -281,7 +337,7 @@ def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device
     # Split Temporary into Training and Validation
     train_val_splits = train_test_split(*temp_splits, test_size=val_size / (1 - test_size), random_state=random_state)
     val_splits = train_val_splits[1::2]  # Extract Validation set
-    train_splits = train_val_splits[0::2]   # Extract Training set
+    train_splits = train_val_splits[0::2]  # Extract Training set
 
     if verbose:
         print(f"\nDataset splits:")
@@ -291,6 +347,6 @@ def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device
 
         print(f"\nDataset splits shape:")
         for i, train_split in enumerate(train_splits):
-            print(f"  Training {i+1} shape: {train_split.shape}")
+            print(f"  Training {i + 1} shape: {train_split.shape}")
 
-    return (*train_splits, *val_splits, *test_splits)
+    return *train_splits, *val_splits, *test_splits
