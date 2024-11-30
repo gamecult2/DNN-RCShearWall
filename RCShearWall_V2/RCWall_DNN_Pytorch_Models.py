@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchinfo
-from torchviz import make_dot
 from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -16,8 +15,6 @@ from RCWall_Data_Processing import *
 from utils.earlystopping import EarlyStopping
 from DNNModels import *
 
-
-
 # Determine the device (GPU if available, else CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"PyTorch version: {torch.__version__} --- Using device: {device}")
@@ -27,19 +24,17 @@ torch.backends.cudnn.benchmark = True
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 
-
-
 # Define hyperparameters
-DATA_FOLDER = "RCWall_Data/Run_Full/FullData"
+DATA_FOLDER = "RCWall_Data/Run_Full/CyclicData"
 DATA_SIZE = 200000
 SEQUENCE_LENGTH = 500
 DISPLACEMENT_FEATURES = 1
-PARAMETERS_FEATURES = 15
-TEST_SIZE = 0.10
+PARAMETERS_FEATURES = 16
+TEST_SIZE = 0.05
 VAL_SIZE = 0.15
 BATCH_SIZE = 32
-LEARNING_RATE = 0.0001
-EPOCHS = 1
+LEARNING_RATE = 0.001
+EPOCHS = 20
 PATIENCE = 5
 
 # Load and preprocess data
@@ -58,31 +53,29 @@ splits = split_and_convert((InParams, InDisp, OutShear), TEST_SIZE, VAL_SIZE, 40
  X_param_test, X_disp_test, Y_shear_test) = splits
 
 # Create DataLoaders
-train_loader = DataLoader(TensorDataset(X_param_train, X_disp_train, Y_shear_train), BATCH_SIZE, shuffle=True) #, pin_memory=True, num_workers=4, prefetch_factor=2)
-val_loader = DataLoader(TensorDataset(X_param_val, X_disp_val, Y_shear_val), BATCH_SIZE, shuffle=False) #, pin_memory=True, num_workers=4, prefetch_factor=2)
-test_loader = DataLoader(TensorDataset(X_param_test, X_disp_test, Y_shear_test), BATCH_SIZE, shuffle=False) #, pin_memory=True, num_workers=4, prefetch_factor=2)
+train_loader = DataLoader(TensorDataset(X_param_train, X_disp_train, Y_shear_train), BATCH_SIZE, shuffle=True)  #, pin_memory=True, num_workers=4, prefetch_factor=2)
+val_loader = DataLoader(TensorDataset(X_param_val, X_disp_val, Y_shear_val), BATCH_SIZE, shuffle=False)  #, pin_memory=True, num_workers=4, prefetch_factor=2)
+test_loader = DataLoader(TensorDataset(X_param_test, X_disp_test, Y_shear_test), BATCH_SIZE, shuffle=False)  #, pin_memory=True, num_workers=4, prefetch_factor=2)
 
 # Initialize model, loss, and optimizer
 # model = LSTM_AE_Model_1(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LSTM_AE_Model_2(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LSTM_AE_Model_3(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-model = Transformer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = Informer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = Transformer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = xLSTM_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LLaMA2_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = AttentionLSTM_AEModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = InformerModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LLaMAInspiredModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = xLSTMModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = TimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+model = TimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = EnhancedTimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = InformerShearModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = torch.compile(model)
 
 
-optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE)  #  weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8
-# scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=1e-6)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
+optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, min_lr=1e-6)
 criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
 early_stopping = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}")
 
@@ -101,8 +94,8 @@ for epoch in range(EPOCHS):
     batch_count = 0
 
     train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{EPOCHS} [Train]",
-                            bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | Batch Loss: {postfix[0][batch_loss]:.4f} | Batch R²: {postfix[0][batch_r2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
-                            postfix=[{"batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
+                             bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | Batch Loss: {postfix[0][batch_loss]:.4f} | Batch R²: {postfix[0][batch_r2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
+                             postfix=[{"batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
 
     for batch_param, batch_disp, batch_shear in train_loader_tqdm:
         batch_count += 1  # Increment batch counter
@@ -118,11 +111,11 @@ for epoch in range(EPOCHS):
 
         # Update epoch metrics
         epoch_train_loss += loss.item()
-        epoch_train_r2 += r2 # .item()
+        epoch_train_r2 += r2  # .item()
 
         # Update progress bar with real-time batch metrics
         train_loader_tqdm.postfix[0]["batch_loss"] = loss.item()
-        train_loader_tqdm.postfix[0]["batch_r2"] = r2 # .item()
+        train_loader_tqdm.postfix[0]["batch_r2"] = r2  # .item()
         train_loader_tqdm.postfix[0]["avg_r2"] = epoch_train_r2 / batch_count  # Running average
         train_loader_tqdm.update(1)
 
@@ -166,16 +159,15 @@ for epoch in range(EPOCHS):
 
     # Update learning rate
     lr = scheduler.get_last_lr()[0]  # Assuming a single learning rate group
-    scheduler.step()
+    scheduler.step(val_loss)
 
     # Print epoch summary
-    print(f'Epoch [{epoch + 1}/{EPOCHS}], Learining Rate: {lr}, Train Loss: {epoch_train_loss:.4f}, Train R²: {epoch_train_r2:.4f}, Val Loss: {val_loss:.4f}, Val R²: {val_r2:.4f}\n')
+    print(f'Epoch [{epoch + 1}/{EPOCHS}], Learning Rate: {lr}, Train Loss: {epoch_train_loss:.4f}, Train R²: {epoch_train_r2:.4f}, Val Loss: {val_loss:.4f}, Val R²: {val_r2:.4f}\n')
 
     # Early Stopping
     if early_stopping(val_loss, model):
         print("Early stopping triggered")
         break
-
 
 best_epoch = np.argmin(val_losses) + 1  # +1 because epochs are 1-indexed
 print(f"Best Epoch: {best_epoch}")
@@ -188,12 +180,13 @@ with torch.no_grad():
     for batch_param, batch_disp, batch_shear in test_loader:
         test_outputs = model(batch_param, batch_disp)
         test_loss += criterion(batch_shear, test_outputs).item()
-        test_r2 = r2_score(batch_shear.detach().cpu().numpy(), test_outputs.detach().cpu().numpy())
+        test_r2 += r2_score(batch_shear.detach().cpu().numpy(), test_outputs.detach().cpu().numpy())
 
     test_loss /= len(test_loader)
     test_r2 /= len(test_loader)
 
 print(f'Final Model Performance - Test Loss: {test_loss:.4f}, Test R2: {test_r2:.4f}')
+
 
 # Plotting
 def plot_metric(train_data, val_data, best_epoch, ylabel, title):
@@ -210,6 +203,7 @@ def plot_metric(train_data, val_data, best_epoch, ylabel, title):
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.tight_layout()
     plt.show()
+
 
 # Plot loss & Plot R2 score
 plot_metric(train_losses, val_losses, best_epoch, "MSE Loss", "Training and Validation Loss")
@@ -229,16 +223,16 @@ with torch.no_grad():
     predicted_shear = trained_model(new_input_parameters, new_input_displacement)
 
 # Move tensors to CPU for plotting
-# new_input_parameters = denormalize(new_input_parameters.cpu().numpy(), param_scaler, sequence=False)
-# new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
-# real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
-# predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
+new_input_parameters = denormalize(new_input_parameters.cpu().numpy(), param_scaler, sequence=False)
+new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
+real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
+predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
 
 # Move tensors to CPU for plotting and denormalization
-new_input_parameters = denormalize2(new_input_parameters.cpu().numpy(), param_scaler, scaling_strategy='robust', sequence=False)
-new_input_displacement = denormalize2(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
-real_shear = denormalize2(real_shear.cpu().numpy(), shear_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
-predicted_shear = denormalize2(predicted_shear.cpu().numpy(), shear_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
+# new_input_parameters = denormalize2(new_input_parameters.cpu().numpy(), param_scaler, scaling_strategy='robust', sequence=False)
+# new_input_displacement = denormalize2(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
+# real_shear = denormalize2(real_shear.cpu().numpy(), shear_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
+# predicted_shear = denormalize2(predicted_shear.cpu().numpy(), shear_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
 
 # Plotting code
 for i in range(test_index):

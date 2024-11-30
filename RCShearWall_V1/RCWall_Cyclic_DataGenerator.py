@@ -64,8 +64,6 @@ with open("RCWall_Data/RCWall_Dataset_Full(ShortWall).csv", 'a', newline='') as 
 
         # Cyclic load parameters
         num_cycles = int(random.uniform(minLoading[0], maxLoading[0]))
-        # initial_displacement = int(random.uniform(minLoading[1], maxLoading[1]))
-        # max_displacement = int(random.uniform(minLoading[1], maxLoading[1]))
         max_displacement = int(random.uniform(hw*0.005, hw*0.040))
         repetition_cycles = int(random.uniform(minLoading[2], maxLoading[2]))
         num_points = math.ceil(sequence_length / (num_cycles * repetition_cycles))  # Ensure at least 500 points in total.

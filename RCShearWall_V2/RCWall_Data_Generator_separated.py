@@ -17,8 +17,9 @@ from functions import generate_cyclic_loading_linear, generate_cyclic_loading_ex
 
 # Define SEQUENCE_LENGTH as a global constant
 SEQUENCE_LENGTH = 501
-OUTPUT_DIR = Path("RCWall_Data")
-FORCE_THRESHOLD = 27000.0
+OUTPUT_DIR = Path("RCWall_Data/OriginalData/Run_3")
+FORCE_THRESHOLD = 21000.0
+DISP_THRESHOLD = 480
 
 
 # Set up logging
@@ -35,80 +36,6 @@ def setup_logging(level=logging.INFO) -> logging.Logger:
 
 
 logger = setup_logging()
-
-
-class SynchronizedDataWriter:
-    def __init__(self, output_dir):
-        self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.file_locks = {}
-        self.buffer_size = 1
-        # Add sample counter to maintain order
-        self.sample_counter = 0
-        # Add sample index to each buffer entry
-        self.buffers = {
-            'parameters': [],
-            'displacement': [],
-            'shear': [],
-            'c1': [],
-            'a1': [],
-            'c2': [],
-            'a2': []
-        }
-
-    def _get_filepath(self, file_type):
-        return self.output_dir / f"{file_type}_Data.csv"
-
-    @contextmanager
-    def _get_file_lock(self, file_type):
-        if file_type not in self.file_locks:
-            self.file_locks[file_type] = Lock()
-        lock = self.file_locks[file_type]
-        try:
-            lock.acquire()
-            yield
-        finally:
-            lock.release()
-
-    def _write_buffer(self, file_type):
-        if not self.buffers[file_type]:
-            return
-
-        filepath = self._get_filepath(file_type)
-        # Sort buffer by sample index before writing
-        sorted_buffer = sorted(self.buffers[file_type], key=lambda x: x[0])
-        # Remove sample index before writing
-        data_to_write = [row[0:] for row in sorted_buffer]
-
-        with self._get_file_lock(file_type):
-            with open(filepath, 'a', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerows(data_to_write)
-        self.buffers[file_type] = []
-
-    def add_sample(self, sample_data):
-        parameter_values, displacement, shear, c1, a1, c2, a2 = sample_data
-        current_index = self.sample_counter
-
-        # Add sample index to each buffer entry
-        self.buffers['parameters'].append([current_index] + parameter_values)
-        self.buffers['displacement'].append([current_index] + displacement)
-        self.buffers['shear'].append([current_index] + shear)
-        self.buffers['c1'].append([current_index] + c1)
-        self.buffers['a1'].append([current_index] + a1)
-        self.buffers['c2'].append([current_index] + c2)
-        self.buffers['a2'].append([current_index] + a2)
-
-        self.sample_counter += 1
-
-        if len(self.buffers['parameters']) >= self.buffer_size:
-            for file_type in self.buffers:
-                self._write_buffer(file_type)
-
-    def flush(self):
-        """Write all remaining data in buffers."""
-        for file_type in self.buffers:
-            self._write_buffer(file_type)
 
 
 def split_combined_file(instance_id):
@@ -176,7 +103,7 @@ def split_combined_file(instance_id):
 def generate_parameters():
     """Generate random parameters based on defined ranges."""
     tw = round(np.random.uniform(*parameter_ranges['tw']))
-    tb = round(np.random.uniform(tw, tw * 2))
+    tb = round(np.random.uniform(tw, tw * 3))
     lw = round(np.random.uniform(tw * 6, parameter_ranges['lw'][1]) / 10) * 10
     ar = round(np.random.uniform(*parameter_ranges['ar']), 1)
     hw = round(lw * ar, 2)
@@ -192,18 +119,16 @@ def generate_parameters():
     rouXw = round(np.random.uniform(*parameter_ranges['rouXw']), 4)
     loadF = round(np.random.uniform(*parameter_ranges['loadF']), 4)
 
-    analysis = np.random.choice(['cyclic', 'pushover'], p=[0.70, 0.30])
+    analysis = np.random.choice(['cyclic', 'pushover'], p=[0.75, 0.25])
     protocol = 0 if analysis == 'cyclic' else 1
 
     parameter_values = [tw, tb, hw, lw, ar, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag, protocol]
 
-    return parameter_values, analysis
+    # return parameter_values, analysis
 
-
-def generate_loading():
     # Generate loading
     num_cycles = np.random.randint(*loading_ranges['num_cycles'])
-    max_displacement = np.random.randint(*loading_ranges['max_displacement'])
+    max_displacement = max(np.random.randint(hw * 0.005, hw * 0.040), 2)
     repetition_cycles = np.random.randint(*loading_ranges['repetition_cycles'])
     num_points = math.ceil(SEQUENCE_LENGTH / (num_cycles * repetition_cycles))
     # displacement_step = generate_cyclic_loading_linear(num_cycles, max_displacement, num_points, repetition_cycles)[:SEQUENCE_LENGTH]
@@ -213,15 +138,16 @@ def generate_loading():
     if loading_protocol == 'linear':
         displacement_step = generate_cyclic_loading_linear(num_cycles, max_displacement, num_points, repetition_cycles)[:SEQUENCE_LENGTH]
     else:
-        initial_min = max_displacement / 32  # Lower limit
-        initial_max = max_displacement / 10  # Upper limit
-        initial_displacement = np.random.uniform(initial_min, initial_max)
+        initial_min = max(max_displacement / 32, 1)  # Ensure at least 1 mm
+        initial_max = max(max_displacement / 10, initial_min + 1)  # Ensure initial_max > initial_min
+        initial_displacement = np.random.randint(initial_min, initial_max)
+
         displacement_step = generate_cyclic_loading_exponential(num_cycles, initial_displacement, max_displacement, num_points=num_points, repetition_cycles=repetition_cycles)[:SEQUENCE_LENGTH]
 
-    return displacement_step
+    return parameter_values, analysis, displacement_step
 
 
-def analyse_sample(instance_id, sample_index, run_index=2):
+def analyse_sample(instance_id, sample_index, run_index=22):
     """Generate a single simulation sample."""
     np.random.seed(hash((instance_id, sample_index, run_index)) & 0xFFFFFFFF)
     worker_id = current_process().name
@@ -229,8 +155,7 @@ def analyse_sample(instance_id, sample_index, run_index=2):
     logger.info(f"Starting sample {sample_index} on worker {worker_id}")
 
     # Generate parameters and loading
-    parameter_values, analysis = generate_parameters()
-    displacement_step = generate_loading()
+    parameter_values, analysis, displacement_step = generate_parameters()
 
     # Extract parameters for model building
     tw, tb, hw, lw, ar, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag, protocol = parameter_values
@@ -247,6 +172,11 @@ def analyse_sample(instance_id, sample_index, run_index=2):
         logger.warning(f"Invalid sequence length: {len(y1)}")
         return None
 
+    # Validate results
+    if np.any(np.abs(x1) > DISP_THRESHOLD):
+        logger.warning("Displacement threshold exceeded")
+        return None
+
     if np.any(np.abs(y1) > FORCE_THRESHOLD):
         logger.warning("Force threshold exceeded")
         return None
@@ -255,62 +185,6 @@ def analyse_sample(instance_id, sample_index, run_index=2):
 
     # return parameter_values, displacement_step[:-1], np.concatenate((y1[:1], y1[2:])), c1, a1, c2, a2
     return parameter_values, np.concatenate((x1[:1], x1[2:])), np.concatenate((y1[:1], y1[2:])), c1, a1, c2, a2
-
-
-'''
-def process_samples(instance_id, start_index, end_index):
-    """Process a batch of samples."""
-
-    valid_samples = 0
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-    # Set up paths for the different files
-    data_path = os.path.join(OUTPUT_DIR, "Full_Data.csv")
-    parameter_path = os.path.join(OUTPUT_DIR, "Parameters_Data.csv")
-    displacement_path = os.path.join(OUTPUT_DIR, "Displacement_Data.csv")
-    shear_path = os.path.join(OUTPUT_DIR, "Shear_Data.csv")
-    c1_a1_path = os.path.join(OUTPUT_DIR, "c1_a1_Data.csv")
-    c2_a2_path = os.path.join(OUTPUT_DIR, "c2_a2_Data.csv")
-
-    with (open(data_path, 'a', newline='') as data_file, \
-          open(parameter_path, 'a', newline='') as parameter_file, \
-          open(displacement_path, 'a', newline='') as displacement_file, \
-          open(shear_path, 'a', newline='') as shear_file, \
-          open(c1_a1_path, 'a', newline='') as c1_a1_file, \
-          open(c2_a2_path, 'a', newline='') as c2_a2_file):
-
-        # Set up CSV writers
-        data_writer = csv.writer(data_file)
-        parameter_writer = csv.writer(parameter_file)
-        displacement_writer = csv.writer(displacement_file)
-        shear_writer = csv.writer(shear_file)
-        c1_a1_writer = csv.writer(c1_a1_file)
-        c2_a2_writer = csv.writer(c2_a2_file)
-
-        # Process each sample
-        for sample_index in range(start_index, end_index):
-            sample_result = analyse_sample(instance_id, sample_index)
-            if sample_result is not None:
-                parameter_values, displacement, shear, c1, a1, c2, a2 = sample_result
-                # Write parameter_values, displacement, shear each on new line
-                data_writer.writerows(sample_result[:3])
-                parameter_writer.writerow(parameter_values)
-                displacement_writer.writerow(displacement)
-                shear_writer.writerow(shear)
-
-                # Write c1, a1 each on new line
-                c1_a1_writer.writerow(c1)
-                c1_a1_writer.writerow(a1)
-
-                # Write c2, a2 each on new line
-                c2_a2_writer.writerow(c2)
-                c2_a2_writer.writerow(a2)
-
-                valid_samples += 1
-                print(f"Total valid samples: {valid_samples}")
-
-    return valid_samples
-'''
 
 
 def process_samples(instance_id, start_index, end_index):
@@ -323,7 +197,9 @@ def process_samples(instance_id, start_index, end_index):
     monotonic_file_path = os.path.join(OUTPUT_DIR, f"MonotonicData/Monotonic_{instance_id}_Data.csv")
 
     # Ensure output directory exists
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(f"{OUTPUT_DIR}/FullData", exist_ok=True)
+    os.makedirs(f"{OUTPUT_DIR}/CyclicData", exist_ok=True)
+    os.makedirs(f"{OUTPUT_DIR}/MonotonicData", exist_ok=True)
 
     with open(combined_file_path, 'w', newline='') as combined_file, \
             open(cyclic_file_path, 'w', newline='') as cyclic_file, \
@@ -387,8 +263,8 @@ if __name__ == "__main__":
         num_samples = int(sys.argv[1])
         num_processes = int(sys.argv[2])
     else:
-        num_samples = 32
-        num_processes = 16  # cpu_count()
+        num_samples = 100000
+        num_processes = cpu_count()
 
     logger.info(f"Starting simulation with {num_samples} samples using {num_processes} processes")
     valid_samples, execution_time = run_parallel(num_samples, num_processes)

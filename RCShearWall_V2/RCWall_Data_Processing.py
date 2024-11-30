@@ -159,6 +159,7 @@ def denormalize2(data, scaler=None, scaler_filename=None, sequence=False, scalin
     return data_restored
 
 
+# =================================================================================================================================================================
 def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, fit=False, save_scaler_path=None):
     if not fit and scaler is None and scaler_filename is None:
         raise ValueError("Either a scaler or a scaler filename must be provided for normalization when fit=False.")
@@ -172,8 +173,8 @@ def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=F
                 raise FileNotFoundError(f"Scaler file '{scaler_filename}' not found.")
             scaler = joblib.load(scaler_filename)
         else:
-            scaler = MinMaxScaler(feature_range=range)
-            # scaler = RobustScaler()
+            # scaler = MinMaxScaler(feature_range=range)
+            scaler = RobustScaler()
 
     # Normalize data
     if sequence:
@@ -225,10 +226,10 @@ def denormalize(data_scaled, scaler=None, scaler_filename=None, sequence=False):
         data_restored = scaler.inverse_transform(data_scaled)
 
     return data_restored
+# =================================================================================================================================================================
 
 
 def load_data(data_size=100, sequence_length=500, input_parameters=17, data_folder="RCWall_Data/ProcessedData/FullData", normalize_data=True, verbose=True):
-    # ---------------------- Read Data  -------------------------------
     # Define data and scaler folders
     data_folder = Path(data_folder)
     scaler_folder = data_folder / "Scaler"
@@ -245,13 +246,13 @@ def load_data(data_size=100, sequence_length=500, input_parameters=17, data_fold
         print("  Lateral Load  :", OutShear.shape)
 
     if normalize_data:
-        # NormInParams, param_scaler = normalize(InParams, sequence=True, range=(0, 1), fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
-        # NormInDisp, disp_scaler = normalize(InDisp, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/disp_scaler.joblib")
-        # NormOutShear, shear_scaler = normalize(OutShear, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/shear_scaler.joblib")
+        NormInParams, param_scaler = normalize(InParams, sequence=False, range=(0, 1), fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
+        NormInDisp, disp_scaler = normalize(InDisp, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/disp_scaler.joblib")
+        NormOutShear, shear_scaler = normalize(OutShear, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/shear_scaler.joblib")
 
-        NormInParams, param_scaler = normalize2(InParams, sequence=False, range=(0, 1), scaling_strategy='robust', fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
-        NormInDisp, disp_scaler = normalize2(InDisp, sequence=True, range=(-1, 1), scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / "Scaler/disp_scaler.joblib")
-        NormOutShear, shear_scaler = normalize2(OutShear, sequence=True, range=(-1, 1), scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / "Scaler/shear_scaler.joblib")
+        # NormInParams, param_scaler = normalize2(InParams, sequence=False, range=(0, 1), scaling_strategy='robust', fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
+        # NormInDisp, disp_scaler = normalize2(InDisp, sequence=True, range=(-1, 1), scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / "Scaler/disp_scaler.joblib")
+        # NormOutShear, shear_scaler = normalize2(OutShear, sequence=True, range=(-1, 1), scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / "Scaler/shear_scaler.joblib")
 
         save_normalized_data = False
         if save_normalized_data:
@@ -307,7 +308,6 @@ def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device
             print(f"  Training {i + 1} shape: {train_split.shape}")
 
     return *train_splits, *val_splits, *test_splits
-
 
 
 '''

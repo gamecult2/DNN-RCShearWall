@@ -844,11 +844,11 @@ class LSTM_AE_Model_3(nn.Module):
         self.lstm_decoder2 = nn.LSTM(150, d_model, batch_first=True)
 
         # Dense layers with reduced dimensions for parameter efficiency
-        self.dense1 = nn.Linear(d_model, 150)
-        self.layer_norm1 = nn.LayerNorm(150)
+        self.dense1 = nn.Linear(d_model, d_model // 2)
+        self.layer_norm1 = nn.LayerNorm(d_model // 2)
         self.dropout1 = nn.Dropout(0.1)
 
-        self.dense2 = nn.Linear(150, 100)
+        self.dense2 = nn.Linear(d_model // 2, 100)
         self.layer_norm2 = nn.LayerNorm(100)
         self.dropout2 = nn.Dropout(0.1)
 

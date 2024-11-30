@@ -14,10 +14,10 @@ from functions import generate_cyclic_loading_linear
 
 # Define SEQUENCE_LENGTH as a global constant
 SEQUENCE_LENGTH = 501
-OUTPUT_DIR = "RCWall_Data"
+OUTPUT_DIR = "RCWall_Data/OriginalData/Run_3"
 
 
-def generate_sample(instance_id, sample_index, run_index=4):
+def generate_sample(instance_id, sample_index, run_index=22):
     # Initialize random seed
     random.seed(hash((instance_id, sample_index, run_index)) & 0xFFFFFFFF)
     worker_id = current_process().name
@@ -61,7 +61,7 @@ def generate_sample(instance_id, sample_index, run_index=4):
         print(f"Sample {sample_index}: INVALID SAMPLE (y1 length: {len(y1)})")
         return None
 
-    force_threshold = 27000
+    force_threshold = 21000
     if np.any(np.abs(y1) > force_threshold):
         print(f"Sample {sample_index}: INVALID SAMPLE (y1 contains unreasonably large values)")
         return None
@@ -107,8 +107,8 @@ if __name__ == "__main__":
         NUM_SAMPLES = int(sys.argv[1])
         NUM_PROCESSES = int(sys.argv[2])
     else:
-        NUM_SAMPLES = 10000
-        NUM_PROCESSES = 5
+        NUM_SAMPLES = 100000
+        NUM_PROCESSES = cpu_count()
 
     print(f"Running in parallel mode with {NUM_SAMPLES} samples, {NUM_PROCESSES} processes...")
     run_parallel(NUM_SAMPLES, NUM_PROCESSES)
