@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchinfo
 from torch.utils.data import DataLoader, TensorDataset
+import gc
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import numpy as np
@@ -18,6 +19,14 @@ from DNNModels import *
 # Determine the device (GPU if available, else CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"PyTorch version: {torch.__version__} --- Using device: {device}")
+gc.collect()
+if device.type == "cuda":
+    torch.cuda.empty_cache()
+    torch.cuda.memory_stats()
+    print("CUDA memory cleared.")
+else:
+    print("CUDA not available; no memory to clear.")
+
 # Enable performance optimizations
 torch.backends.cuda.enable_flash_sdp(True)
 torch.backends.cudnn.benchmark = True
@@ -25,37 +34,29 @@ torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 
 # Define hyperparameters
-DATA_FOLDER = "RCWall_Data/Run_Full/CyclicData"
-DATA_SIZE = 200000
+DATA_FOLDER = "RCWall_Data/Run_Full/FullData"
+DATA_SIZE = 150
 SEQUENCE_LENGTH = 500
 DISPLACEMENT_FEATURES = 1
-PARAMETERS_FEATURES = 16
-TEST_SIZE = 0.05
-VAL_SIZE = 0.15
+PARAMETERS_FEATURES = 17
+CRACK_LENGTH = 168
+TEST_SIZE = 0.02
+VAL_SIZE = 0.20
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
-EPOCHS = 20
+EPOCHS = 1
 PATIENCE = 5
 
 # Load and preprocess data
-(InParams, InDisp, OutShear), (param_scaler, disp_scaler, shear_scaler) = load_data(DATA_SIZE,
-                                                                                    SEQUENCE_LENGTH,
-                                                                                    PARAMETERS_FEATURES,
-                                                                                    DATA_FOLDER,
-                                                                                    True,
-                                                                                    True)
+data, scaler = load_data(DATA_SIZE,SEQUENCE_LENGTH, PARAMETERS_FEATURES, DATA_FOLDER, True, True)
 
 # Split and convert data
-splits = split_and_convert((InParams, InDisp, OutShear), TEST_SIZE, VAL_SIZE, 40, device, True)
-
-(X_param_train, X_disp_train, Y_shear_train,
- X_param_val, X_disp_val, Y_shear_val,
- X_param_test, X_disp_test, Y_shear_test) = splits
+(train_splits, val_splits, test_splits) = split_and_convert(data, TEST_SIZE, VAL_SIZE, 44, device, True)
 
 # Create DataLoaders
-train_loader = DataLoader(TensorDataset(X_param_train, X_disp_train, Y_shear_train), BATCH_SIZE, shuffle=True)  #, pin_memory=True, num_workers=4, prefetch_factor=2)
-val_loader = DataLoader(TensorDataset(X_param_val, X_disp_val, Y_shear_val), BATCH_SIZE, shuffle=False)  #, pin_memory=True, num_workers=4, prefetch_factor=2)
-test_loader = DataLoader(TensorDataset(X_param_test, X_disp_test, Y_shear_test), BATCH_SIZE, shuffle=False)  #, pin_memory=True, num_workers=4, prefetch_factor=2)
+train_loader = DataLoader(TensorDataset(*train_splits), BATCH_SIZE, shuffle=True)
+val_loader = DataLoader(TensorDataset(*val_splits), BATCH_SIZE, shuffle=False)
+test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=False)
 
 # Initialize model, loss, and optimizer
 # model = LSTM_AE_Model_1(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
@@ -73,14 +74,13 @@ model = TimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUEN
 # model = InformerShearModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = torch.compile(model)
 
-
-optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3, min_lr=1e-6)
-criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
-early_stopping = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}")
-
 # Visualize the computation graph
 torchinfo.summary(model)
+
+optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=1, min_lr=1e-6)
+criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
+earlystop = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}")
 
 # Initialize tracking variables
 train_losses, val_losses, train_r2_scores, val_r2_scores = [], [], [], []
@@ -165,7 +165,7 @@ for epoch in range(EPOCHS):
     print(f'Epoch [{epoch + 1}/{EPOCHS}], Learning Rate: {lr}, Train Loss: {epoch_train_loss:.4f}, Train R²: {epoch_train_r2:.4f}, Val Loss: {val_loss:.4f}, Val R²: {val_r2:.4f}\n')
 
     # Early Stopping
-    if early_stopping(val_loss, model):
+    if earlystop(val_loss, model):
         print("Early stopping triggered")
         break
 
@@ -186,7 +186,6 @@ with torch.no_grad():
     test_r2 /= len(test_loader)
 
 print(f'Final Model Performance - Test Loss: {test_loss:.4f}, Test R2: {test_r2:.4f}')
-
 
 # Plotting
 def plot_metric(train_data, val_data, best_epoch, ylabel, title):
@@ -209,11 +208,23 @@ def plot_metric(train_data, val_data, best_epoch, ylabel, title):
 plot_metric(train_losses, val_losses, best_epoch, "MSE Loss", "Training and Validation Loss")
 plot_metric(train_r2_scores, val_r2_scores, best_epoch, "R2 Score", "Training and Validation R2 Score")
 
-# Plotting results
-test_index = 2
-new_input_parameters = X_param_test[:test_index]
-new_input_displacement = X_disp_test[:test_index]
-real_shear = Y_shear_test[:test_index]
+# Select a specific test index (e.g., 2)
+test_index = 3
+param_scaler, disp_scaler, shear_scaler = scaler
+
+# Loop over the loader and get the first batch
+for data, displacement, shear in test_loader:
+    new_input_parameters = data[:test_index, :]
+    new_input_displacement = displacement[:test_index, :]
+    real_shear = shear[:test_index, :]
+    break
+
+
+# (X_param_test, X_disp_test, Y_shear_test) = test_splits
+# new_input_parameters = X_param_test[:test_index]
+# new_input_displacement = X_disp_test[:test_index]
+# real_shear = Y_shear_test[:test_index]
+
 
 # Restore best weights
 trained_model = torch.load(f"checkpoints/{type(model).__name__}_best_full.pt", weights_only=False)
@@ -222,42 +233,38 @@ trained_model.eval()
 with torch.no_grad():
     predicted_shear = trained_model(new_input_parameters, new_input_displacement)
 
-# Move tensors to CPU for plotting
-new_input_parameters = denormalize(new_input_parameters.cpu().numpy(), param_scaler, sequence=False)
-new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
-real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
-predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
-
 # Move tensors to CPU for plotting and denormalization
-# new_input_parameters = denormalize2(new_input_parameters.cpu().numpy(), param_scaler, scaling_strategy='robust', sequence=False)
-# new_input_displacement = denormalize2(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
-# real_shear = denormalize2(real_shear.cpu().numpy(), shear_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
-# predicted_shear = denormalize2(predicted_shear.cpu().numpy(), shear_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
+# new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
+# real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
+# predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
 
-# Plotting code
+new_input_displacement = denormalize2(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
+real_shear = denormalize2(real_shear.cpu().numpy(), shear_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
+predicted_shear = denormalize2(predicted_shear.cpu().numpy(), shear_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
+
+# plotting
 for i in range(test_index):
-    plt.figure(figsize=(10, 6))
-    plt.plot(predicted_shear[i], label=f'Predicted Shear - {i + 1}')
-    plt.plot(real_shear[i], label=f'Real Shear - {i + 1}')
-    plt.xlabel('Time Step', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
-    plt.ylabel('Shear Load', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
-    plt.title('Predicted Shear Time Series', {'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
-    plt.yticks(fontname='Cambria', fontsize=14)
-    plt.xticks(fontname='Cambria', fontsize=14)
-    plt.tight_layout()
-    plt.legend()
-    plt.grid()
-    plt.show()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 6))
 
-    plt.figure(figsize=(10, 6))
-    plt.plot(new_input_displacement[i], predicted_shear[i], label=f'Predicted Loop - {i + 1}')
-    plt.plot(new_input_displacement[i], real_shear[i], label=f'Real Loop - {i + 1}')
-    plt.xlabel('Displacement', fontdict={'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
-    plt.ylabel('Shear Load', fontdict={'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
-    plt.title('Predicted Hysteresis', fontdict={'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
-    plt.yticks(fontname='Cambria', fontsize=14)
-    plt.xticks(fontname='Cambria', fontsize=14)
+    # Time Series Plot
+    ax1.plot(predicted_shear[i], label=f'Predicted Shear - {i + 1}')
+    ax1.plot(real_shear[i], label=f'Real Shear - {i + 1}')
+    ax1.set_xlabel('Time Step', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax1.set_ylabel('Shear Load', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax1.set_title('Predicted Shear Time Series', {'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
+    ax1.tick_params(axis='both', labelsize=14, labelcolor='black', colors='black')
+    ax1.legend()
+    ax1.grid()
+
+    # Hysteresis Loop Plot
+    ax2.plot(new_input_displacement[i], predicted_shear[i], label=f'Predicted Loop - {i + 1}')
+    ax2.plot(new_input_displacement[i], real_shear[i], label=f'Real Loop - {i + 1}')
+    ax2.set_xlabel('Displacement', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax2.set_ylabel('Shear Load', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax2.set_title('Predicted Hysteresis', {'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
+    ax2.tick_params(axis='both', labelsize=14, labelcolor='black', colors='black')
+    ax2.legend()
+    ax2.grid()
+
     plt.tight_layout()
-    plt.legend()
-    plt.grid()
     plt.show()

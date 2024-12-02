@@ -173,8 +173,8 @@ def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=F
                 raise FileNotFoundError(f"Scaler file '{scaler_filename}' not found.")
             scaler = joblib.load(scaler_filename)
         else:
-            # scaler = MinMaxScaler(feature_range=range)
-            scaler = RobustScaler()
+            scaler = MinMaxScaler(feature_range=range)
+            # scaler = RobustScaler()
 
     # Normalize data
     if sequence:
@@ -226,6 +226,8 @@ def denormalize(data_scaled, scaler=None, scaler_filename=None, sequence=False):
         data_restored = scaler.inverse_transform(data_scaled)
 
     return data_restored
+
+
 # =================================================================================================================================================================
 
 
@@ -246,13 +248,13 @@ def load_data(data_size=100, sequence_length=500, input_parameters=17, data_fold
         print("  Lateral Load  :", OutShear.shape)
 
     if normalize_data:
-        NormInParams, param_scaler = normalize(InParams, sequence=False, range=(0, 1), fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
-        NormInDisp, disp_scaler = normalize(InDisp, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/disp_scaler.joblib")
-        NormOutShear, shear_scaler = normalize(OutShear, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/shear_scaler.joblib")
+        # NormInParams, param_scaler = normalize(InParams, sequence=False, range=(0, 1), fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
+        # NormInDisp, disp_scaler = normalize(InDisp, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/disp_scaler.joblib")
+        # NormOutShear, shear_scaler = normalize(OutShear, sequence=True, range=(-1, 1), fit=True, save_scaler_path=data_folder / f"Scaler/shear_scaler.joblib")
 
-        # NormInParams, param_scaler = normalize2(InParams, sequence=False, range=(0, 1), scaling_strategy='robust', fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
-        # NormInDisp, disp_scaler = normalize2(InDisp, sequence=True, range=(-1, 1), scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / "Scaler/disp_scaler.joblib")
-        # NormOutShear, shear_scaler = normalize2(OutShear, sequence=True, range=(-1, 1), scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / "Scaler/shear_scaler.joblib")
+        NormInParams, param_scaler = normalize2(InParams, sequence=False, range=(0, 1), scaling_strategy='robust', fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
+        NormInDisp, disp_scaler = normalize2(InDisp, sequence=True, range=(-1, 1), scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / "Scaler/disp_scaler.joblib")
+        NormOutShear, shear_scaler = normalize2(OutShear, sequence=True, range=(-1, 1), scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-5, fit=True, save_scaler_path=data_folder / "Scaler/shear_scaler.joblib")
 
         save_normalized_data = False
         if save_normalized_data:
@@ -274,7 +276,149 @@ def load_data(data_size=100, sequence_length=500, input_parameters=17, data_fold
 
         return (NormInParams, NormInDisp, NormOutShear), (param_scaler, disp_scaler, shear_scaler)
     else:
-        return (InParams, InDisp, OutShear), (InParams, InDisp, OutShear)
+        return (InParams, InDisp, OutShear)
+
+
+def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, crack_parameters=168, data_folder="RCWall_Data/ProcessedData/FullData", normalize_data=True, verbose=True):
+    # Define data and scaler folders
+    data_folder = Path(data_folder)
+    scaler_folder = data_folder / "Scaler"
+    scaler_folder.mkdir(parents=True, exist_ok=True)  # Create folder if it doesn't exist
+
+    # Read input and output data from Parquet files
+    InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=float)
+    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
+    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
+
+    # New outputs for a1, c1, a2, c2
+    Outa1 = pd.read_parquet(data_folder / "a1.parquet").iloc[:data_size, :crack_parameters].to_numpy(dtype=float)
+    Outc1 = pd.read_parquet(data_folder / "c1.parquet").iloc[:data_size, :crack_parameters].to_numpy(dtype=float)
+    Outa2 = pd.read_parquet(data_folder / "a2.parquet").iloc[:data_size, :crack_parameters].to_numpy(dtype=float)
+    Outc2 = pd.read_parquet(data_folder / "c2.parquet").iloc[:data_size, :crack_parameters].to_numpy(dtype=float)
+
+    if verbose:
+        print(f"\nDataset shape:")
+        print("  Parameters    :", InParams.shape)
+        print("  Displacement  :", InDisp.shape)
+        print("  Lateral Load  :", OutShear.shape)
+        print("  a1            :", Outa1.shape)
+        print("  c1            :", Outc1.shape)
+        print("  a2            :", Outa2.shape)
+        print("  c2            :", Outc2.shape)
+
+    if normalize_data:
+        # Normalize input parameters
+        NormInParams, param_scaler = normalize2(InParams,
+                                                sequence=False,
+                                                range=(0, 1),
+                                                scaling_strategy='robust',
+                                                fit=True,
+                                                save_scaler_path=data_folder / "Scaler/param_scaler.joblib"
+                                                )
+
+        # Normalize input displacement
+        NormInDisp, disp_scaler = normalize2(InDisp,
+                                             sequence=True,
+                                             range=(-1, 1),
+                                             scaling_strategy='symmetric_log',
+                                             handle_small_values=True,
+                                             small_value_threshold=1e-5,
+                                             fit=True,
+                                             save_scaler_path=data_folder / "Scaler/disp_scaler.joblib"
+                                             )
+
+        # Normalize output shear
+        NormOutShear, shear_scaler = normalize2(OutShear,
+                                                sequence=True,
+                                                range=(-1, 1),
+                                                scaling_strategy='symmetric_log',
+                                                handle_small_values=True,
+                                                small_value_threshold=1e-5,
+                                                fit=True,
+                                                save_scaler_path=data_folder / "Scaler/shear_scaler.joblib"
+                                                )
+
+        # Normalize new outputs
+        NormOuta1, outa1_scaler = normalize2(Outa1,
+                                             sequence=True,
+                                             range=(-1, 1),
+                                             scaling_strategy='symmetric_log',
+                                             handle_small_values=True,
+                                             small_value_threshold=1e-5,
+                                             fit=True,
+                                             save_scaler_path=data_folder / "Scaler/outa1_scaler.joblib"
+                                             )
+
+        NormOutc1, outc1_scaler = normalize2(Outc1,
+                                             sequence=True,
+                                             range=(-1, 1),
+                                             scaling_strategy='symmetric_log',
+                                             handle_small_values=True,
+                                             small_value_threshold=1e-5,
+                                             fit=True,
+                                             save_scaler_path=data_folder / "Scaler/outc1_scaler.joblib"
+                                             )
+
+        NormOuta2, outa2_scaler = normalize2(Outa2,
+                                             sequence=True,
+                                             range=(-1, 1),
+                                             scaling_strategy='symmetric_log',
+                                             handle_small_values=True,
+                                             small_value_threshold=1e-5,
+                                             fit=True,
+                                             save_scaler_path=data_folder / "Scaler/outa2_scaler.joblib"
+                                             )
+
+        NormOutc2, outc2_scaler = normalize2(Outc2,
+                                             sequence=True,
+                                             range=(-1, 1),
+                                             scaling_strategy='symmetric_log',
+                                             handle_small_values=True,
+                                             small_value_threshold=1e-5,
+                                             fit=True,
+                                             save_scaler_path=data_folder / "Scaler/outc2_scaler.joblib"
+                                             )
+
+        # Optional: save normalized data
+        save_normalized_data = False
+        if save_normalized_data:
+            pd.DataFrame(NormInParams).to_csv(data_folder / f"Normalized/InputParameters.csv", index=False)
+            pd.DataFrame(NormInDisp).to_csv(data_folder / f"Normalized/InputDisplacement.csv", index=False)
+            pd.DataFrame(NormOutShear).to_csv(data_folder / f"Normalized/OutputShear.csv", index=False)
+            pd.DataFrame(NormOuta1).to_csv(data_folder / f"Normalized/Outa1.csv", index=False)
+            pd.DataFrame(NormOutc1).to_csv(data_folder / f"Normalized/Outc1.csv", index=False)
+            pd.DataFrame(NormOuta2).to_csv(data_folder / f"Normalized/Outa2.csv", index=False)
+            pd.DataFrame(NormOutc2).to_csv(data_folder / f"Normalized/Outc2.csv", index=False)
+
+        # Verbose output of max and min values
+        if verbose:
+            print("\nDataset Max and Mean values:")
+            print("  Parameters:")
+            print("    Max  :", ", ".join(f"{val:.2f}" for val in np.max(InParams, axis=0)))
+            print("    Min  :", ", ".join(f"{val:.2f}" for val in np.min(InParams, axis=0)))
+            print(f"  Displacement:")
+            print(f"    Max  : {np.round(np.max(InDisp), 2)}")
+            print(f"    Min  : {np.round(np.min(InDisp), 2)}")
+            print(f"  Lateral Load:")
+            print(f"    Max  : {np.round(np.max(OutShear), 2)}")
+            print(f"    Min  : {np.round(np.min(OutShear), 2)}")
+            print(f"  Angle 1:")
+            print(f"    Max  : {np.round(np.max(Outa1), 2)}")
+            print(f"    Min  : {np.round(np.min(Outa1), 2)}")
+            print(f"  Crack 1:")
+            print(f"    Max  : {np.round(np.max(Outc1), 2)}")
+            print(f"    Min  : {np.round(np.min(Outc1), 2)}")
+
+        # Return normalized data and scalers
+        return (NormInParams, NormInDisp, NormOutShear, NormOuta1, NormOutc1, NormOuta2, NormOutc2), \
+            (param_scaler, disp_scaler, shear_scaler, outa1_scaler, outc1_scaler, outa2_scaler, outc2_scaler)
+    else:
+        # Return raw data if normalization is not requested
+        return (InParams, InDisp, OutShear, Outa1, Outc1, Outa2, Outc2)
+
+
+
+
 
 
 def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device='cuda', verbose=True):
@@ -307,7 +451,7 @@ def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device
         for i, train_split in enumerate(train_splits):
             print(f"  Training {i + 1} shape: {train_split.shape}")
 
-    return *train_splits, *val_splits, *test_splits
+    return train_splits, val_splits, test_splits
 
 
 '''

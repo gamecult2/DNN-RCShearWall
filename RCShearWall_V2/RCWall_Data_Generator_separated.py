@@ -18,7 +18,7 @@ from functions import generate_cyclic_loading_linear, generate_cyclic_loading_ex
 # Define SEQUENCE_LENGTH as a global constant
 SEQUENCE_LENGTH = 501
 OUTPUT_DIR = Path("RCWall_Data/OriginalData/Run_3")
-FORCE_THRESHOLD = 21000.0
+FORCE_THRESHOLD = 21000
 DISP_THRESHOLD = 480
 
 
@@ -36,68 +36,6 @@ def setup_logging(level=logging.INFO) -> logging.Logger:
 
 
 logger = setup_logging()
-
-
-def split_combined_file(instance_id):
-    """Split the combined data file into separate files for each data type."""
-    combined_file = os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_Data.csv")
-
-    # Define output files for each data type
-    output_files = {
-        'Parameters': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_Parameters.csv"),
-        'Displacement': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_Displacement.csv"),
-        'Shear': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_Shear.csv"),
-        'C1': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_C1.csv"),
-        'A1': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_A1.csv"),
-        'C2': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_C2.csv"),
-        'A2': os.path.join(OUTPUT_DIR, f"Worker_{instance_id}_A2.csv")
-    }
-
-    # Create file writers
-    writers = {}
-    files = {}
-
-    try:
-        # Open all output files
-        for data_type, filepath in output_files.items():
-            files[data_type] = open(filepath, 'w', newline='')
-            writers[data_type] = csv.writer(files[data_type])
-
-        # Read and split the combined file
-        with open(combined_file, 'r', newline='') as infile:
-            reader = csv.reader(infile)
-
-            # Read all rows from the combined file
-            rows = list(reader)
-
-            # Process each block (7 rows per block)
-            num_rows = len(rows)
-            for i in range(0, num_rows, 7):  # Step by 7 rows for each block
-                if i + 6 < num_rows:  # Ensure there are enough rows for a full block
-                    parameter_values = rows[i]
-                    displacement = rows[i + 1]
-                    shear = rows[i + 2]
-                    c1 = rows[i + 3]
-                    a1 = rows[i + 4]
-                    c2 = rows[i + 5]
-                    a2 = rows[i + 6]
-
-                    # Write each block to the respective file
-                    writers['Parameters'].writerows([[value] for value in parameter_values])
-                    writers['Displacement'].writerows([[value] for value in displacement])
-                    writers['Shear'].writerows([[value] for value in shear])
-                    writers['C1'].writerow([c1])
-                    writers['A1'].writerow([a1])
-                    writers['C2'].writerow([c2])
-                    writers['A2'].writerow([a2])
-
-    finally:
-        # Close all files
-        for file in files.values():
-            file.close()
-
-    # Optionally remove the combined file
-    # os.remove(combined_file)
 
 
 def generate_parameters():
