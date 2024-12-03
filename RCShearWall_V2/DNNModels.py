@@ -14,7 +14,7 @@ from informer.attn import FullAttention, ProbAttention, AttentionLayer
 from informer.encoder import Encoder, EncoderLayer
 from informer.decoder import Decoder, DecoderLayer
 
-# ======= Global Use Layers  =================================================================
+# ======= Global Use Layers  ====================================================================
 class ProbSparseAttention(nn.Module):
     def __init__(self, d_model, n_heads):
         super(ProbSparseAttention, self).__init__()
@@ -68,161 +68,7 @@ class MultiHeadAttention(nn.Module):
         return self.attention(x, x, x)[0]
 # ===============================================================================================
 
-# 1. Transformer-based Informer Architecture
-class InformerModel(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=512):
-        super(InformerModel, self).__init__()
-        self.sequence_length = sequence_length
-
-        # Input processing
-        self.input_projection = nn.Linear(displacement_features + parameters_features, d_model)
-
-        # Informer-specific attention
-        self.prob_sparse_attn = ProbSparseAttention(d_model, n_heads=8)
-
-        # Encoder layers with batch_first=True
-        encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model,
-            nhead=8,
-            dim_feedforward=2048,
-            dropout=0.1,
-            activation='gelu',
-            batch_first=True,  # Set batch_first=True
-            norm_first=True  # Apply normalization before attention
-        )
-
-        self.encoder = nn.TransformerEncoder(
-            encoder_layer,
-            num_layers=3,
-            enable_nested_tensor=True  # Enable nested tensor optimization
-        )
-
-        # Decoder layers
-        self.decoder = nn.Sequential(
-            nn.Linear(d_model, 256),
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.LayerNorm(256),  # Add LayerNorm for stability
-            nn.Linear(256, 64),
-            nn.GELU(),
-            nn.LayerNorm(64),  # Add LayerNorm for stability
-            nn.Linear(64, 1)
-        )
-
-        # Positional encoding
-        self.pos_encoder = PositionalEncoding(d_model, dropout=0.1, max_len=sequence_length)
-
-    def forward(self, parameters_input, displacement_input):
-        # Distribute parameters across sequence
-        distributed_params = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
-
-        # Concatenate inputs
-        x = torch.cat([displacement_input.unsqueeze(-1), distributed_params], dim=-1)
-
-        # Project to d_model dimensions
-        x = self.input_projection(x)
-
-        # Apply Informer attention and encoding
-        x = self.prob_sparse_attn(x)
-        x = self.encoder(x)
-
-        # Decode to final output
-        output = self.decoder(x)
-        return output.squeeze(-1)
-
-
-# 2. LLaMA-inspired Architecture
-class LLaMAInspiredModel(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length):
-        super(LLaMAInspiredModel, self).__init__()
-        self.sequence_length = sequence_length
-        hidden_dim = 512
-
-        # RoPE positional embeddings
-        self.pos_encoder = RotaryPositionalEmbedding(hidden_dim)
-
-        # Input processing
-        self.input_proj = nn.Linear(displacement_features + parameters_features, hidden_dim)
-
-        # Multi-head attention with RoPE
-        self.attention = MultiHeadAttention(hidden_dim, num_heads=8)
-
-        # Feed-forward network
-        self.feed_forward = nn.Sequential(
-            nn.Linear(hidden_dim, 4 * hidden_dim),
-            nn.GELU(),
-            nn.Linear(4 * hidden_dim, hidden_dim)
-        )
-
-        # Output layers
-        self.output_layers = nn.Sequential(
-            nn.Linear(hidden_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
-
-    def forward(self, parameters_input, displacement_input):
-        distributed_params = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
-        x = torch.cat([displacement_input.unsqueeze(-1), distributed_params], dim=-1)
-
-        # Project and apply positional encoding
-        x = self.input_proj(x)
-        x = self.pos_encoder(x)
-
-        # Self-attention and feed-forward
-        x = self.attention(x)
-        x = self.feed_forward(x)
-
-        # Output processing
-        output = self.output_layers(x)
-        return output.squeeze(-1)
-
-
-# 3. Extended LSTM (xLSTM) Architecture
-class xLSTMModel(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length):
-        super(xLSTMModel, self).__init__()
-        self.sequence_length = sequence_length
-        hidden_dim = 256
-
-        # Extended LSTM with multiple attention mechanisms
-        self.xlstm = nn.ModuleList([
-            nn.LSTM(displacement_features + parameters_features, hidden_dim, batch_first=True),
-            MultiHeadAttention(hidden_dim, 4),
-            nn.LSTM(hidden_dim, hidden_dim // 2, batch_first=True)
-        ])
-
-        # Skip connections and layer normalization
-        self.layer_norm = nn.LayerNorm(hidden_dim // 2)
-
-        # Output processing
-        self.output_network = nn.Sequential(
-            nn.Linear(hidden_dim // 2, 64),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(64, 1)
-        )
-
-    def forward(self, parameters_input, displacement_input):
-        distributed_params = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
-        x = torch.cat([displacement_input.unsqueeze(-1), distributed_params], dim=-1)
-
-        # First LSTM layer
-        x, _ = self.xlstm[0](x)
-
-        # Multi-head attention
-        attention_out = self.xlstm[1](x)
-        x = x + attention_out  # Skip connection
-
-        # Second LSTM layer
-        x, _ = self.xlstm[2](x)
-        x = self.layer_norm(x)
-
-        # Output processing
-        output = self.output_network(x)
-        return output.squeeze(-1)
-
-
+# ======= Divers Model  =========================================================================
 class AttentionLSTM_AEModel(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length):
         super(AttentionLSTM_AEModel, self).__init__()
@@ -275,10 +121,79 @@ class AttentionLSTM_AEModel(nn.Module):
 
         return output_shear.reshape(output_shear.size(0), -1)
 
+class xLSTM_Model(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length):
+        super(xLSTM_Model, self).__init__()
+        self.sequence_length = sequence_length
+        self.norm = nn.LayerNorm(200)
+        self.norm2 = nn.LayerNorm(1)
+        self.activation = nn.GELU()
+        self.dropout_layer = nn.Dropout(0.1)
 
-# suggest best
+        '''
+        # #  xLSTM encoder
+        self.lstm_encoder1 = xLSTMBlock(displacement_features + parameters_features, 200, num_layers=1, lstm_type="slstm")
+        self.lstm_encoder2 = xLSTMBlock(200, 50, num_layers=1, lstm_type="slstm")
+        # # xLSTM decoder
+        self.lstm_decoder1 = xLSTMBlock(50, 200, num_layers=1, lstm_type="slstm")
+        self.lstm_decoder2 = xLSTMBlock(200, displacement_features, num_layers=1, lstm_type="slstm")
+        '''
+        #  xLSTM encoder
+        self.lstm_encoder1 = sLSTM(displacement_features + parameters_features, 200, num_layers=2)
+        self.lstm_encoder2 = sLSTM(200, 50, num_layers=1)
 
+        # xLSTM decoder
+        self.lstm_decoder1 = sLSTM(50, 200, num_layers=1)
+        self.lstm_decoder2 = sLSTM(200, displacement_features, num_layers=2)
 
+        # Adjusting dimensions
+        self.dense1 = nn.Linear(displacement_features, 200)
+        self.dropout1 = nn.Dropout(0.2)
+        self.dense2 = nn.Linear(200, 100)
+        self.dropout2 = nn.Dropout(0.2)
+        self.output = nn.Linear(100, 1)
+
+    def forward(self, parameters_input, displacement_input):
+        # Repeat parameters for each time step
+        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, displacement_input.shape[1], 1)
+        # print('distributed_parameters', distributed_parameters.shape)
+
+        # Concatenate displacement and parameters
+        concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
+        # print('concatenated_tensor', concatenated_tensor.shape)
+
+        # Encoding
+        lstm_out, _ = self.lstm_encoder1(concatenated_tensor)
+        lstm_out = self.activation(lstm_out)
+        # print('lstm_out activation', lstm_out.shape)
+        # lstm_out = self.norm(lstm_out)
+        # print('lstm_out norm', lstm_out.shape)
+        # encoded_sequence, _ = self.lstm_encoder2(lstm_out)
+        # encoded_sequence = self.activation(encoded_sequence)
+        #
+        # # Decoding
+        # lstm_out, _ = self.lstm_decoder1(encoded_sequence)
+        # lstm_out = self.activation(lstm_out)
+
+        decoded_sequence, _ = self.lstm_decoder2(lstm_out)
+        decoded_sequence = self.activation(decoded_sequence)
+        # Dense layers
+        x = self.dense1(decoded_sequence)
+        x = torch.tanh(x)
+        x = self.dropout1(x)
+        x = self.dense2(x)
+        x = torch.tanh(x)
+        x = self.dropout2(x)
+
+        # Output layer
+        output_shear = self.output(x)
+        # print('output_shear', output_shear.shape)
+        output_shear = output_shear.reshape(output_shear.size(0), -1)
+
+        return output_shear
+# ================================================================================================
+
+# ======= Transformer Based Model  ==============================================================
 class Transformer_Model(nn.Module):
     def __init__(self, num_features_params, num_features_disp, sequence_length,
                  d_model=256, nhead=8, num_encoder_layers=2, num_decoder_layers=2,
@@ -370,7 +285,6 @@ class Transformer_Model(nn.Module):
         ).squeeze(-1)  # [batch_size, seq_length]
         return predictions
 
-
 class Transformer_Model_2(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length,
                  d_model=256, nhead=4, num_encoder_layers=2, num_decoder_layers=2, dim_feedforward=512, dropout=0.0):
@@ -443,250 +357,65 @@ class Transformer_Model_2(nn.Module):
 
         return output_shear
 
-
-class xLSTM_Model(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length):
-        super(xLSTM_Model, self).__init__()
+class TransformerAEModel(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length,
+                 n_heads=4, n_encoder_layers=2, n_decoder_layers=2):
+        super(TransformerAEModel, self).__init__()
         self.sequence_length = sequence_length
-        self.norm = nn.LayerNorm(200)
-        self.norm2 = nn.LayerNorm(1)
-        self.activation = nn.GELU()
-        self.dropout_layer = nn.Dropout(0.1)
 
-        '''
-        # #  xLSTM encoder
-        self.lstm_encoder1 = xLSTMBlock(displacement_features + parameters_features, 200, num_layers=1, lstm_type="slstm")
-        self.lstm_encoder2 = xLSTMBlock(200, 50, num_layers=1, lstm_type="slstm")
-        # # xLSTM decoder
-        self.lstm_decoder1 = xLSTMBlock(50, 200, num_layers=1, lstm_type="slstm")
-        self.lstm_decoder2 = xLSTMBlock(200, displacement_features, num_layers=1, lstm_type="slstm")
-        '''
-        #  xLSTM encoder
-        self.lstm_encoder1 = sLSTM(displacement_features + parameters_features, 200, num_layers=2)
-        self.lstm_encoder2 = sLSTM(200, 50, num_layers=1)
+        # Input embedding
+        self.input_embedding = nn.Linear(displacement_features + parameters_features, 256)
 
-        # xLSTM decoder
-        self.lstm_decoder1 = sLSTM(50, 200, num_layers=1)
-        self.lstm_decoder2 = sLSTM(200, displacement_features, num_layers=2)
+        # Positional encoding
+        self.positional_encoding = nn.Parameter(torch.randn(1, sequence_length, 256))
 
-        # Adjusting dimensions
-        self.dense1 = nn.Linear(displacement_features, 200)
-        self.dropout1 = nn.Dropout(0.2)
-        self.dense2 = nn.Linear(200, 100)
-        self.dropout2 = nn.Dropout(0.2)
-        self.output = nn.Linear(100, 1)
+        # Transformer Encoder
+        encoder_layer = nn.TransformerEncoderLayer(d_model=256, nhead=n_heads, dim_feedforward=512, dropout=0.1)
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_encoder_layers)
+
+        # Transformer Decoder
+        decoder_layer = nn.TransformerDecoderLayer(d_model=256, nhead=n_heads, dim_feedforward=512, dropout=0.1)
+        self.transformer_decoder = nn.TransformerDecoder(decoder_layer, num_layers=n_decoder_layers)
+
+        # Reconstruction and output layers
+        self.reconstruction = nn.Sequential(
+            nn.Linear(256, 300),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(300, 200),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(200, 1)
+        )
 
     def forward(self, parameters_input, displacement_input):
         # Repeat parameters for each time step
-        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, displacement_input.shape[1], 1)
-        # print('distributed_parameters', distributed_parameters.shape)
+        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
 
         # Concatenate displacement and parameters
         concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
-        # print('concatenated_tensor', concatenated_tensor.shape)
 
-        # Encoding
-        lstm_out, _ = self.lstm_encoder1(concatenated_tensor)
-        lstm_out = self.activation(lstm_out)
-        # print('lstm_out activation', lstm_out.shape)
-        # lstm_out = self.norm(lstm_out)
-        # print('lstm_out norm', lstm_out.shape)
-        # encoded_sequence, _ = self.lstm_encoder2(lstm_out)
-        # encoded_sequence = self.activation(encoded_sequence)
-        #
-        # # Decoding
-        # lstm_out, _ = self.lstm_decoder1(encoded_sequence)
-        # lstm_out = self.activation(lstm_out)
+        # Input embedding
+        x = self.input_embedding(concatenated_tensor)
 
-        decoded_sequence, _ = self.lstm_decoder2(lstm_out)
-        decoded_sequence = self.activation(decoded_sequence)
-        # Dense layers
-        x = self.dense1(decoded_sequence)
-        x = torch.tanh(x)
-        x = self.dropout1(x)
-        x = self.dense2(x)
-        x = torch.tanh(x)
-        x = self.dropout2(x)
+        # Add positional encoding
+        x = x + self.positional_encoding
 
-        # Output layer
-        output_shear = self.output(x)
-        # print('output_shear', output_shear.shape)
-        output_shear = output_shear.reshape(output_shear.size(0), -1)
+        # Transformer Encoding
+        x = x.transpose(0, 1)  # Sequence first for transformer
+        encoded = self.transformer_encoder(x)
 
-        return output_shear
+        # Transformer Decoding (using a memory-like approach)
+        decoded = self.transformer_decoder(x, encoded)
 
+        # Transpose back and pass through reconstruction layers
+        decoded = decoded.transpose(0, 1)
+        output_shear = self.reconstruction(decoded)
 
-class ResidualBlock(nn.Module):
-    def __init__(self, input_size, hidden_size, dropout=0.1):
-        super().__init__()
-        self.linear1 = nn.Linear(input_size, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, input_size)
-        self.layer_norm = nn.LayerNorm(input_size)
-        self.dropout = nn.Dropout(dropout)
+        return output_shear.reshape(output_shear.size(0), -1)
+# ==============================================================================================
 
-    def forward(self, x):
-        residual = x
-        out = self.linear1(x)
-        out = F.relu(out)
-        out = self.dropout(out)
-        out = self.linear2(out)
-        out = self.dropout(out)
-        out = self.layer_norm(out + residual)
-        return out
-
-
-class ExtendedLSTMCell(nn.Module):
-    def __init__(self, input_size, hidden_size, dropout=0.1):
-        super().__init__()
-        self.hidden_size = hidden_size
-
-        # Traditional LSTM gates
-        self.gates = nn.Linear(input_size + hidden_size, 4 * hidden_size)
-
-        # Additional components
-        self.input_norm = nn.LayerNorm(input_size)
-        self.hidden_norm = nn.LayerNorm(hidden_size)
-        self.state_norm = nn.LayerNorm(hidden_size)
-        self.dropout = nn.Dropout(dropout)
-
-        # Attention mechanism for cell state
-        self.cell_attention = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size),
-            nn.Tanh(),
-            nn.Linear(hidden_size, 1),
-            nn.Sigmoid()
-        )
-
-    def forward(self, x, hidden):
-        h, c = hidden
-
-        # Apply normalization
-        x = self.input_norm(x)
-        h = self.hidden_norm(h)
-
-        # Concatenate input and hidden state
-        gates = self.gates(torch.cat([x, h], dim=1))
-        i, f, g, o = gates.chunk(4, dim=1)
-
-        # Apply non-linearities
-        i = torch.sigmoid(i)  # input gate
-        f = torch.sigmoid(f)  # forget gate
-        g = torch.tanh(g)  # cell gate
-        o = torch.sigmoid(o)  # output gate
-
-        # Compute cell attention
-        cell_importance = self.cell_attention(c)
-
-        # Update cell state with attention
-        c = f * c + i * g
-        c = c * cell_importance
-        c = self.state_norm(c)
-
-        # Compute hidden state
-        h = o * torch.tanh(c)
-
-        return h, c
-
-
-class xLSTM_Model2(nn.Module):
-    def __init__(self, num_features_params, sequence_length,
-                 hidden_size=256, num_layers=3, dropout=0.1):
-        super().__init__()
-
-        self.sequence_length = sequence_length
-        self.hidden_size = hidden_size
-        self.num_layers = num_layers
-
-        # Input processing
-        total_features = num_features_params + 1  # +1 for displacement
-        self.input_embed = nn.Sequential(
-            nn.Linear(total_features, hidden_size),
-            nn.LayerNorm(hidden_size),
-            nn.ReLU(),
-            nn.Dropout(dropout)
-        )
-
-        # Multiple xLSTM layers
-        self.lstm_layers = nn.ModuleList([
-            ExtendedLSTMCell(hidden_size, hidden_size, dropout)
-            for _ in range(num_layers)
-        ])
-
-        # Residual connections
-        self.residual_blocks = nn.ModuleList([
-            ResidualBlock(hidden_size, hidden_size * 2, dropout)
-            for _ in range(num_layers)
-        ])
-
-        # Output processing
-        self.output_layer = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size // 2),
-            nn.LayerNorm(hidden_size // 2),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_size // 2, 1)
-        )
-
-        # Skip connection from input to output
-        self.skip_connection = nn.Sequential(
-            nn.Linear(total_features, hidden_size // 2),
-            nn.ReLU()
-        )
-
-    def init_hidden(self, batch_size, device):
-        hidden = []
-        for _ in range(self.num_layers):
-            hidden.append((
-                torch.zeros(batch_size, self.hidden_size).to(device),
-                torch.zeros(batch_size, self.hidden_size).to(device)
-            ))
-        return hidden
-
-    def forward(self, parameters_input, displacement_input):
-        batch_size = parameters_input.size(0)
-        device = parameters_input.device
-
-        # Initialize hidden states
-        hidden_states = self.init_hidden(batch_size, device)
-        outputs = []
-
-        # Distribute parameters across sequence length
-        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
-
-        concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
-
-        # Process each time step
-        for t in range(self.sequence_length):
-            x = concatenated_input[:, t, :]
-
-            # Skip connection input
-            skip_out = self.skip_connection(x)
-
-            # Main input embedding
-            x = self.input_embed(x)
-
-            # Process through LSTM layers with residual connections
-            for layer_idx in range(self.num_layers):
-                residual = x
-
-                # LSTM processing
-                h, c = self.lstm_layers[layer_idx](x, hidden_states[layer_idx])
-                hidden_states[layer_idx] = (h, c)
-
-                # Residual connection
-                x = h
-                x = self.residual_blocks[layer_idx](x)
-                x = x + residual
-
-            # Combine with skip connection and generate output
-            x = torch.cat([x, skip_out], dim=-1)
-            out = self.output_layer(x)
-            outputs.append(out)
-
-        # Stack outputs along sequence dimension
-        outputs = torch.stack(outputs, dim=1)
-        return outputs.squeeze(-1)
-
+# ======= LSTM AutoEncoder ======================================================================
 # LSTM-AE for joint parameter & time series processing (baseline)
 class LSTM_AE_Model_1(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length):
@@ -804,7 +533,7 @@ class LSTM_AE_Model_2(nn.Module):
 
         return output_shear
 
-# Hybrid LSTM-AE with separate processing branches and positional encoding for enhanced feature representation
+# Hybrid LSTM-AE with separate processing branches and positional encoding for enhanced feature
 class LSTM_AE_Model_3(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length, d_model=400):
         super(LSTM_AE_Model_3, self).__init__()
@@ -904,122 +633,9 @@ class LSTM_AE_Model_3(nn.Module):
         output_shear = output_shear.reshape(batch_size, -1)
 
         return output_shear
+# =================================================================================================
 
-
-class LLaMA2_Model(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length):
-        super().__init__()
-        self.sequence_length = sequence_length
-
-        # Fixed values
-        dim = 512
-        n_layers = 2
-        n_heads = 4
-
-        config = ModelConfig(
-            dim=dim,
-            n_layers=n_layers,
-            n_heads=n_heads,
-            n_kv_heads=n_heads,
-            max_batch_size=32,
-            device=device,
-            ffn_dim_multiplier=None,
-            multiple_of=256
-        )
-
-        self.input_embedding = nn.Linear(displacement_features + parameters_features, dim)
-        self.dropout = nn.Dropout(0.1)  # Fixed dropout rate
-
-        self.layers = nn.ModuleList([EncoderBlock(config) for _ in range(config.n_layers)])
-
-        self.norm = RMSNorm(config.dim, config.norm_eps)
-        self.output = nn.Linear(config.dim, 1)
-
-    def forward(self, parameters_input, displacement_input):
-        print(f"parameters_input shape: {parameters_input.shape}")
-        print(f"displacement_input shape: {displacement_input.shape}")
-
-        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
-        print(f"distributed_parameters shape: {distributed_parameters.shape}")
-
-        concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
-        print(f"concatenated_tensor shape: {concatenated_tensor.shape}")
-
-        x = self.input_embedding(concatenated_tensor)
-        print(f"After input_embedding shape: {x.shape}")
-
-        x = self.dropout(x)
-
-        for i, layer in enumerate(self.layers):
-            print(f"Before layer {i} shape: {x.shape}")
-            x = layer(x, 0)
-            print(f"After layer {i} shape: {x.shape}")
-
-        x = self.norm(x)
-        output = self.output(x)
-
-        return output.squeeze(-1)
-
-
-class TransformerAEModel(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length,
-                 n_heads=4, n_encoder_layers=2, n_decoder_layers=2):
-        super(TransformerAEModel, self).__init__()
-        self.sequence_length = sequence_length
-
-        # Input embedding
-        self.input_embedding = nn.Linear(displacement_features + parameters_features, 256)
-
-        # Positional encoding
-        self.positional_encoding = nn.Parameter(torch.randn(1, sequence_length, 256))
-
-        # Transformer Encoder
-        encoder_layer = nn.TransformerEncoderLayer(d_model=256, nhead=n_heads, dim_feedforward=512, dropout=0.1)
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_encoder_layers)
-
-        # Transformer Decoder
-        decoder_layer = nn.TransformerDecoderLayer(d_model=256, nhead=n_heads, dim_feedforward=512, dropout=0.1)
-        self.transformer_decoder = nn.TransformerDecoder(decoder_layer, num_layers=n_decoder_layers)
-
-        # Reconstruction and output layers
-        self.reconstruction = nn.Sequential(
-            nn.Linear(256, 300),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(300, 200),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(200, 1)
-        )
-
-    def forward(self, parameters_input, displacement_input):
-        # Repeat parameters for each time step
-        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
-
-        # Concatenate displacement and parameters
-        concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
-
-        # Input embedding
-        x = self.input_embedding(concatenated_tensor)
-
-        # Add positional encoding
-        x = x + self.positional_encoding
-
-        # Transformer Encoding
-        x = x.transpose(0, 1)  # Sequence first for transformer
-        encoded = self.transformer_encoder(x)
-
-        # Transformer Decoding (using a memory-like approach)
-        decoded = self.transformer_decoder(x, encoded)
-
-        # Transpose back and pass through reconstruction layers
-        decoded = decoded.transpose(0, 1)
-        output_shear = self.reconstruction(decoded)
-
-        return output_shear.reshape(output_shear.size(0), -1)
-
-
-# ======= TimeSeriesTransformer =================================================================
+# ======= TimeSeriesTransformer ===================================================================
 class TimeSeriesTransformer(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length, d_model=200):
         super(TimeSeriesTransformer, self).__init__()
@@ -1184,9 +800,9 @@ class ProcessingBlock(nn.Module):
         x = self.norm4(x + self.dropout(lstm_output))
 
         return x
-# ===============================================================================================
+# =================================================================================================
 
-# ======= CrackTransformer ======================================================================
+# ======= CrackTransformer ========================================================================
 class CrackTimeSeriesTransformer(nn.Module):
     def __init__(self, parameters_features=17, displacement_features=1, shear_features=1, sequence_length=500, crack_length=168, d_model=200):
         super(CrackTimeSeriesTransformer, self).__init__()
@@ -1339,7 +955,6 @@ class CrackTimeSeriesTransformer(nn.Module):
         # print('a1_smoothed.squeeze()', a1_smoothed.squeeze().shape)
         return a1_smoothed.squeeze(), c1_smoothed.squeeze(), a2_smoothed.squeeze(), c2_smoothed.squeeze(), crack_output
 
-
 class CrackProcessingBlock(nn.Module):
     def __init__(self, d_model, nhead, dropout=0.1):
         super(CrackProcessingBlock, self).__init__()
@@ -1394,9 +1009,9 @@ class CrackProcessingBlock(nn.Module):
         x = self.norm4(x + self.dropout(lstm_output))
 
         return x
-# ===============================================================================================
+# =================================================================================================
 
-# ======= EnhancedTimeSeriesTransformer =========================================================
+# ======= EnhancedTimeSeriesTransformer ===========================================================
 class EnhancedTimeSeriesTransformer(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length, d_model=256):
         super(EnhancedTimeSeriesTransformer, self).__init__()
@@ -1552,8 +1167,70 @@ class EnhancedProcessingBlock(nn.Module):
         x = self.norm2(x + self.dropout(temp_conv_output))
 
         return x
-# ================================================================================================
+# ==================================================================================================
 
+# ======= Informer Model ===========================================================================
+# 1. Transformer-based Informer Architecture
+class InformerModel(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=512):
+        super(InformerModel, self).__init__()
+        self.sequence_length = sequence_length
+
+        # Input processing
+        self.input_projection = nn.Linear(displacement_features + parameters_features, d_model)
+
+        # Informer-specific attention
+        self.prob_sparse_attn = ProbSparseAttention(d_model, n_heads=8)
+
+        # Encoder layers with batch_first=True
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=8,
+            dim_feedforward=2048,
+            dropout=0.1,
+            activation='gelu',
+            batch_first=True,  # Set batch_first=True
+            norm_first=True  # Apply normalization before attention
+        )
+
+        self.encoder = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=3,
+            enable_nested_tensor=True  # Enable nested tensor optimization
+        )
+
+        # Decoder layers
+        self.decoder = nn.Sequential(
+            nn.Linear(d_model, 256),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.LayerNorm(256),  # Add LayerNorm for stability
+            nn.Linear(256, 64),
+            nn.GELU(),
+            nn.LayerNorm(64),  # Add LayerNorm for stability
+            nn.Linear(64, 1)
+        )
+
+        # Positional encoding
+        self.pos_encoder = PositionalEncoding(d_model, dropout=0.1, max_len=sequence_length)
+
+    def forward(self, parameters_input, displacement_input):
+        # Distribute parameters across sequence
+        distributed_params = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
+
+        # Concatenate inputs
+        x = torch.cat([displacement_input.unsqueeze(-1), distributed_params], dim=-1)
+
+        # Project to d_model dimensions
+        x = self.input_projection(x)
+
+        # Apply Informer attention and encoding
+        x = self.prob_sparse_attn(x)
+        x = self.encoder(x)
+
+        # Decode to final output
+        output = self.decoder(x)
+        return output.squeeze(-1)
 
 class InformerShearModel(nn.Module):
     def __init__(self,
@@ -1759,3 +1436,105 @@ class Informer_AE_Model(nn.Module):
         output_shear = output_shear.reshape(batch_size, -1)
 
         return output_shear
+# ==================================================================================================
+
+# ======= LLaMA2 Model =============================================================================
+class LLaMA2_Model(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length):
+        super().__init__()
+        self.sequence_length = sequence_length
+
+        # Fixed values
+        dim = 512
+        n_layers = 2
+        n_heads = 4
+
+        config = ModelConfig(dim=dim,
+                             n_layers=n_layers,
+                             n_heads=n_heads,
+                             n_kv_heads=n_heads,
+                             max_batch_size=32,
+                             device=device,
+                             ffn_dim_multiplier=None,
+                             multiple_of=256
+        )
+
+        self.input_embedding = nn.Linear(displacement_features + parameters_features, dim)
+        self.dropout = nn.Dropout(0.1)  # Fixed dropout rate
+
+        self.layers = nn.ModuleList([EncoderBlock(config) for _ in range(config.n_layers)])
+
+        self.norm = RMSNorm(config.dim, config.norm_eps)
+        self.output = nn.Linear(config.dim, 1)
+
+    def forward(self, parameters_input, displacement_input):
+        print(f"parameters_input shape: {parameters_input.shape}")
+        print(f"displacement_input shape: {displacement_input.shape}")
+
+        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
+        print(f"distributed_parameters shape: {distributed_parameters.shape}")
+
+        concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
+        print(f"concatenated_tensor shape: {concatenated_tensor.shape}")
+
+        x = self.input_embedding(concatenated_tensor)
+        print(f"After input_embedding shape: {x.shape}")
+
+        x = self.dropout(x)
+
+        for i, layer in enumerate(self.layers):
+            print(f"Before layer {i} shape: {x.shape}")
+            x = layer(x, 0)
+            print(f"After layer {i} shape: {x.shape}")
+
+        x = self.norm(x)
+        output = self.output(x)
+
+        return output.squeeze(-1)
+
+# 2. LLaMA-inspired Architecture
+class LLaMAInspiredModel(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length):
+        super(LLaMAInspiredModel, self).__init__()
+        self.sequence_length = sequence_length
+        hidden_dim = 512
+
+        # Input processing
+        self.input_proj = nn.Linear(displacement_features + parameters_features, hidden_dim)
+
+        # RoPE positional embeddings
+        self.pos_encoder = RotaryPositionalEmbedding(hidden_dim)
+
+        # Multi-head attention with RoPE
+        self.attention = MultiHeadAttention(hidden_dim, num_heads=8)
+
+        # Feed-forward network
+        self.feed_forward = nn.Sequential(
+            nn.Linear(hidden_dim, 4 * hidden_dim),
+            nn.GELU(),
+            nn.Linear(4 * hidden_dim, hidden_dim)
+        )
+
+        # Output layers
+        self.output_layers = nn.Sequential(
+            nn.Linear(hidden_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1)
+        )
+
+    def forward(self, parameters_input, displacement_input):
+        distributed_params = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
+        x = torch.cat([displacement_input.unsqueeze(-1), distributed_params], dim=-1)
+
+        # Project and apply positional encoding
+        x = self.input_proj(x)
+        x = self.pos_encoder(x)
+
+        # Self-attention and feed-forward
+        x = self.attention(x)
+        x = self.feed_forward(x)
+
+        # Output processing
+        output = self.output_layers(x)
+        return output.squeeze(-1)
+# ==================================================================================================

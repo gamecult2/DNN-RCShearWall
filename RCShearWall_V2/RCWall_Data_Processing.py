@@ -226,8 +226,6 @@ def denormalize(data_scaled, scaler=None, scaler_filename=None, sequence=False):
         data_restored = scaler.inverse_transform(data_scaled)
 
     return data_restored
-
-
 # =================================================================================================================================================================
 
 
@@ -408,6 +406,12 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
             print(f"  Crack 1:")
             print(f"    Max  : {np.round(np.max(Outc1), 2)}")
             print(f"    Min  : {np.round(np.min(Outc1), 2)}")
+            print(f"  Angle 2:")
+            print(f"    Max  : {np.round(np.max(Outa2), 2)}")
+            print(f"    Min  : {np.round(np.min(Outa2), 2)}")
+            print(f"  Crack 2:")
+            print(f"    Max  : {np.round(np.max(Outc2), 2)}")
+            print(f"    Min  : {np.round(np.min(Outc2), 2)}")
 
         # Return normalized data and scalers
         return (NormInParams, NormInDisp, NormOutShear, NormOuta1, NormOutc1, NormOuta2, NormOutc2), \
@@ -415,10 +419,6 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
     else:
         # Return raw data if normalization is not requested
         return (InParams, InDisp, OutShear, Outa1, Outc1, Outa2, Outc2)
-
-
-
-
 
 
 def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device='cuda', verbose=True):
