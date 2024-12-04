@@ -20,6 +20,7 @@ def inverse_log_transform(data, epsilon=1e-10):
     return sign * (np.expm1(np.abs(data)) - epsilon)
 
 
+# =================================================================================================================================================================
 def normalize2(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, fit=False, save_scaler_path=None, scaling_strategy='minmax', handle_small_values=True, small_value_threshold=1e-3):
     if not fit and scaler is None and scaler_filename is None:
         raise ValueError("Either a scaler or a scaler filename must be provided for normalization when fit=False.")
@@ -157,7 +158,7 @@ def denormalize2(data, scaler=None, scaler_filename=None, sequence=False, scalin
         data_restored = data_restored.reshape(original_shape)
 
     return data_restored
-
+# =================================================================================================================================================================
 
 # =================================================================================================================================================================
 def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, fit=False, save_scaler_path=None):
@@ -277,7 +278,7 @@ def load_data(data_size=100, sequence_length=500, input_parameters=17, data_fold
         return (InParams, InDisp, OutShear)
 
 
-def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, crack_parameters=168, data_folder="RCWall_Data/ProcessedData/FullData", normalize_data=True, verbose=True):
+def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, crack_length=168, data_folder="RCWall_Data/ProcessedData/FullData", normalize_data=True, verbose=True):
     # Define data and scaler folders
     data_folder = Path(data_folder)
     scaler_folder = data_folder / "Scaler"
@@ -289,10 +290,10 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
     OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
 
     # New outputs for a1, c1, a2, c2
-    Outa1 = pd.read_parquet(data_folder / "a1.parquet").iloc[:data_size, :crack_parameters].to_numpy(dtype=float)
-    Outc1 = pd.read_parquet(data_folder / "c1.parquet").iloc[:data_size, :crack_parameters].to_numpy(dtype=float)
-    Outa2 = pd.read_parquet(data_folder / "a2.parquet").iloc[:data_size, :crack_parameters].to_numpy(dtype=float)
-    Outc2 = pd.read_parquet(data_folder / "c2.parquet").iloc[:data_size, :crack_parameters].to_numpy(dtype=float)
+    Outa1 = pd.read_parquet(data_folder / "a1.parquet").iloc[:data_size, :crack_length].replace(10, 0).to_numpy(dtype=float)
+    Outc1 = pd.read_parquet(data_folder / "c1.parquet").iloc[:data_size, :crack_length].to_numpy(dtype=float)
+    Outa2 = pd.read_parquet(data_folder / "a2.parquet").iloc[:data_size, :crack_length].replace(10, 0).to_numpy(dtype=float)
+    Outc2 = pd.read_parquet(data_folder / "c2.parquet").iloc[:data_size, :crack_length].to_numpy(dtype=float)
 
     if verbose:
         print(f"\nDataset shape:")
@@ -340,7 +341,7 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
         NormOuta1, outa1_scaler = normalize2(Outa1,
                                              sequence=True,
                                              range=(-1, 1),
-                                             scaling_strategy='symmetric_log',
+                                             scaling_strategy='robust',
                                              handle_small_values=True,
                                              small_value_threshold=1e-5,
                                              fit=True,
@@ -350,7 +351,7 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
         NormOutc1, outc1_scaler = normalize2(Outc1,
                                              sequence=True,
                                              range=(-1, 1),
-                                             scaling_strategy='symmetric_log',
+                                             scaling_strategy='robust',
                                              handle_small_values=True,
                                              small_value_threshold=1e-5,
                                              fit=True,
@@ -360,7 +361,7 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
         NormOuta2, outa2_scaler = normalize2(Outa2,
                                              sequence=True,
                                              range=(-1, 1),
-                                             scaling_strategy='symmetric_log',
+                                             scaling_strategy='robust',
                                              handle_small_values=True,
                                              small_value_threshold=1e-5,
                                              fit=True,
@@ -370,7 +371,7 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
         NormOutc2, outc2_scaler = normalize2(Outc2,
                                              sequence=True,
                                              range=(-1, 1),
-                                             scaling_strategy='symmetric_log',
+                                             scaling_strategy='robust',
                                              handle_small_values=True,
                                              small_value_threshold=1e-5,
                                              fit=True,
@@ -395,23 +396,23 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
             print("    Max  :", ", ".join(f"{val:.2f}" for val in np.max(InParams, axis=0)))
             print("    Min  :", ", ".join(f"{val:.2f}" for val in np.min(InParams, axis=0)))
             print(f"  Displacement:")
-            print(f"    Max  : {np.round(np.max(InDisp), 2)}")
-            print(f"    Min  : {np.round(np.min(InDisp), 2)}")
+            print(f"    Max  : {np.round(np.max(InDisp), 3)}      |      Max  : {np.round(np.max(NormInDisp), 2)}")
+            print(f"    Min  : {np.round(np.min(InDisp), 3)}     |       Min  : {np.round(np.min(NormInDisp), 2)}")
             print(f"  Lateral Load:")
-            print(f"    Max  : {np.round(np.max(OutShear), 2)}")
-            print(f"    Min  : {np.round(np.min(OutShear), 2)}")
+            print(f"    Max  : {np.round(np.max(OutShear), 3)}      |      Max  : {np.round(np.max(NormOutShear), 2)}")
+            print(f"    Min  : {np.round(np.min(OutShear), 3)}     |      Min  : {np.round(np.min(NormOutShear), 2)}")
             print(f"  Angle 1:")
-            print(f"    Max  : {np.round(np.max(Outa1), 2)}")
-            print(f"    Min  : {np.round(np.min(Outa1), 2)}")
+            print(f"    Max  : {np.round(np.max(Outa1), 5)}      |      Max  : {np.round(np.max(NormOuta1), 5)}")
+            print(f"    Min  : {np.round(np.min(Outa1), 5)}     |      Min  : {np.round(np.min(NormOuta1), 5)}")
             print(f"  Crack 1:")
-            print(f"    Max  : {np.round(np.max(Outc1), 2)}")
-            print(f"    Min  : {np.round(np.min(Outc1), 2)}")
+            print(f"    Max  : {np.round(np.max(Outc1), 5)}      |      Max  : {np.round(np.max(NormOutc1), 5)}")
+            print(f"    Min  : {np.round(np.min(Outc1), 5)}     |      Min  : {np.round(np.min(NormOutc1), 5)}")
             print(f"  Angle 2:")
-            print(f"    Max  : {np.round(np.max(Outa2), 2)}")
-            print(f"    Min  : {np.round(np.min(Outa2), 2)}")
+            print(f"    Max  : {np.round(np.max(Outa2), 5)}      |      Max  : {np.round(np.max(NormOuta2), 5)}")
+            print(f"    Min  : {np.round(np.min(Outa2), 5)}     |      Min  : {np.round(np.min(NormOuta2), 5)}")
             print(f"  Crack 2:")
-            print(f"    Max  : {np.round(np.max(Outc2), 2)}")
-            print(f"    Min  : {np.round(np.min(Outc2), 2)}")
+            print(f"    Max  : {np.round(np.max(Outc2), 5)}      |      Max  : {np.round(np.max(NormOutc2), 5)}")
+            print(f"    Min  : {np.round(np.min(Outc2), 5)}     |      Min  : {np.round(np.min(NormOutc2), 5)}")
 
         # Return normalized data and scalers
         return (NormInParams, NormInDisp, NormOutShear, NormOuta1, NormOutc1, NormOuta2, NormOutc2), \

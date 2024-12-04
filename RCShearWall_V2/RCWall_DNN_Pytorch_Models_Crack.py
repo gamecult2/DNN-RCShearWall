@@ -37,7 +37,7 @@ torch.backends.cudnn.allow_tf32 = True
 
 # Define hyperparameters
 DATA_FOLDER = "RCWall_Data/Run_Full/FullData"
-DATA_SIZE = 2000
+DATA_SIZE = 200000
 SEQUENCE_LENGTH = 500
 DISPLACEMENT_FEATURES = 1
 SHEAR_FEATURES = 1
@@ -46,22 +46,12 @@ CRACK_LENGTH = 168
 TEST_SIZE = 0.05
 VAL_SIZE = 0.15
 BATCH_SIZE = 32
-LEARNING_RATE = 0.0001
-EPOCHS = 11
+LEARNING_RATE = 0.00001
+EPOCHS = 3
 PATIENCE = 5
 
 # Load and preprocess data
-# (InParams, InDisp, InShear, Outa1, Outc1, Outa2, Outc2)
 data, scaler = load_data_crack(DATA_SIZE, SEQUENCE_LENGTH, PARAMETERS_FEATURES, CRACK_LENGTH, DATA_FOLDER, True, True)
-print('data shape', len(data))
-# Split and convert data
-
-# (train_splits, val_splits, test_splits) = split_and_convert(data, TEST_SIZE, VAL_SIZE, 44, device, True)
-#
-# Unpack splits correctly
-# train_splits = splits[:len(data)]
-# val_splits = splits[len(data):2*len(data)]
-# test_splits = splits[2*len(data):]
 
 # Split and convert data
 (train_splits, val_splits, test_splits) = split_and_convert(data, TEST_SIZE, VAL_SIZE, 44, device, True)
@@ -93,8 +83,7 @@ torchinfo.summary(model)
 optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=1, min_lr=1e-6)
 criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
-crack_criterion = nn.BCELoss().to(device)
-early_stopping = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}-2")
+early_stopping = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}")
 
 # Initialize tracking variables
 train_losses, val_losses, train_r2_scores, val_r2_scores = [], [], [], []
@@ -108,8 +97,8 @@ for epoch in range(EPOCHS):
     batch_count = 0
 
     train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{EPOCHS} [Train]",
-                             bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | Batch Loss: {postfix[0][batch_loss]:.4f} | Batch R²: {postfix[0][batch_r2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
-                             postfix=[{"batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
+                             bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | Loss a1: {postfix[0][r2_a1]:.4f} | Loss c1: {postfix[0][r2_c1]:.4f} | Loss a2: {postfix[0][r2_a2]:.4f} | Loss c2: {postfix[0][r2_c2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
+                             postfix=[{"r2_a1": 0.0, "r2_c1": 0.0, "r2_a2": 0.0, "r2_c2": 0.0, "avg_r2": 0.0}], leave=False)
 
     for batch_param, batch_disp, batch_shear, batch_a1, batch_c1, batch_a2, batch_c2 in train_loader_tqdm:
         batch_count += 1  # Increment batch counter
@@ -136,11 +125,6 @@ for epoch in range(EPOCHS):
         # Average R²
         r2 = (r2_a1 + r2_c1 + r2_a2 + r2_c2) / 4
 
-        # Crack presence evaluation based on predicted a1 and a2
-        crack_actual = ((batch_a1 != 10) | (batch_a2 != 10)).float()
-        crack_predicted = ((a1_pred != 10) | (a2_pred != 10)).float()
-        crack_accuracy = ((crack_actual == crack_predicted).float().mean()).item()
-
         # Backward pass and optimizer step
         loss.backward()  # Backward pass
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Gradient clipping
@@ -149,18 +133,18 @@ for epoch in range(EPOCHS):
         # Update epoch metrics
         epoch_train_loss += loss.item()
         epoch_train_r2 += r2  # .item()
-        epoch_crack_accuracy += crack_accuracy
 
         # Update progress bar with real-time batch metrics
-        train_loader_tqdm.postfix[0]["batch_loss"] = loss.item()
-        train_loader_tqdm.postfix[0]["batch_r2"] = r2  # .item()
-                train_loader_tqdm.postfix[0]["avg_r2"] = epoch_train_r2 / batch_count  # Running average
+        train_loader_tqdm.postfix[0]["r2_a1"] = r2_a1.item()
+        train_loader_tqdm.postfix[0]["r2_c1"] = r2_c1.item()
+        train_loader_tqdm.postfix[0]["r2_a2"] = r2_a2.item()
+        train_loader_tqdm.postfix[0]["r2_c2"] = r2_c2.item()
+        train_loader_tqdm.postfix[0]["avg_r2"] = epoch_train_r2 / batch_count  # Running average
         train_loader_tqdm.update(1)
 
     # Calculate average training loss and R² for the epoch
     epoch_train_loss /= len(train_loader)
     epoch_train_r2 /= len(train_loader)
-    epoch_crack_accuracy /= len(train_loader)
     train_losses.append(epoch_train_loss)
     train_r2_scores.append(epoch_train_r2)
 
@@ -203,10 +187,6 @@ for epoch in range(EPOCHS):
             val_loss += batch_loss.item()
             val_r2 += batch_r2
 
-            # Crack detection accuracy
-            crack_pred_class = (crack_pred > 0.5).float()
-            val_crack_accuracy += (crack_pred_class == batch_crack).float().mean().item()
-
             # Update progress bar with real-time batch metrics
             val_loader_tqdm.postfix[0]["batch_loss"] = batch_loss.item()
             val_loader_tqdm.postfix[0]["batch_r2"] = batch_r2
@@ -216,7 +196,6 @@ for epoch in range(EPOCHS):
     # Calculate average validation loss and R² for the epoch
     val_loss /= len(val_loader)
     val_r2 /= len(val_loader)
-    val_crack_accuracy /= len(val_loader)
     val_losses.append(val_loss)
     val_r2_scores.append(val_r2)
 
