@@ -21,7 +21,7 @@ def inverse_log_transform(data, epsilon=1e-10):
 
 
 # =================================================================================================================================================================
-def normalize2(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, fit=False, save_scaler_path=None, scaling_strategy='minmax', handle_small_values=True, small_value_threshold=1e-3):
+def normalize2(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, fit=False, save_scaler_path=None, scaling_strategy='minmax', handle_small_values=True, handle_large_values=False, small_value_threshold=1e-3):
     if not fit and scaler is None and scaler_filename is None:
         raise ValueError("Either a scaler or a scaler filename must be provided for normalization when fit=False.")
 
@@ -69,6 +69,17 @@ def normalize2(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=
                     np.abs(data_transformed[small_mask]) / small_value_threshold
             )
 
+    large_value_threshold = 0.5
+    # Special handling for large values if enabled
+    if handle_large_values:
+        large_mask = np.abs(data_transformed) > large_value_threshold
+        if np.any(large_mask):
+            # Scale down large values while preserving their sign
+            data_transformed[large_mask] = (
+                    np.sign(data_transformed[large_mask]) *
+                    large_value_threshold *
+                    large_value_threshold / np.abs(data_transformed[large_mask])
+            )
     # Apply scaling
     if fit:
         data_scaled = scaler.fit_transform(data_transformed)

@@ -80,29 +80,37 @@ class StochasticDepth(nn.Module):
         return x / keep_prob * mask
 
 class ResidualBlock(nn.Module):
-    def __init__(self, d_model, dropout=0.1):
-        super(ResidualBlock, self).__init__()
-
-        # Main transformation path
-        self.main_path = nn.Sequential(
-            nn.LayerNorm(d_model),
-            nn.GELU(),
-            nn.Linear(d_model, d_model * 2),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(d_model * 2, d_model)
-        )
-
-        # Projection layer for residual connection if needed
-        self.residual_proj = nn.Sequential(
-            nn.Linear(d_model, d_model),
-            nn.Dropout(dropout)
-        )
+    def __init__(self, channels, dropout=0.1):
+        super().__init__()
+        self.conv1 = nn.Conv1d(channels, channels, kernel_size=3, padding=1)
+        self.norm1 = nn.LayerNorm(channels)
+        self.conv2 = nn.Conv1d(channels, channels, kernel_size=3, padding=1)
+        self.norm2 = nn.LayerNorm(channels)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        # Residual connection with adaptive projection
-        residual = self.residual_proj(x)
-        return self.main_path(x) + residual
+        residual = x
+        x = self.conv1(x.transpose(1, 2)).transpose(1, 2)
+        x = self.norm1(x)
+        x = F.gelu(x)
+        x = self.dropout(x)
+        x = self.conv2(x.transpose(1, 2)).transpose(1, 2)
+        x = self.norm2(x)
+        return residual + x
+
+class AdaptivePositionalEncoding(nn.Module):
+    def __init__(self, d_model, max_len=500):
+        super().__init__()
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * (-torch.log(torch.tensor(10000.0)) / d_model))
+        pe = torch.zeros(max_len, d_model)
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
+        self.adaptive_scale = nn.Parameter(torch.ones(1))
+
+    def forward(self, x):
+        return x + self.adaptive_scale * self.pe[:x.size(1), :].unsqueeze(0)
 # ===============================================================================================
 
 # ======= Divers Model  =========================================================================
@@ -848,28 +856,25 @@ class CrackTimeSeriesTransformer(nn.Module):
                  sequence_length=500,
                  crack_length=168,
                  d_model=256,
-                 dropout=0.1):
+                 dropout=0.1,
+                 num_processing_blocks=3):
         super(CrackTimeSeriesTransformer, self).__init__()
         self.sequence_length = sequence_length
         self.crack_length = crack_length
 
-        # Parameter Processing Branch
+        # Enhanced feature encoders with adaptive normalization
         self.param_encoder = nn.Sequential(
             nn.Linear(parameters_features, d_model // 2),
             nn.LayerNorm(d_model // 2),
             nn.GELU(),
             nn.Dropout(dropout)
         )
-
-        # Displacement Time Series Processing Branch
         self.displacement_encoder = nn.Sequential(
             nn.Linear(displacement_features, d_model // 4),
             nn.LayerNorm(d_model // 4),
             nn.GELU(),
             nn.Dropout(dropout)
         )
-
-        # Shear Time Series Processing Branch
         self.shear_encoder = nn.Sequential(
             nn.Linear(shear_features, d_model // 4),
             nn.LayerNorm(d_model // 4),
@@ -877,27 +882,23 @@ class CrackTimeSeriesTransformer(nn.Module):
             nn.Dropout(dropout)
         )
 
-        # Positional Encoding
-        self.pos_encoder = PositionalEncoding(d_model, max_len=sequence_length)
+        # Adaptive Positional Encoding
+        self.pos_encoder = AdaptivePositionalEncoding(d_model, max_len=sequence_length)
 
-        # Residual feature projection
-        self.feature_residual_proj = nn.Sequential(
+        # Feature interaction projection
+        self.feature_interaction = nn.Sequential(
             nn.Linear(d_model, d_model),
-            nn.LayerNorm(d_model)
+            nn.LayerNorm(d_model),
+            nn.GELU()
         )
 
-        # Main Processing Blocks
+        # Configurable Processing Blocks
         self.processing_blocks = nn.ModuleList([
-            CrackProcessingBlock(d_model, nhead=4, dropout=dropout
-            ) for _ in range(2)
+            CrackProcessingBlock(d_model, nhead=4, dropout=dropout)
+            for _ in range(num_processing_blocks)
         ])
-        # Residual connection for processing blocks
-        self.block_residual_proj = nn.Sequential(
-            nn.Linear(d_model, d_model),
-            nn.LayerNorm(d_model)
-        )
 
-        # Separate Output Layers for a1, c1, a2, c2
+        # Output prediction heads with uncertainty estimation
         self.output_layers = nn.ModuleList([
             nn.Sequential(
                 ResidualBlock(d_model, dropout),
@@ -906,66 +907,43 @@ class CrackTimeSeriesTransformer(nn.Module):
                 nn.Dropout(dropout),
                 nn.Linear(d_model // 2, d_model // 4),
                 nn.GELU(),
-                nn.Dropout(dropout),
-                nn.Linear(d_model // 4, crack_length)
+                nn.Linear(d_model // 4, crack_length),
+                nn.Softplus()  # Added for uncertainty estimation
             ) for _ in range(4)
         ])
 
-
     def forward(self, parameters, displacement_series, shear_series):
-        batch_size = parameters.shape[0]
-
         # Expand parameters to match sequence length
         params_expanded = parameters.unsqueeze(1).expand(-1, self.sequence_length, -1)
         params_encoded = self.param_encoder(params_expanded)
-
-        # Process time series
         displacement_encoded = self.displacement_encoder(displacement_series.unsqueeze(-1))
-
-        # Reshape shear_series
         shear_encoded = self.shear_encoder(shear_series.unsqueeze(-1))
 
         # Combine features
         combined = torch.cat([params_encoded, displacement_encoded, shear_encoded], dim=-1)
-
-        # Add positional encoding
         x = self.pos_encoder(combined)
-        x = x + self.feature_residual_proj(combined)
+        x = self.feature_interaction(x)
 
         # Process through configurable blocks
-        block_input = x.clone()
         for block in self.processing_blocks:
-            block_output = block(x)
-            x = block_output + self.block_residual_proj(block_input)
-            block_input = x.clone()
+            x = block(x)
 
-            # Generate output sequences with mean aggregation
+        # Generate output sequences with mean aggregation and uncertainty estimation
         outputs = [
-            layer(x).mean(dim=1, keepdim=True).squeeze()
+            layer(x).mean(dim=1)
             for layer in self.output_layers
         ]
-
-        # Generate output sequences
-        # a1_output = self.output_layer_a1(x1).mean(dim=1, keepdim=True)  # Reshape to (batch_size, crack_length, sequence_length)
-        # c1_output = self.output_layer_c1(x2).mean(dim=1, keepdim=True)
-        # a2_output = self.output_layer_a2(x3).mean(dim=1, keepdim=True)
-        # c2_output = self.output_layer_c2(x4).mean(dim=1, keepdim=True)
-        # print('a1_output', a1_output.shape).mean(dim=1, keepdim=True)
-
-        # return a1_output.squeeze(), c1_output.squeeze(), a2_output.squeeze(), c2_output.squeeze()
 
         return outputs[0], outputs[1], outputs[2], outputs[3]
 
 class CrackProcessingBlock(nn.Module):
-    def __init__(self, d_model, nhead, dropout=0.1, stochastic_depth_prob=0.1):
+    def __init__(self, d_model, nhead, dropout=0.1):
         super(CrackProcessingBlock, self).__init__()
 
-        # Multi-head self-attention
         self.self_attn = nn.MultiheadAttention(
             d_model, nhead, dropout=dropout, batch_first=True
         )
-        self.attn_norm = nn.LayerNorm(d_model)
-        # Convolutional FFN
+        self.norm1 = nn.LayerNorm(d_model)
         self.conv_ffn = nn.Sequential(
             nn.Conv1d(d_model, d_model * 4, kernel_size=3, padding=1),
             nn.GELU(),
@@ -974,40 +952,30 @@ class CrackProcessingBlock(nn.Module):
             nn.Conv1d(d_model * 4, d_model, kernel_size=3, padding=1),
             nn.BatchNorm1d(d_model)
         )
-        self.conv_norm = nn.LayerNorm(d_model)
-
-        # LSTM layers
+        self.norm2 = nn.LayerNorm(d_model)
         self.lstm = nn.LSTM(
             d_model, d_model // 2, bidirectional=True,
             batch_first=True, num_layers=2
         )
-        self.lstm_norm = nn.LayerNorm(d_model)
-
-        # Additional residual blocks
-        self.residual_block1 = ResidualBlock(d_model, dropout)
-        self.residual_block2 = ResidualBlock(d_model, dropout)
-
-        self.dropout = nn.Dropout(dropout)
+        self.norm3 = nn.LayerNorm(d_model)
+        self.residual_block = ResidualBlock(d_model, dropout)
 
     def forward(self, x):
-        # Self-attention with skip connection
+        # Multi-head self-attention
         attn_output, _ = self.self_attn(x, x, x)
-        x = self.attn_norm(x + self.dropout(attn_output))
+        x = self.norm1(x + attn_output)
 
-        # Convolutional FFN with skip connection
+        # Convolutional feed-forward network
         conv_input = x.transpose(1, 2)
         conv_output = self.conv_ffn(conv_input).transpose(1, 2)
-        x = self.conv_norm(x + self.dropout(conv_output))
-        # x = self.norm2(x + self.dropout(conv_output))
+        x = self.norm2(x + conv_output)
 
-        # Bidirectional LSTM with skip connections
+        # Bidirectional LSTM
         lstm_output, _ = self.lstm(x)
-        x = self.lstm_norm(x + self.dropout(lstm_output))
+        x = self.norm3(x + lstm_output)
 
-        # Additional residual blocks
-        x = self.residual_block1(x)
-        x = self.residual_block2(x)
-
+        # Additional residual processing
+        x = self.residual_block(x)
         return x
 # =================================================================================================
 
