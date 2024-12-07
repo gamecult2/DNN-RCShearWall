@@ -17,7 +17,7 @@ def main():
     PARAMETERS_FEATURES = 17  # Based on the input parameters length
     DISPLACEMENT_FEATURES = 1  # Assuming single-channel displacement
     SEQUENCE_LENGTH = 500  # As per your previous configuration
-    MODEL_PATH = 'checkpoints/TimeSeriesTransformer.pt'
+    MODEL_PATH = 'checkpoints/TimeSeriesTransformer_best_full.pt'
 
     # Input Parameters
     new_input_parameters = np.array([102, 102, 3650, 1220, 3.0, 190, 42, 434, 448, 448, 0.030, 0.0030, 0.0049, 0.0035, 0.080, 124440, 1])
@@ -45,7 +45,6 @@ def main():
 
     # Load the state dictionary
     checkpoint = torch.load(MODEL_PATH)
-    model.load_state_dict(checkpoint)
     model.eval()
 
     # Scaler Paths
@@ -57,22 +56,18 @@ def main():
     # Normalize new data
     new_input_parameters = normalize(new_input_parameters.reshape(1, -1), scaler_filename=param_scaler, sequence=False, fit=False)
     new_input_parameters = torch.tensor(new_input_parameters, dtype=torch.float32)
-    print('new_input_parameters', new_input_parameters.shape)
 
+    # Normalize new input displacement using the 'normalizer' scaler
     new_input_displacement = normalize(new_input_displacement, scaler_filename=disp_scaler, sequence=True, fit=False)
     new_input_displacement = torch.tensor(new_input_displacement.reshape(1, -1), dtype=torch.float32)
-    print('new_input_displacement', new_input_displacement.shape)
 
     # Perform inference
     with torch.no_grad():
         predictions = model(new_input_parameters, new_input_displacement)
 
-    new_input_displacement = denormalize(new_input_displacement, scaler_filename=disp_scaler, sequence=True)
-    predictions = denormalize(predictions, scaler_filename=shear_scaler, sequence=True)
-
-    # Convert to numpy for plotting
-    # predictions_np = predictions.numpy()[0]
-    # displacement_np = new_input_displacement.numpy()[0].flatten()
+    # ------- Denormalize Data -------------------------------------------
+    new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), scaler_filename=disp_scaler, sequence=True)
+    predictions = denormalize(predictions.cpu().numpy(), scaler_filename=shear_scaler, sequence=True)
 
     # Plotting
     plt.figure(figsize=(12, 6))
@@ -95,7 +90,6 @@ def main():
     plt.grid(True)
     plt.tight_layout()
     plt.show()
-
 
     # Plotting
     plt.figure(figsize=(12, 6))

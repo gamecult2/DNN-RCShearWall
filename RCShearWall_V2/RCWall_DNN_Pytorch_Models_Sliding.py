@@ -33,24 +33,80 @@ torch.backends.cudnn.benchmark = True
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 
+
+def create_sliding_windows(parameters, displacements, shear_outputs, window_size):
+    batch_size, full_sequence_length = displacements.shape
+    _, parameters_features = parameters.shape
+    # Create sliding windows
+    windowed_inputs = []
+    windowed_outputs = []
+
+    # Convert inputs to numpy arrays if they aren't already
+    if isinstance(parameters, np.ndarray) is False:
+        parameters = np.array(parameters, dtype=np.float32)
+    if isinstance(displacements, np.ndarray) is False:
+        displacements = np.array(displacements, dtype=np.float32)
+    if isinstance(shear_outputs, np.ndarray) is False:
+        shear_outputs = np.array(shear_outputs, dtype=np.float32)
+
+    # Expand dimensions of parameters and displacements to match input dimensions
+    parameters = np.repeat(parameters[:, np.newaxis, :], full_sequence_length, axis=1)  # [batch_size, full_sequence_length, parameters_features]
+    displacements = displacements[..., np.newaxis]  # [batch_size, full_sequence_length, 1]
+
+    # Combine displacements and parameters
+    combined_input = np.concatenate([displacements, parameters], axis=-1)  # [batch_size, full_sequence_length, parameters_features + 1]
+
+    # Loop through each batch and extract windows
+    for b in tqdm(range(batch_size), desc="Processing batches"):
+        for start in range(full_sequence_length - window_size + 1):
+            window_input = combined_input[b, start:start + window_size, :]
+            window_output = shear_outputs[b, start:start + window_size]
+
+            windowed_inputs.append(window_input)
+            windowed_outputs.append(window_output)
+
+    # Convert the lists of windows to numpy arrays
+    windowed_inputs_array = np.array(windowed_inputs, dtype=np.float32)
+    windowed_outputs_array = np.array(windowed_outputs, dtype=np.float32)
+
+    return windowed_inputs_array, windowed_outputs_array
+
+
 # Define hyperparameters
 DATA_FOLDER = "RCWall_Data/Run_Full/FullData"
-DATA_SIZE = 520
+DATA_SIZE = 500
 SEQUENCE_LENGTH = 500
+WINDOW_SIZE = 30  # Sliding window size
 DISPLACEMENT_FEATURES = 1
 PARAMETERS_FEATURES = 17
+CRACK_LENGTH = 168
 TEST_SIZE = 0.02
 VAL_SIZE = 0.20
 BATCH_SIZE = 32
 LEARNING_RATE = 0.0001
-EPOCHS = 3
+EPOCHS = 5
 PATIENCE = 5
 
 # Load and preprocess data
-data, scaler = load_data(DATA_SIZE,SEQUENCE_LENGTH, PARAMETERS_FEATURES, DATA_FOLDER, True, True)
+data, scaler = load_data(DATA_SIZE, SEQUENCE_LENGTH, PARAMETERS_FEATURES, DATA_FOLDER, True, True)
+
+# Create sliding windows for entire dataset
+parameters = data[0]  # (batch, full_sequence_length, parameters_features)
+# print(f"Parameters shape: {parameters.shape}")
+displacements = data[1]  # (batch, full_sequence_length)
+# print(f"Displacements shape: {displacements.shape}")
+shear_outputs = data[2]  # (batch, full_sequence_length)
+# print(f"Shear outputs shape: {shear_outputs.shape}")
+
+# Create sliding windows
+windowed_inputs, windowed_outputs = create_sliding_windows(
+    parameters, displacements, shear_outputs, WINDOW_SIZE
+)
+
+sliding_data = (windowed_inputs, windowed_outputs)
 
 # Split and convert data
-(train_splits, val_splits, test_splits) = split_and_convert(data, TEST_SIZE, VAL_SIZE, 44, device, True)
+(train_splits, val_splits, test_splits) = split_and_convert(sliding_data, TEST_SIZE, VAL_SIZE, 44, device, True)
 
 # Create DataLoaders
 train_loader = DataLoader(TensorDataset(*train_splits), BATCH_SIZE, shuffle=True)
@@ -68,20 +124,19 @@ test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=False)
 # model = InformerModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LLaMAInspiredModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = xLSTMModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-model = TimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = TimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = ShearTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = LSTM_AE_Model_3_slice(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH, WINDOW_SIZE).to(device)
 # model = EnhancedTimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = InformerShearModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = torch.compile(model)
 
+model = SlidingWindowLSTM_AE(PARAMETERS_FEATURES + DISPLACEMENT_FEATURES, DISPLACEMENT_FEATURES, WINDOW_SIZE, SEQUENCE_LENGTH).to(device)
+
 # Visualize the computation graph
 torchinfo.summary(model)
 
-optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE) # , weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
-# scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=1, min_lr=1e-6)
-scheduler = optim.lr_scheduler.CyclicLR(optimizer, base_lr=0.00005, max_lr=0.001, step_size_up=50, mode='triangular')
-# scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=1e-3, total_steps=len(train_loader) * EPOCHS)
+optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=1, min_lr=1e-6)
 criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
 earlystop = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}")
 
@@ -97,30 +152,26 @@ for epoch in range(EPOCHS):
     batch_count = 0
 
     train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{EPOCHS} [Train]",
-                             bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | LR: {postfix[0][lr]:.6f} | Batch Loss: {postfix[0][batch_loss]:.4f} | Batch R²: {postfix[0][batch_r2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
-                             postfix=[{"lr": 0.0, "batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
+                             bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | Batch Loss: {postfix[0][batch_loss]:.4f} | Batch R²: {postfix[0][batch_r2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
+                             postfix=[{"batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
 
-    for batch_param, batch_disp, batch_shear in train_loader_tqdm:
+    for batch_input, batch_output in train_loader_tqdm:
+        batch_input, batch_output = batch_input.to(device), batch_output.to(device)
         batch_count += 1  # Increment batch counter
-        optimizer.zero_grad(set_to_none=True)  # More efficient than zero_grad() Zero gradients
-        outputs = model(batch_param, batch_disp)  # Forward pass
-        loss = criterion(outputs, batch_shear)  # Loss computation
-        r2 = r2_score(batch_shear.detach().cpu().numpy(), outputs.detach().cpu().numpy())
+        optimizer.zero_grad(set_to_none=True)
+        outputs = model(batch_input)
 
-        # Backward pass and optimizer step
-        loss.backward()  # Backward pass
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Gradient clipping
-        optimizer.step()  # Update parameters
+        loss = criterion(outputs, batch_output)
+        r2 = r2_score(batch_output.detach().cpu().numpy(), outputs.detach().cpu().numpy())
 
-        scheduler.step()
-        lr = scheduler.get_last_lr()[0]
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        optimizer.step()
 
-        # Update epoch metrics
         epoch_train_loss += loss.item()
-        epoch_train_r2 += r2  # .item()
+        epoch_train_r2 += r2
 
         # Update progress bar with real-time batch metrics
-        train_loader_tqdm.postfix[0]["lr"] = lr
         train_loader_tqdm.postfix[0]["batch_loss"] = loss.item()
         train_loader_tqdm.postfix[0]["batch_r2"] = r2  # .item()
         train_loader_tqdm.postfix[0]["avg_r2"] = epoch_train_r2 / batch_count  # Running average
@@ -143,11 +194,12 @@ for epoch in range(EPOCHS):
                            postfix=[{"batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
 
     with torch.no_grad():
-        for batch_param, batch_disp, batch_shear in val_loader_tqdm:
+        for batch_input, batch_output in val_loader_tqdm:
             batch_count += 1
-            val_outputs = model(batch_param, batch_disp)
-            batch_loss = criterion(val_outputs, batch_shear)
-            batch_r2 = r2_score(batch_shear.detach().cpu().numpy(), val_outputs.detach().cpu().numpy())
+            val_outputs = model(batch_input)
+            batch_loss = criterion(val_outputs, batch_output)
+            batch_r2 = r2_score(batch_output.detach().cpu().numpy(), val_outputs.detach().cpu().numpy())
+
             # Update validation metrics
             val_loss += batch_loss.item()
             val_r2 += batch_r2
@@ -166,7 +218,7 @@ for epoch in range(EPOCHS):
 
     # Update learning rate
     lr = scheduler.get_last_lr()[0]  # Assuming a single learning rate group
-    # scheduler.step(val_loss)
+    scheduler.step(val_loss)
 
     # Print epoch summary
     print(f'Epoch [{epoch + 1}/{EPOCHS}], Learning Rate: {lr}, Train Loss: {epoch_train_loss:.4f}, Train R²: {epoch_train_r2:.4f}, Val Loss: {val_loss:.4f}, Val R²: {val_r2:.4f}\n')
@@ -193,6 +245,7 @@ with torch.no_grad():
     test_r2 /= len(test_loader)
 
 print(f'Final Model Performance - Test Loss: {test_loss:.4f}, Test R2: {test_r2:.4f}')
+
 
 # Plotting
 def plot_metric(train_data, val_data, best_epoch, ylabel, title):
@@ -226,6 +279,12 @@ for data, displacement, shear in test_loader:
     real_shear = shear[:test_index, :]
     break
 
+# (X_param_test, X_disp_test, Y_shear_test) = test_splits
+# new_input_parameters = X_param_test[:test_index]
+# new_input_displacement = X_disp_test[:test_index]
+# real_shear = Y_shear_test[:test_index]
+
+
 # Restore best weights
 trained_model = torch.load(f"checkpoints/{type(model).__name__}_best_full.pt", weights_only=False)
 trained_model.eval()
@@ -234,9 +293,13 @@ with torch.no_grad():
     predicted_shear = trained_model(new_input_parameters, new_input_displacement)
 
 # Move tensors to CPU for plotting and denormalization
-new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
-real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
-predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
+# new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
+# real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
+# predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
+
+new_input_displacement = denormalize2(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
+real_shear = denormalize2(real_shear.cpu().numpy(), shear_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
+predicted_shear = denormalize2(predicted_shear.cpu().numpy(), shear_scaler, sequence=True, scaling_strategy='symmetric_log', handle_small_values=True, small_value_threshold=1e-3)
 
 # plotting
 for i in range(test_index):

@@ -747,8 +747,6 @@ class TimeSeriesTransformer(nn.Module):
         )
 
     def forward(self, parameters, time_series):
-        batch_size = parameters.shape[0]
-
         # Expand parameters to match sequence length
         params_expanded = parameters.unsqueeze(1).expand(-1, self.sequence_length, -1)
         params_encoded = self.param_encoder(params_expanded)
@@ -846,6 +844,139 @@ class ProcessingBlock(nn.Module):
 
         return x
 # =================================================================================================
+
+class ShearTransformer(nn.Module):
+    def __init__(self,
+                 parameter_features=17,
+                 displacement_features=1,
+                 sequence_length=500,
+                 d_model=128,
+                 nhead=8,
+                 num_layers=3,
+                 window_size=5,
+                 future_steps=2,  # Number of future steps to predict
+                 overlap_ratio=0.5):
+        super(ShearTransformer, self).__init__()
+
+        # Input feature dimensions
+        self.parameter_features = parameter_features
+        self.displacement_features = displacement_features
+        self.total_input_features = parameter_features + displacement_features
+
+        # Sliding window parameters
+        self.window_size = window_size
+        self.sequence_length = sequence_length
+        self.overlap_ratio = overlap_ratio
+        self.future_steps = future_steps
+
+        # Calculate overlap size
+        self.overlap_size = int(window_size * overlap_ratio)
+
+        # Embedding layers
+        self.parameter_embedding = nn.Linear(parameter_features, d_model)
+        self.displacement_embedding = nn.Linear(displacement_features, d_model)
+
+        # Positional Encoding
+        self.positional_encoder = PositionalEncoding(d_model)
+
+        # Transformer Encoder
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            batch_first=True,
+            dim_feedforward=d_model * 4,
+            dropout=0.1,
+            activation='gelu'
+        )
+        self.transformer_encoder = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=num_layers
+        )
+
+        # Output layer for predictions
+        self.output_projection = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(d_model // 2, 1)
+        )
+
+        # Temporal smoothing
+        self.temporal_smoother = nn.Sequential(
+            nn.Conv1d(1, 1, kernel_size=5, padding=2),
+            nn.GELU(),
+            nn.BatchNorm1d(1)
+        )
+
+    def forward(self, parameters, displacement):
+        batch_size = parameters.size(0)
+
+        # Prepare input tensors
+        parameters = parameters
+        displacement = displacement.unsqueeze(-1)
+
+        # Initialize output tensor to store predictions
+        full_output = torch.zeros(
+            batch_size,
+            self.sequence_length + self.future_steps,
+            device=displacement.device
+        )
+
+        # Sliding window prediction with overlap
+        for start in range(0, self.sequence_length - self.window_size + 1, self.window_size - self.overlap_size):
+            # Determine the end of the current prediction window
+            window_end = min(start + self.window_size + self.future_steps, self.sequence_length + self.future_steps)
+
+            # Select current window of displacement
+            window_displacement = displacement[:, start:start + self.window_size, :]
+
+            # Repeat parameters to match window length
+            window_parameters = parameters.unsqueeze(1).expand(-1, self.window_size, -1)
+
+            # Combine parameters and displacement
+            combined_input = torch.cat([window_parameters, window_displacement], dim=-1)
+
+            # Embed inputs
+            param_embedded = self.parameter_embedding(window_parameters)
+            displ_embedded = self.displacement_embedding(window_displacement)
+
+            # Combine embeddings
+            combined_embedded = param_embedded + displ_embedded
+
+            # Add positional encoding
+            encoded_input = self.positional_encoder(combined_embedded)
+
+            # Transformer encoding
+            transformer_output = self.transformer_encoder(encoded_input)
+
+            # Project to output
+            window_prediction = self.output_projection(transformer_output)
+
+            # Smooth prediction
+            smoothed_prediction = self.temporal_smoother(
+                window_prediction.transpose(1, 2)
+            ).transpose(1, 2).squeeze(-1)
+
+            # print('smoothed_prediction', smoothed_prediction.shape)
+            # Update full output with prediction
+            if start > 0:
+                # Overlap blending
+                overlap_region = min(self.overlap_size, full_output.shape[1] - start)
+                weights = torch.linspace(1, 0, overlap_region, device=full_output.device)
+
+                # Blend overlapping predictions
+                full_output[:, start:start + overlap_region] = (
+                        full_output[:, start:start + overlap_region] * (1 - weights) +
+                        smoothed_prediction[:, :overlap_region] * weights
+                )
+
+            # Update predictions for current window
+            prediction_slice = smoothed_prediction[:, :min(window_end - start, self.window_size + self.future_steps)]
+            # print('prediction_slice', prediction_slice.shape)
+            full_output[:, start:start + len(prediction_slice[0])] = prediction_slice
+
+        # Return predictions up to sequence length + future steps
+        return full_output[:, :self.sequence_length]
 
 # ======= CrackTransformer ========================================================================
 class CrackTimeSeriesTransformer(nn.Module):
@@ -1506,3 +1637,410 @@ class LLaMAInspiredModel(nn.Module):
         output = self.output_layers(x)
         return output.squeeze(-1)
 # ==================================================================================================
+
+class LSTM_AE_Model_3_slice(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length, window_size, d_model=400):
+        super(LSTM_AE_Model_3_slice, self).__init__()
+        self.sequence_length = sequence_length
+        self.parameters_features = parameters_features
+        self.displacement_features = displacement_features
+        self.window_size = window_size  # Window size for sliding window approach
+        self.overlap_size = window_size // 2  # Half of the window size for overlap
+
+        # Parameter Processing Branch
+        self.param_encoder = nn.Sequential(
+            nn.Linear(parameters_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.1)
+        )
+
+        # Time Series Processing Branch
+        self.series_encoder = nn.Sequential(
+            nn.Linear(displacement_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.1)
+        )
+
+        self.pos_encoder = PositionalEncoding(d_model, max_len=window_size)
+
+        # Encoder
+        self.lstm_encoder1 = nn.LSTM(d_model, 150, batch_first=True)
+        self.lstm_encoder2 = nn.LSTM(150, 50, batch_first=True)
+
+        # Decoder
+        self.lstm_decoder1 = nn.LSTM(50, 150, batch_first=True)
+        self.lstm_decoder2 = nn.LSTM(150, d_model, batch_first=True)
+
+        # Dense layers reduction
+        self.dense1 = nn.Linear(d_model, d_model // 2)
+        self.layer_norm1 = nn.LayerNorm(d_model // 2)
+        self.dropout1 = nn.Dropout(0.1)
+
+        # Output layers
+        self.dense2 = nn.Linear(d_model // 2, 100)
+        self.layer_norm2 = nn.LayerNorm(100)
+        self.dropout2 = nn.Dropout(0.1)
+
+        self.pre_output = nn.Linear(100, 50)
+        self.output = nn.Linear(50, 1)
+
+    def forward(self, parameters_input, displacement_input):
+        batch_size = parameters_input.size(0)
+        full_output = torch.zeros(batch_size, self.sequence_length, device=parameters_input.device)
+
+        # Adjust the sliding window to ensure we cover the entire sequence
+        for start in range(0, self.sequence_length, self.window_size - self.overlap_size):
+            # Ensure we don't go beyond the sequence length
+            end = min(start + self.window_size, self.sequence_length)
+
+            disp_window = displacement_input[:, start:end]
+
+            # Pad the window if it's shorter than window_size
+            if disp_window.size(1) < self.window_size:
+                pad_size = self.window_size - disp_window.size(1)
+                disp_window = F.pad(disp_window, (0, pad_size))
+
+            disp_window = disp_window.unsqueeze(-1)
+
+            # Encode parameters
+            params_encoded = self.param_encoder(parameters_input)
+            params_expanded = params_encoded.unsqueeze(1).repeat(1, self.window_size, 1)
+
+            # Encode displacement
+            series_encoded = self.series_encoder(disp_window)
+
+            # Combine encoded params and series
+            combined = torch.cat([params_expanded, series_encoded], dim=-1)
+            combined = self.pos_encoder(combined)
+
+            # LSTM Encoder and Decoder transition
+            lstm_out, _ = self.lstm_encoder1(combined)
+            encoded_sequence, _ = self.lstm_encoder2(lstm_out)
+            lstm_out, _ = self.lstm_decoder1(encoded_sequence)
+            decoded_sequence, _ = self.lstm_decoder2(lstm_out)
+
+            # Dense Transformation
+            x = decoded_sequence.reshape(-1, decoded_sequence.size(-1))
+            x = self.dense1(x)
+            x = self.layer_norm1(x)
+            x = torch.relu(x)
+            x = self.dropout1(x)
+
+            x = self.dense2(x)
+            x = self.layer_norm2(x)
+            x = torch.relu(x)
+            x = self.dropout2(x)
+
+            x = self.pre_output(x)
+
+            # Generating shear output for current window
+            smoothed_prediction = self.output(x)
+            smoothed_prediction = smoothed_prediction.view(batch_size, self.window_size)
+
+            # Weighted overlap blending
+            if start > 0:
+                overlap_region = min(self.overlap_size, full_output.shape[1] - start)
+                weights = torch.linspace(1, 0, overlap_region, device=full_output.device)
+
+                # Blend overlapping predictions
+                full_output[:, start:start + overlap_region] = (
+                        full_output[:, start:start + overlap_region] * (1 - weights) +
+                        smoothed_prediction[:, :overlap_region] * weights
+                )
+
+            # Add non-overlapping or remaining parts
+            non_overlap_start = start + (self.overlap_size if start > 0 else 0)
+            non_overlap_end = min(start + self.window_size, self.sequence_length)
+
+            full_output[:, non_overlap_start:non_overlap_end] = smoothed_prediction[
+                                                                :,
+                                                                (self.overlap_size if start > 0 else 0):(non_overlap_end - non_overlap_start + (self.overlap_size if start > 0 else 0))
+                                                                ]
+
+        # Trim or pad to ensure exactly 500 points
+        if full_output.size(1) > 500:
+            full_output = full_output[:, :500]
+        elif full_output.size(1) < 500:
+            pad_size = 500 - full_output.size(1)
+            full_output = F.pad(full_output, (0, pad_size))
+
+        return full_output
+
+
+class ShearTransformer(nn.Module):
+    def __init__(self,
+                 parameter_features=17,
+                 displacement_features=1,
+                 sequence_length=500,
+                 d_model=128,
+                 nhead=8,
+                 num_layers=3,
+                 window_size=10,
+                 overlap_ratio=0.5,
+                 prediction_horizon=3):
+        super(ShearTransformer, self).__init__()
+
+        # Input feature dimensions
+        self.parameter_features = parameter_features
+        self.displacement_features = displacement_features
+        self.total_input_features = parameter_features + displacement_features
+
+        # Sliding window parameters
+        self.window_size = window_size
+        self.sequence_length = sequence_length
+        self.overlap_ratio = overlap_ratio  # Proportion of window that overlaps
+        self.prediction_horizon = prediction_horizon  # Number of time steps to predict beyond the window
+
+        # Calculate overlap size
+        self.overlap_size = int(window_size * overlap_ratio)
+
+        # Embedding layers
+        self.parameter_embedding = nn.Linear(parameter_features, d_model)
+        self.displacement_embedding = nn.Linear(displacement_features, d_model)
+
+        # Positional Encoding
+        self.positional_encoder = PositionalEncoding(d_model)
+
+        # Main Processing Blocks
+        self.processing_blocks = nn.ModuleList([
+            ProcessingBlock(d_model, nhead=4, dropout=0.1)
+            # EnhancedProcessingBlock(d_model, nhead=8, dropout=0.1)
+            for _ in range(3)
+        ])
+
+        # Transformer Encoder
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            batch_first=True,
+            dim_feedforward=d_model * 4,
+            dropout=0.1,
+            activation='gelu'
+        )
+        self.transformer_encoder = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=num_layers
+        )
+
+        # Output layers
+        self.output_projection = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(d_model // 2, 1)
+        )
+
+        # Temporal smoothing
+        self.temporal_smoother = nn.Sequential(
+            nn.Conv1d(1, 1, kernel_size=5, padding=2),
+            nn.GELU(),
+            nn.BatchNorm1d(1)
+        )
+
+    def forward(self, parameters, displacement):
+        batch_size = parameters.size(0)
+
+        # Expand parameters to match sequence length
+        parameters = parameters
+        displacement = displacement.unsqueeze(-1)
+
+        # Initialize full_output with space for the sequence length + prediction horizon
+        full_output = torch.zeros(batch_size, self.sequence_length + self.prediction_horizon, 1, device=displacement.device)
+
+        # Sliding window prediction with overlap
+        for start in range(0, self.sequence_length - self.window_size + 1, self.window_size - self.overlap_size):
+            # Select window of displacement
+            window_displacement = displacement[:, start:start + self.window_size, :]
+
+            # Repeat parameters to match window length
+            window_parameters = parameters.unsqueeze(1).expand(-1, self.window_size, -1)
+
+            # Combine parameters and displacement
+            combined_input = torch.cat([window_parameters, window_displacement], dim=-1)
+
+            # Embed inputs
+            param_embedded = self.parameter_embedding(window_parameters)
+            displ_embedded = self.displacement_embedding(window_displacement)
+
+            # Combine embeddings
+            combined_embedded = param_embedded + displ_embedded
+
+            # Add positional encoding
+            encoded_combined = self.positional_encoder(combined_embedded)
+            x = encoded_combined
+            # Transformer encoding
+            for block in self.processing_blocks:
+                x = block(x)
+            # transformer_output = self.transformer_encoder(encoded_input)
+
+            # Project to output
+            window_prediction = self.output_projection(x)
+
+            # Smooth prediction
+            window_prediction = self.temporal_smoother(window_prediction.transpose(1, 2)).transpose(1, 2)
+
+            # Update full output with prediction
+            # For future predictions (outside window), predict the next steps
+            future_prediction = window_prediction[:, -self.prediction_horizon:, :]  # Get future steps
+
+            # Ensure that the index range aligns
+            end_index = start + self.window_size + self.prediction_horizon
+            if end_index > full_output.shape[1]:
+                end_index = full_output.shape[1]
+
+            # Update the tensor with the correct ranges for the current window and future predictions
+            full_output[:, start:end_index, :] = torch.cat(
+                (window_prediction, future_prediction), dim=1
+            )
+
+            # When overlapping, we'll use a weighted average
+            if start > 0:
+                overlap_region = min(self.overlap_size, full_output.shape[1] - start)
+
+                # Create weights for blending (linear interpolation)
+                weights = torch.linspace(1, 0, overlap_region, device=full_output.device)
+                weights = weights.view(1, -1, 1)
+
+                # Blend the overlapping regions
+                full_output[:, start:start + overlap_region, :] = (
+                        full_output[:, start:start + overlap_region, :] * (1 - weights) +
+                        window_prediction[:, :overlap_region, :] * weights
+                )
+
+        return full_output[:, :self.sequence_length, :].squeeze(-1)
+
+
+class ShearTransformer2(nn.Module):
+    def __init__(self,
+                 parameter_features=17,
+                 displacement_features=1,
+                 sequence_length=500,
+                 d_model=128,
+                 nhead=8,
+                 num_layers=3,
+                 window_size=5,
+                 future_steps=2,  # Number of future steps to predict
+                 overlap_ratio=0.5):
+        super(ShearTransformer2, self).__init__()
+
+        # Input feature dimensions
+        self.parameter_features = parameter_features
+        self.displacement_features = displacement_features
+        self.total_input_features = parameter_features + displacement_features
+
+        # Sliding window parameters
+        self.window_size = window_size
+        self.sequence_length = sequence_length
+        self.overlap_ratio = overlap_ratio
+        self.future_steps = future_steps
+
+        # Calculate overlap size
+        self.overlap_size = int(window_size * overlap_ratio)
+
+        # Embedding layers
+        self.parameter_embedding = nn.Linear(parameter_features, d_model)
+        self.displacement_embedding = nn.Linear(displacement_features, d_model)
+
+        # Positional Encoding
+        self.positional_encoder = PositionalEncoding(d_model)
+
+        # Transformer Encoder
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            batch_first=True,
+            dim_feedforward=d_model * 4,
+            dropout=0.1,
+            activation='gelu'
+        )
+        self.transformer_encoder = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=num_layers
+        )
+
+        # Output layer for predictions
+        self.output_projection = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(d_model // 2, 1)
+        )
+
+        # Temporal smoothing
+        self.temporal_smoother = nn.Sequential(
+            nn.Conv1d(1, 1, kernel_size=5, padding=2),
+            nn.GELU(),
+            nn.BatchNorm1d(1)
+        )
+
+    def forward(self, parameters, displacement):
+        batch_size = parameters.size(0)
+
+        # Prepare input tensors
+        parameters = parameters
+        displacement = displacement.unsqueeze(-1)
+
+        # Initialize output tensor to store predictions
+        full_output = torch.zeros(
+            batch_size,
+            self.sequence_length + self.future_steps,
+            device=displacement.device
+        )
+
+        # Sliding window prediction with overlap
+        for start in range(0, self.sequence_length - self.window_size + 1, self.window_size - self.overlap_size):
+            # Determine the end of the current prediction window
+            window_end = min(start + self.window_size + self.future_steps, self.sequence_length + self.future_steps)
+
+            # Select current window of displacement
+            window_displacement = displacement[:, start:start + self.window_size, :]
+
+            # Repeat parameters to match window length
+            window_parameters = parameters.unsqueeze(1).expand(-1, self.window_size, -1)
+
+            # Combine parameters and displacement
+            combined_input = torch.cat([window_parameters, window_displacement], dim=-1)
+
+            # Embed inputs
+            param_embedded = self.parameter_embedding(window_parameters)
+            displ_embedded = self.displacement_embedding(window_displacement)
+
+            # Combine embeddings
+            combined_embedded = param_embedded + displ_embedded
+
+            # Add positional encoding
+            encoded_input = self.positional_encoder(combined_embedded)
+
+            # Transformer encoding
+            transformer_output = self.transformer_encoder(encoded_input)
+
+            # Project to output
+            window_prediction = self.output_projection(transformer_output)
+
+            # Smooth prediction
+            smoothed_prediction = self.temporal_smoother(
+                window_prediction.transpose(1, 2)
+            ).transpose(1, 2).squeeze(-1)
+
+            # print('smoothed_prediction', smoothed_prediction.shape)
+            # Update full output with prediction
+            if start > 0:
+                # Overlap blending
+                overlap_region = min(self.overlap_size, full_output.shape[1] - start)
+                weights = torch.linspace(1, 0, overlap_region, device=full_output.device)
+
+                # Blend overlapping predictions
+                full_output[:, start:start + overlap_region] = (
+                        full_output[:, start:start + overlap_region] * (1 - weights) +
+                        smoothed_prediction[:, :overlap_region] * weights
+                )
+
+            # Update predictions for current window
+            prediction_slice = smoothed_prediction[:, :min(window_end - start, self.window_size + self.future_steps)]
+            # print('prediction_slice', prediction_slice.shape)
+            full_output[:, start:start + len(prediction_slice[0])] = prediction_slice
+
+        # Return predictions up to sequence length + future steps
+        return full_output[:, :self.sequence_length]
