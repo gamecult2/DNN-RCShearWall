@@ -3,14 +3,9 @@ import openseespy.opensees as ops
 # import vfo.vfo as vfo
 # import opsvis as opsv
 from functions import *
-import pandas as pd
 
 
 def reset_analysis():
-    """
-    Resets the analysis by setting time to 0,
-    removing the recorders and wiping the analysis.
-    """
     ops.setTime(0.0)  # Set the time in the Domain to zero
     ops.loadConst()  # Set the loads constant in the domain
     ops.remove('recorders')  # Remove all recorder objects.
@@ -240,7 +235,7 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
 
             ops.recorder('Element', '-file', f'plot/MVLEM_cracking_angle_ele_{i + 1}_panel_{j + 1}.txt', '-ele', i + 1, 'RCPanel', j + 1, 'cracking_angles')
             ops.recorder('Element', '-file', f'plot/MVLEM_panel_crack_{i + 1}_panel_{j + 1}.txt', '-ele', i + 1, 'RCPanel', j + 1, 'panel_crack')
-    # ''' # Recorders
+    # '''  # Recorders
 
     # define parameters for adaptive time-step
     max_factor = 0.12  # 1.0 -> don't make it larger than initial time step

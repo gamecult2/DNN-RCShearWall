@@ -83,7 +83,7 @@ torchinfo.summary(model)
 optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=1, min_lr=1e-6)
 criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
-early_stopping = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}")
+earlystop = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}")
 
 # Initialize tracking variables
 train_losses, val_losses, train_r2_scores, val_r2_scores = [], [], [], []
@@ -135,10 +135,10 @@ for epoch in range(EPOCHS):
         epoch_train_r2 += r2  # .item()
 
         # Update progress bar with real-time batch metrics
-        train_loader_tqdm.postfix[0]["r2_a1"] = r2_a1.item()
-        train_loader_tqdm.postfix[0]["r2_c1"] = r2_c1.item()
-        train_loader_tqdm.postfix[0]["r2_a2"] = r2_a2.item()
-        train_loader_tqdm.postfix[0]["r2_c2"] = r2_c2.item()
+        train_loader_tqdm.postfix[0]["r2_a1"] = r2_a1
+        train_loader_tqdm.postfix[0]["r2_c1"] = r2_c1
+        train_loader_tqdm.postfix[0]["r2_a2"] = r2_a2
+        train_loader_tqdm.postfix[0]["r2_c2"] = r2_c2
         train_loader_tqdm.postfix[0]["avg_r2"] = epoch_train_r2 / batch_count  # Running average
         train_loader_tqdm.update(1)
 
