@@ -14,6 +14,7 @@ from informer.attn import FullAttention, ProbAttention, AttentionLayer
 from informer.encoder import Encoder, EncoderLayer
 from informer.decoder import Decoder, DecoderLayer
 
+
 # ======= Global Use Layers  ====================================================================
 class ProbSparseAttention(nn.Module):
     def __init__(self, d_model, n_heads):
@@ -27,6 +28,7 @@ class ProbSparseAttention(nn.Module):
 
     def forward(self, x):
         return self.attention(x, x, x)[0]
+
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_len=5000):
@@ -45,6 +47,7 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         return x + self.pe[:, :x.size(1)]
 
+
 class RotaryPositionalEmbedding(nn.Module):
     def __init__(self, d_model, max_len=5000):
         super(RotaryPositionalEmbedding, self).__init__()
@@ -59,6 +62,7 @@ class RotaryPositionalEmbedding(nn.Module):
         pe[:, 1::2] = torch.cos(position * div_term)
         return x + pe.to(x.device)
 
+
 class MultiHeadAttention(nn.Module):
     def __init__(self, d_model, num_heads):
         super(MultiHeadAttention, self).__init__()
@@ -66,6 +70,7 @@ class MultiHeadAttention(nn.Module):
 
     def forward(self, x):
         return self.attention(x, x, x)[0]
+
 
 class StochasticDepth(nn.Module):
     def __init__(self, drop_prob=0.1):
@@ -78,6 +83,7 @@ class StochasticDepth(nn.Module):
         keep_prob = 1 - self.drop_prob
         mask = x.new_empty([x.shape[0], 1, 1]).bernoulli_(keep_prob)
         return x / keep_prob * mask
+
 
 class ResidualBlock(nn.Module):
     def __init__(self, channels, dropout=0.1):
@@ -98,6 +104,7 @@ class ResidualBlock(nn.Module):
         x = self.norm2(x)
         return residual + x
 
+
 class AdaptivePositionalEncoding(nn.Module):
     def __init__(self, d_model, max_len=500):
         super().__init__()
@@ -111,6 +118,8 @@ class AdaptivePositionalEncoding(nn.Module):
 
     def forward(self, x):
         return x + self.adaptive_scale * self.pe[:x.size(1), :].unsqueeze(0)
+
+
 # ===============================================================================================
 
 # ======= Divers Model  =========================================================================
@@ -165,6 +174,7 @@ class AttentionLSTM_AEModel(nn.Module):
         output_shear = self.reconstruction(decoded_sequence)
 
         return output_shear.reshape(output_shear.size(0), -1)
+
 
 class xLSTM_Model(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length):
@@ -236,6 +246,8 @@ class xLSTM_Model(nn.Module):
         output_shear = output_shear.reshape(output_shear.size(0), -1)
 
         return output_shear
+
+
 # ================================================================================================
 
 # ======= Transformer Based Model  ==============================================================
@@ -320,7 +332,6 @@ class Transformer_Model(nn.Module):
         # Process output sequence
         predictions = self.output_layer(output)  # [batch_size, seq_length, 1]
 
-
         # Add additional smoothing strategies
         predictions = F.interpolate(
             predictions,
@@ -329,6 +340,7 @@ class Transformer_Model(nn.Module):
             align_corners=False
         ).squeeze(-1)  # [batch_size, seq_length]
         return predictions
+
 
 class Transformer_Model_2(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length,
@@ -402,6 +414,7 @@ class Transformer_Model_2(nn.Module):
 
         return output_shear
 
+
 class TransformerAEModel(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length,
                  n_heads=4, n_encoder_layers=2, n_decoder_layers=2):
@@ -458,7 +471,9 @@ class TransformerAEModel(nn.Module):
         output_shear = self.reconstruction(decoded)
 
         return output_shear.reshape(output_shear.size(0), -1)
+
 # ==============================================================================================
+
 
 # ======= LSTM AutoEncoder ======================================================================
 # LSTM-AE for joint parameter & time series processing (baseline)
@@ -479,14 +494,14 @@ class LSTM_AE_Model_1(nn.Module):
         self.dropout2 = nn.Dropout(0.2)
         self.output = nn.Linear(200, 1)
 
+    def small_value_activation(self, x):
+        return x * torch.sigmoid(x)  # Smooth transition near zero (Custom activation function for small values)
+
     def forward(self, parameters_input, displacement_input):
-        # Repeat parameters for each time step
         distributed_parameters = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
 
-        # Concatenate displacement and parameters
         concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
 
-        # Encoding & Decoding
         lstm_out, _ = self.lstm_encoder1(concatenated_tensor)
         encoded_sequence, _ = self.lstm_encoder2(lstm_out)
         lstm_out, _ = self.lstm_decoder1(encoded_sequence)
@@ -506,87 +521,14 @@ class LSTM_AE_Model_1(nn.Module):
 
         return output_shear
 
-# LSTM-AE with batch norm and GELU activation for improved stability and small value
-class LSTM_AE_Model_2(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=200):
-        super(LSTM_AE_Model_2, self).__init__()
-        self.sequence_length = sequence_length
 
-        self.lstm_encoder1 = nn.LSTM(displacement_features + parameters_features, 300, batch_first=True)
-        self.lstm_encoder2 = nn.LSTM(300, 50, batch_first=True)
-
-        self.lstm_decoder1 = nn.LSTM(50, 300, batch_first=True)
-        self.lstm_decoder2 = nn.LSTM(300, displacement_features, batch_first=True)
-
-        # Dense layers with modified architecture
-        self.dense1 = nn.Linear(displacement_features, 300)
-        self.batch_norm1 = nn.BatchNorm1d(300)
-        self.dropout1 = nn.Dropout(0.1)
-
-        self.dense2 = nn.Linear(300, 200)
-        self.batch_norm2 = nn.BatchNorm1d(200)
-        self.dropout2 = nn.Dropout(0.1)
-
-        # Modified output layer for better small value handling
-        self.pre_output = nn.Linear(200, 50)
-        self.output = nn.Linear(50, 1)
-
-        # Activation for small values
-        self.small_activation = nn.GELU()  # or custom activation
-
-    def small_value_activation(self, x):
-        return x * torch.sigmoid(x)  # Smooth transition near zero (Custom activation function for small values)
-
-    def forward(self, parameters_input, displacement_input):
-        # Distribute parameters
-        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
-
-        # Concatenate inputs
-        concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
-
-        # Encoding & Decoding
-        lstm_out, _ = self.lstm_encoder1(concatenated_tensor)
-        encoded_sequence, _ = self.lstm_encoder2(lstm_out)
-        lstm_out, _ = self.lstm_decoder1(encoded_sequence)
-        decoded_sequence, _ = self.lstm_decoder2(lstm_out)
-
-        # Dense layers with batch normalization
-        batch_size = decoded_sequence.size(0)
-        time_steps = decoded_sequence.size(1)
-
-        # Reshape for batch norm
-        x = decoded_sequence.reshape(-1, decoded_sequence.size(-1))
-
-        x = self.dense1(x)
-        x = self.batch_norm1(x)
-        x = torch.sigmoid(x)
-        x = self.dropout1(x)
-
-        x = self.dense2(x)
-        x = self.batch_norm2(x)
-        x = torch.sigmoid(x)
-        x = self.dropout2(x)
-
-        # Pre-output processing
-        x = self.pre_output(x)
-        # x = self.small_value_activation(x)  # Custom activation for small values
-        x = self.small_activation(x)
-
-        # Final output
-        output_shear = self.output(x)
-        output_shear = output_shear.reshape(batch_size, -1)
-
-        return output_shear
-
-# Hybrid LSTM-AE with separate processing branches and positional encoding for enhanced feature
 class LSTM_AE_Model_3(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=400):
+    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=200):
         super(LSTM_AE_Model_3, self).__init__()
         self.sequence_length = sequence_length
         self.parameters_features = parameters_features
         self.displacement_features = displacement_features
 
-        # Parameter Processing Branch
         self.param_encoder = nn.Sequential(
             nn.Linear(parameters_features, d_model // 2),
             nn.LayerNorm(d_model // 2),
@@ -594,193 +536,55 @@ class LSTM_AE_Model_3(nn.Module):
             nn.Dropout(0.1)
         )
 
-        # Time Series Processing Branch with multiple Conv1d layers
         self.series_encoder = nn.Sequential(
-            nn.Conv1d(in_channels=1, out_channels=d_model // 6, kernel_size=5, padding=2),  # First Conv1d layer
+            nn.Linear(displacement_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
             nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Conv1d(in_channels=d_model // 6, out_channels=d_model // 4, kernel_size=5, padding=2),  # Second Conv1d layer
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Conv1d(in_channels=d_model // 4, out_channels=d_model // 2, kernel_size=5, padding=2),  # Third Conv1d layer
-            nn.GELU(),
-            nn.Dropout(0.1),
+            nn.Dropout(0.1)
         )
 
-        self.pos_encoder = PositionalEncoding(d_model, max_len=sequence_length)
+        self.lstm_encoder1 = nn.LSTM(d_model, 300, batch_first=True)
+        self.lstm_encoder2 = nn.LSTM(300, 50, batch_first=True)
+        self.lstm_decoder1 = nn.LSTM(50, 300, batch_first=True)
+        self.lstm_decoder2 = nn.LSTM(300, d_model, batch_first=True)
 
-        # Encoder with smoother transitions
-        self.lstm_encoder1 = nn.LSTM(d_model, 150, batch_first=True)  # Reduced from 300
-        self.lstm_encoder2 = nn.LSTM(150, 50, batch_first=True)
-
-        # Decoder with smoother transitions
-        self.lstm_decoder1 = nn.LSTM(50, 150, batch_first=True)
-        self.lstm_decoder2 = nn.LSTM(150, d_model, batch_first=True)
-
-        # Dense layers with reduced dimensions for parameter efficiency
-        self.dense1 = nn.Linear(d_model, d_model // 2)
-        self.layer_norm1 = nn.LayerNorm(d_model // 2)
-        self.dropout1 = nn.Dropout(0.1)
-
-        self.dense2 = nn.Linear(d_model // 2, 100)
-        self.layer_norm2 = nn.LayerNorm(100)
-        self.dropout2 = nn.Dropout(0.1)
-
-        # Modified output layers
-        self.pre_output = nn.Linear(100, 50)
-        self.output = nn.Linear(50, 1)
+        self.output_layer = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(d_model // 2, 100),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(100, 50),
+            nn.GELU(),
+            nn.Linear(50, displacement_features)
+        )
 
     def forward(self, parameters_input, displacement_input):
-        batch_size = parameters_input.size(0)
-
-        # Process parameters: expand to match sequence length
         params_encoded = self.param_encoder(parameters_input)
-        params_expanded = params_encoded.unsqueeze(1).expand(-1, self.sequence_length, -1)
-        # print('params_expanded', params_expanded.shape)
-        # Process displacement input: reduce dimensionality first
-        displacement_input = displacement_input.unsqueeze(1)
-        series_encoded = self.series_encoder(displacement_input)
-        # print('series_encoded', series_encoded.shape)
+        params_encoded = params_encoded.unsqueeze(1).expand(-1, self.sequence_length, -1)
 
-        series_encoded = series_encoded.permute(0, 2, 1)
-        # print('series_encoded', series_encoded.shape)
+        displacement_input = displacement_input.unsqueeze(-1)
+        disp_encoded = self.series_encoder(displacement_input)
 
-        # Combine features: concatenation + projection
-        combined = torch.cat([params_expanded, series_encoded], dim=-1)
+        combined = torch.cat([params_encoded, disp_encoded], dim=-1)
 
-        # Add positional encoding
-        combined = self.pos_encoder(combined)
+        out1, _ = self.lstm_encoder1(combined)
+        out2, _ = self.lstm_encoder2(out1)
+        out3, _ = self.lstm_decoder1(out2)
+        out4, _ = self.lstm_decoder2(out3)
 
-        # Encoding and decoding
-        lstm_out, _ = self.lstm_encoder1(combined)
-        encoded_sequence, _ = self.lstm_encoder2(lstm_out)
-        lstm_out, _ = self.lstm_decoder1(encoded_sequence)
-        decoded_sequence, _ = self.lstm_decoder2(lstm_out)
+        output_shear = self.output_layer(out4)
 
-        # Dense layers with layer normalization
-        x = decoded_sequence.reshape(-1, decoded_sequence.size(-1))
+        return output_shear.squeeze(-1)
 
-        x = self.dense1(x)
-        x = self.layer_norm1(x)
-        x = torch.relu(x)
-        x = self.dropout1(x)
-
-        x = self.dense2(x)
-        x = self.layer_norm2(x)
-        x = torch.relu(x)
-        x = self.dropout2(x)
-
-        # Pre-output processing
-        x = self.pre_output(x)
-
-        # Final output
-        output_shear = self.output(x)
-        output_shear = output_shear.reshape(batch_size, -1)
-
-        return output_shear
 # =================================================================================================
 
+
 # ======= TimeSeriesTransformer ===================================================================
-class TimeSeriesTransformer(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=200):
-        super(TimeSeriesTransformer, self).__init__()
-        self.sequence_length = sequence_length
-
-        # Parameter Processing Branch
-        self.param_encoder = nn.Sequential(
-            nn.Linear(parameters_features, d_model // 2),
-            nn.LayerNorm(d_model // 2),
-            nn.GELU(),
-            nn.Dropout(0.1)
-        )
-
-        # Time Series Processing Branch with multiple Conv1d layers
-        self.series_encoder = nn.Sequential(
-            nn.Conv1d(in_channels=1, out_channels=d_model // 6, kernel_size=5, padding=2),  # First Conv1d layer
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Conv1d(in_channels=d_model // 6, out_channels=d_model // 4, kernel_size=5, padding=2),  # Second Conv1d layer
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Conv1d(in_channels=d_model // 4, out_channels=d_model // 2, kernel_size=5, padding=2),  # Third Conv1d layer
-            nn.GELU(),
-            nn.Dropout(0.1),
-        )
-
-        # Positional Encoding or Rotary Positional Encoding
-        self.pos_encoder = PositionalEncoding(d_model, max_len=sequence_length)
-        # self.pos_encoder = RotaryPositionalEmbedding(d_model, max_len=sequence_length)
-
-        # Main Processing Blocks
-        self.processing_blocks = nn.ModuleList([
-            ProcessingBlock(d_model, nhead=4, dropout=0.1)
-            # EnhancedProcessingBlock(d_model, nhead=8, dropout=0.1)
-            for _ in range(3)
-        ])
-
-        # Output Generation
-        # self.output_layer = nn.Sequential(
-        #     nn.Linear(d_model, d_model // 2),
-        #     nn.GELU(),
-        #     nn.Dropout(0.1),
-        #     nn.Linear(d_model // 2, displacement_features)
-        # )
-        self.output_layer = nn.Sequential(
-            nn.Linear(d_model, d_model // 2),  # Reduced first layer size
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Linear(d_model // 2, d_model // 4),  # Reduced further
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Linear(d_model // 4, d_model // 2),  # Increased back
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Linear(d_model // 2, displacement_features)  # Final output layer
-        )
-
-        # Add temporal smoothing convolution
-        self.temporal_smoother = nn.Sequential(
-            nn.Conv1d(displacement_features, displacement_features,
-                      kernel_size=5, padding=2, groups=displacement_features),
-            nn.GELU(),
-            nn.BatchNorm1d(displacement_features)
-        )
-
-    def forward(self, parameters, time_series):
-        # Expand parameters to match sequence length
-        params_expanded = parameters.unsqueeze(1).expand(-1, self.sequence_length, -1)
-        params_encoded = self.param_encoder(params_expanded)
-        # print('params_encoded', params_encoded.shape)
-        # Process time series
-        # print('time_series', time_series.shape)
-        # series_encoded = series_encoded
-        series_encoded = self.series_encoder(time_series.unsqueeze(1)).permute(0, 2, 1)  # For Convolution
-        # series_encoded = self.series_encoder(time_series.unsqueeze(-1))  # For Linear
-        # print('series_encoded', series_encoded.shape)
-        # Combine features
-        combined = torch.cat([params_encoded, series_encoded], dim=-1)
-        # print('combined', combined.shape)
-        # Add positional encoding
-        combined = self.pos_encoder(combined)
-
-        # Process through main blocks
-        x = combined
-        for block in self.processing_blocks:
-            x = block(x)
-
-        # Generate output sequence
-        output = self.output_layer(x)
-
-        # Add time series as residual connection
-        residual_output = output + time_series.unsqueeze(-1)
-
-        # Apply temporal smoothing  Reshape for 1D convolution
-        smoothed_output = self.temporal_smoother(residual_output.transpose(1, 2)).transpose(1, 2)
-
-        return smoothed_output.squeeze(-1)
 
 class ProcessingBlock(nn.Module):
-    def __init__(self, d_model, nhead, dropout=0.1):
+    def __init__(self, d_model, nhead, dropout=0.05):
         super(ProcessingBlock, self).__init__()
 
         # Multi-head self-attention
@@ -788,33 +592,21 @@ class ProcessingBlock(nn.Module):
             d_model, nhead, dropout=dropout, batch_first=True
         )
 
-        # Convolutional FFN
         self.conv_ffn = nn.Sequential(
-            nn.Conv1d(d_model, d_model * 2, kernel_size=3, padding=1),
+            nn.Conv1d(d_model, d_model // 2, kernel_size=3, padding=1),  # Increased expansion
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Conv1d(d_model * 2, d_model, kernel_size=3, padding=1)
+            nn.Conv1d(d_model // 2, d_model, kernel_size=3, padding=1)
         )
-        # self.conv_ffn = nn.Sequential(
-        #     nn.Conv1d(d_model, d_model * 4, kernel_size=3, padding=1),  # Increased expansion
-        #     nn.GELU(),
-        #     nn.Dropout(dropout),
-        #     nn.Conv1d(d_model * 4, d_model * 2, kernel_size=3, padding=1),  # Additional intermediate layer
-        #     nn.GELU(),
-        #     nn.Dropout(dropout),
-        #     nn.Conv1d(d_model * 2, d_model, kernel_size=3, padding=1)
-        # )
 
         # LSTM layer
         self.lstm = nn.LSTM(
-            d_model, d_model, bidirectional=False,
-            batch_first=True
+            d_model, d_model, bidirectional=False, batch_first=True
         )
 
         # LSTM layer
         self.lstm2 = nn.LSTM(
-            d_model, d_model, bidirectional=False,
-            batch_first=True
+            d_model, d_model, bidirectional=False, batch_first=True
         )
         # Normalization layers
         self.norm1 = nn.LayerNorm(d_model)
@@ -843,6 +635,217 @@ class ProcessingBlock(nn.Module):
         x = self.norm4(x + self.dropout(lstm_output))
 
         return x
+
+
+class TimeSeriesTransformer(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=200, dropout=0.05):
+        super(TimeSeriesTransformer, self).__init__()
+        self.sequence_length = sequence_length
+
+        self.param_encoder = nn.Sequential(
+            nn.Linear(parameters_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout)
+        )
+
+        self.series_encoder = nn.Sequential(
+            nn.Linear(displacement_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout)
+        )
+
+        self.pos_encoder = PositionalEncoding(d_model, max_len=sequence_length)
+
+        self.processing_blocks = nn.ModuleList([
+            ProcessingBlock(d_model, nhead=4, dropout=dropout)
+            for _ in range(2)
+        ])
+
+        self.output_layer = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model // 2, d_model)
+        )
+        self.output_layer2 = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model // 2, displacement_features)
+        )
+
+        # Enhanced temporal smoothing with multiple convolutional layers
+        self.temporal_smoother = nn.Sequential(
+            # First conv layer
+            nn.Conv1d(displacement_features, displacement_features,
+                      kernel_size=5, padding=2, groups=displacement_features),
+            nn.GELU(),
+            nn.BatchNorm1d(displacement_features),
+
+            # Second conv layer
+            nn.Conv1d(displacement_features, displacement_features,
+                      kernel_size=5, padding=2, groups=displacement_features),
+            nn.GELU(),
+            nn.BatchNorm1d(displacement_features),
+
+            # Third conv layer
+            nn.Conv1d(displacement_features, displacement_features,
+                      kernel_size=5, padding=2, groups=displacement_features),
+            nn.GELU(),
+            nn.BatchNorm1d(displacement_features)
+        )
+
+    def forward(self, parameters, time_series):
+        params_expanded = parameters.unsqueeze(1).expand(-1, self.sequence_length, -1)
+        params_encoded = self.param_encoder(params_expanded)
+
+        series_encoded = self.series_encoder(time_series.unsqueeze(-1))
+
+        combined = torch.cat([params_encoded, series_encoded], dim=-1)
+        combined = self.pos_encoder(combined)
+
+        x = combined
+        for block in self.processing_blocks:
+            x = block(x)
+
+        # Generate output sequence
+        output = self.output_layer(x)
+
+        # Add time series as residual connection
+        residual_output = output + combined
+
+        residual_output = self.output_layer2(residual_output)
+
+        # Apply temporal smoothing  Reshape for 1D convolution
+        smoothed_output = self.temporal_smoother(residual_output.transpose(1, 2)).transpose(1, 2)
+
+        return smoothed_output.squeeze(-1)
+
+# =================================================================================================
+
+
+class ProcessingBlock2(nn.Module):
+    def __init__(self, d_model, nhead, dropout=0.05):
+        super(ProcessingBlock2, self).__init__()
+
+        self.self_attn = nn.MultiheadAttention(
+            d_model, nhead, dropout=dropout, batch_first=True
+        )
+
+        self.conv_ffn = nn.Sequential(
+            nn.Linear(d_model, d_model),
+            nn.LayerNorm(d_model),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model, d_model),
+            nn.Tanh()
+        )
+
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        attn_output, _ = self.self_attn(x, x, x)
+        x = self.norm1(x + self.dropout(attn_output))
+
+        conv_output = self.conv_ffn(x)
+        x = self.norm2(x + self.dropout(conv_output))
+
+        return x
+
+
+class TimeSeriesTransformer2(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=256, dropout=0.1):
+        super(TimeSeriesTransformer2, self).__init__()
+        self.sequence_length = sequence_length
+
+        # Param encoder with residual projection
+        self.param_encoder = nn.Sequential(
+            nn.Linear(parameters_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model // 2, d_model // 2)
+        )
+
+        # Series encoder with residual projection
+        self.series_encoder = nn.Sequential(
+            nn.Linear(displacement_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model // 2, d_model // 2)
+        )
+
+        self.pos_encoder = PositionalEncoding(d_model, max_len=sequence_length)
+
+        # Processing blocks with residual connections
+        self.processing_blocks = nn.ModuleList([
+            ProcessingBlock2(d_model, nhead=4, dropout=dropout)
+            for _ in range(2)
+        ])
+
+        self.lstm_encoder = nn.LSTM(
+            d_model, d_model,
+            num_layers=1,
+            batch_first=True,
+            dropout=dropout
+        )
+
+        self.output_projection = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model // 2, 50),
+            nn.Tanh(),
+            nn.Dropout(dropout),
+            nn.Linear(50, displacement_features),
+            nn.Tanh()
+        )
+
+        self.temporal_smoother = nn.Sequential(
+            nn.Conv1d(displacement_features, displacement_features,
+                      kernel_size=11, padding=5, groups=displacement_features),
+            nn.GELU(),
+            nn.BatchNorm1d(displacement_features),
+            nn.Conv1d(displacement_features, displacement_features,
+                      kernel_size=9, padding=4, groups=displacement_features),
+            nn.GELU(),
+            nn.BatchNorm1d(displacement_features)
+        )
+
+    def smooth_loss(self, prediction):
+        diff = prediction[:, 1:] - prediction[:, :-1]
+        return torch.mean(torch.abs(diff))
+
+    def forward(self, parameters, time_series):
+        # Expanded and encoded parameters with residual
+        params_expanded = parameters.unsqueeze(1).expand(-1, self.sequence_length, -1)
+        params_encoded = self.param_encoder(params_expanded)
+
+        # Encoded time series with residual
+        series_encoded = self.series_encoder(time_series.unsqueeze(-1))
+
+        # Combine and positional encoding
+        combined = torch.cat([params_encoded, series_encoded], dim=-1)
+        combined = self.pos_encoder(combined)
+
+        # Process through transformer blocks
+        x = combined
+        for block in self.processing_blocks:
+            x = block(x)
+
+        x, _ = self.lstm_encoder(x)
+        output = self.output_projection(x)
+
+        smoothed_output = self.temporal_smoother(output.transpose(1, 2)).transpose(1, 2)
+
+        return smoothed_output.squeeze(-1)
+
+
 # =================================================================================================
 
 class ShearTransformer(nn.Module):
@@ -978,6 +981,7 @@ class ShearTransformer(nn.Module):
         # Return predictions up to sequence length + future steps
         return full_output[:, :self.sequence_length]
 
+
 # ======= CrackTransformer ========================================================================
 class CrackTimeSeriesTransformer(nn.Module):
     def __init__(self,
@@ -1067,6 +1071,7 @@ class CrackTimeSeriesTransformer(nn.Module):
 
         return outputs[0], outputs[1], outputs[2], outputs[3]
 
+
 class CrackProcessingBlock(nn.Module):
     def __init__(self, d_model, nhead, dropout=0.1):
         super(CrackProcessingBlock, self).__init__()
@@ -1108,165 +1113,9 @@ class CrackProcessingBlock(nn.Module):
         # Additional residual processing
         x = self.residual_block(x)
         return x
+
 # =================================================================================================
 
-# ======= EnhancedTimeSeriesTransformer ===========================================================
-class EnhancedTimeSeriesTransformer(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=256):
-        super(EnhancedTimeSeriesTransformer, self).__init__()
-        self.sequence_length = sequence_length
-        self.parameters_features = parameters_features
-        self.displacement_features = displacement_features
-
-        # Parameter encoder
-        self.param_encoder = nn.Sequential(
-            nn.Linear(parameters_features, d_model // 2),
-            nn.LayerNorm(d_model // 2),
-            nn.GELU(),
-            nn.Dropout(0.2)
-        )
-
-        # Time series encoder
-        self.series_encoder = nn.Sequential(
-            nn.Linear(displacement_features, d_model // 2),
-            nn.LayerNorm(d_model // 2),
-            nn.GELU(),
-            nn.Dropout(0.2)
-        )
-
-        # Positional Encoding
-        # self.positional_encoding = PositionalEncoding(d_model)
-        self.positional_encoding = RotaryPositionalEmbedding(d_model, max_len=sequence_length)
-
-        # Multiple processing blocks with progressive complexity
-        self.processing_blocks = nn.ModuleList([
-            EnhancedProcessingBlock(d_model, nhead=4, dropout=0.1)
-            for _ in range(3)
-        ])
-
-        # Global feature extraction
-        # self.global_pooling = nn.AdaptiveAvgPool1d(1)
-        self.global_pooling = nn.AdaptiveMaxPool1d(1)
-
-        # Output Generation
-        self.output_layer = nn.Sequential(
-            nn.Linear(d_model, d_model // 2),
-            nn.GELU(),
-            nn.Dropout(0.1),
-            nn.Linear(d_model // 2, displacement_features),
-        )
-
-    def forward(self, parameters, time_series):
-        # Expand parameters to match sequence length
-        params_expanded = parameters.unsqueeze(1).expand(-1, self.sequence_length, -1)
-        params_encoded = self.param_encoder(params_expanded)
-
-        # Process time series
-        series_encoded = self.series_encoder(time_series.unsqueeze(-1))
-
-        # Combine features
-        combined = torch.cat([params_encoded, series_encoded], dim=-1)
-
-        # Add positional encoding
-        combined = self.positional_encoding(combined)
-
-        # Process through enhanced blocks
-        x = combined
-        for block in self.processing_blocks:
-            x = block(x)
-        # print('x processing_blocks', x.shape)
-
-        # Global feature extraction
-        global_features = self.global_pooling(x.transpose(1, 2)).squeeze(-1)
-        global_features_expanded = global_features.unsqueeze(1).expand(-1, x.size(1), -1)  # Shape: [32, 500, 256]
-        x = x + global_features_expanded  # Combine global and sequence-level featuresc
-
-        output = self.output_layer(x).squeeze(-1)
-        # print('output', output.shape)
-
-        return output
-
-class SEBlock(nn.Module):
-    def __init__(self, channel, reduction=16):
-        super(SEBlock, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool1d(1)
-        self.fc = nn.Sequential(
-            nn.Linear(channel, channel // reduction, bias=False),
-            nn.ReLU(inplace=True),
-            nn.Linear(channel // reduction, channel, bias=False),
-            nn.Sigmoid()
-        )
-
-    def forward(self, x):
-        b, c, _ = x.size()
-        y = self.avg_pool(x).view(b, c)
-        y = self.fc(y).view(b, c, 1)
-        return x * y.expand_as(x)
-
-class EnhancedProcessingBlock(nn.Module):
-    def __init__(self, d_model, nhead, dropout=0.1):
-        super(EnhancedProcessingBlock, self).__init__()
-
-        # Advanced self-attention with adaptive layer normalization
-        self.self_attn = nn.MultiheadAttention(
-            d_model, nhead, dropout=dropout, batch_first=True
-        )
-
-        # Adaptive layer normalization
-        self.adaptive_norm = nn.LayerNorm(d_model)
-
-        # Channel attention
-        self.se_block = SEBlock(d_model)
-
-        # Dilated convolutional FFN
-        self.dilated_conv_ffn = nn.Sequential(
-            nn.Conv1d(d_model, d_model * 2, kernel_size=3, padding=2, dilation=2),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Conv1d(d_model * 2, d_model, kernel_size=3, padding=2, dilation=2)
-        )
-
-        # Stochastic depth (drop path)
-        self.drop_path_rate = dropout
-
-        # Convolutional layer for temporal processing
-        self.temporal_conv = nn.Sequential(
-            nn.Conv1d(d_model, d_model, kernel_size=3, padding=1),
-            nn.GELU(),
-            nn.BatchNorm1d(d_model)
-        )
-
-        self.norm1 = nn.LayerNorm(d_model)
-        self.norm2 = nn.LayerNorm(d_model)
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, x):
-        # Stochastic depth
-        if self.training and self.drop_path_rate > 0:
-            keep_prob = 1 - self.drop_path_rate
-            mask = x.new_empty(x.shape[0], 1, 1).bernoulli_(keep_prob)
-            if keep_prob > 0:
-                x = x / keep_prob * mask
-
-        # Self-attention with adaptive normalization
-        attn_output, _ = self.self_attn(x, x, x)
-        x = self.adaptive_norm(x + self.dropout(attn_output))
-
-        # Channel-wise attention
-        x = self.se_block(x.transpose(1, 2)).transpose(1, 2)
-
-        # Dilated convolutional FFN
-        conv_input = x.transpose(1, 2)
-        conv_output = self.dilated_conv_ffn(conv_input).transpose(1, 2)
-        x = self.norm1(x + self.dropout(conv_output))
-
-        # Temporal convolution
-        temp_conv_input = x.transpose(1, 2)
-        temp_conv_output = self.temporal_conv(temp_conv_input).transpose(1, 2)
-        x = self.norm2(x + self.dropout(temp_conv_output))
-
-        return x
-# ==================================================================================================
 
 # ======= Informer Model ===========================================================================
 # 1. Transformer-based Informer Architecture
@@ -1330,6 +1179,7 @@ class InformerModel(nn.Module):
         # Decode to final output
         output = self.decoder(x)
         return output.squeeze(-1)
+
 
 class InformerShearModel(nn.Module):
     def __init__(self,
@@ -1457,6 +1307,7 @@ class InformerShearModel(nn.Module):
 
         return output
 
+
 class Informer_AE_Model(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length, model_dim=512, factor=5, heads=8, dropout=0.1):
         super(Informer_AE_Model, self).__init__()
@@ -1535,7 +1386,9 @@ class Informer_AE_Model(nn.Module):
         output_shear = output_shear.reshape(batch_size, -1)
 
         return output_shear
+
 # ==================================================================================================
+
 
 # ======= LLaMA2 Model =============================================================================
 class LLaMA2_Model(nn.Module):
@@ -1556,7 +1409,7 @@ class LLaMA2_Model(nn.Module):
                              device=device,
                              ffn_dim_multiplier=None,
                              multiple_of=256
-        )
+                             )
 
         self.input_embedding = nn.Linear(displacement_features + parameters_features, dim)
         self.dropout = nn.Dropout(0.1)  # Fixed dropout rate
@@ -1590,6 +1443,7 @@ class LLaMA2_Model(nn.Module):
         output = self.output(x)
 
         return output.squeeze(-1)
+
 
 # 2. LLaMA-inspired Architecture
 class LLaMAInspiredModel(nn.Module):
@@ -1636,8 +1490,9 @@ class LLaMAInspiredModel(nn.Module):
         # Output processing
         output = self.output_layers(x)
         return output.squeeze(-1)
-# ==================================================================================================
 
+
+# ==================================================================================================
 class LSTM_AE_Model_3_slice(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length, window_size, d_model=400):
         super(LSTM_AE_Model_3_slice, self).__init__()

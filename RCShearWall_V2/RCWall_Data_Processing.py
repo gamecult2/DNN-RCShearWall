@@ -10,7 +10,7 @@ from pathlib import Path  # For path handling
 
 
 # =================================================================================================================================================================
-def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, fit=False, save_scaler_path=None, scaling_strategy='minmax'):
+def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=False, scaling_strategy='minmax', fit=False, save_scaler_path=None):
     if not fit and scaler is None and scaler_filename is None:
         raise ValueError("Either a scaler or a scaler filename must be provided for normalization when fit=False.")
 
@@ -31,7 +31,6 @@ def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=F
                 'robust': RobustScaler(),
                 'standard': StandardScaler(),
                 'maxabs': MaxAbsScaler(),
-                'normalizer': Normalizer(norm='l2'),
                 'quantile': QuantileTransformer(output_distribution='normal'),
                 'power': PowerTransformer(method='yeo-johnson')
             }
@@ -61,12 +60,6 @@ def normalize(data, scaler=None, scaler_filename=None, range=(-1, 1), sequence=F
     # Save the scaler if specified
     if save_scaler_path and fit:
         joblib.dump(scaler, save_scaler_path)
-
-    # Optional clipping
-    # if clip:
-    #     if clip_range is None:
-    #         clip_range = range
-    #     data_scaled = np.clip(data_scaled, clip_range[0], clip_range[1])
 
     # Return results
     if scaler_filename:
@@ -115,7 +108,7 @@ def load_data(data_size=100, sequence_length=500, input_parameters=17, data_fold
     # Define data and scaler folders
     data_folder = Path(data_folder)
     scaler_folder = data_folder / "Scaler"
-    scaler_folder.mkdir(parents=True, exist_ok=True)  # Create folder if it doesn't exist
+    scaler_folder.mkdir(parents=True, exist_ok=True)
 
     # Read input and output data from Parquet files
     InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=float)
@@ -187,7 +180,7 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
 
     if normalize_data:
         # Normalize input parameters
-        NormInParams, param_scaler = normalize2(InParams,
+        NormInParams, param_scaler = normalize(InParams,
                                                 sequence=False,
                                                 range=(0, 1),
                                                 scaling_strategy='robust',
@@ -196,64 +189,52 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
                                                 )
 
         # Normalize input displacement
-        NormInDisp, disp_scaler = normalize2(InDisp,
+        NormInDisp, disp_scaler = normalize(InDisp,
                                              sequence=True,
                                              range=(-1, 1),
                                              scaling_strategy='symmetric_log',
-                                             handle_small_values=True,
-                                             small_value_threshold=1e-5,
                                              fit=True,
                                              save_scaler_path=data_folder / "Scaler/disp_scaler.joblib"
                                              )
 
         # Normalize output shear
-        NormOutShear, shear_scaler = normalize2(OutShear,
+        NormOutShear, shear_scaler = normalize(OutShear,
                                                 sequence=True,
                                                 range=(-1, 1),
                                                 scaling_strategy='symmetric_log',
-                                                handle_small_values=True,
-                                                small_value_threshold=1e-5,
                                                 fit=True,
                                                 save_scaler_path=data_folder / "Scaler/shear_scaler.joblib"
                                                 )
 
         # Normalize new outputs
-        NormOuta1, outa1_scaler = normalize2(Outa1,
+        NormOuta1, outa1_scaler = normalize(Outa1,
                                              sequence=True,
                                              range=(-1, 1),
                                              scaling_strategy='robust',
-                                             handle_small_values=True,
-                                             small_value_threshold=1e-5,
                                              fit=True,
                                              save_scaler_path=data_folder / "Scaler/outa1_scaler.joblib"
                                              )
 
-        NormOutc1, outc1_scaler = normalize2(Outc1,
+        NormOutc1, outc1_scaler = normalize(Outc1,
                                              sequence=True,
                                              range=(-1, 1),
                                              scaling_strategy='robust',
-                                             handle_small_values=True,
-                                             small_value_threshold=1e-5,
                                              fit=True,
                                              save_scaler_path=data_folder / "Scaler/outc1_scaler.joblib"
                                              )
 
-        NormOuta2, outa2_scaler = normalize2(Outa2,
+        NormOuta2, outa2_scaler = normalize(Outa2,
                                              sequence=True,
                                              range=(-1, 1),
                                              scaling_strategy='robust',
-                                             handle_small_values=True,
-                                             small_value_threshold=1e-5,
                                              fit=True,
                                              save_scaler_path=data_folder / "Scaler/outa2_scaler.joblib"
                                              )
 
-        NormOutc2, outc2_scaler = normalize2(Outc2,
+        NormOutc2, outc2_scaler = normalize(Outc2,
                                              sequence=True,
                                              range=(-1, 1),
                                              scaling_strategy='robust',
-                                             handle_small_values=True,
-                                             small_value_threshold=1e-5,
                                              fit=True,
                                              save_scaler_path=data_folder / "Scaler/outc2_scaler.joblib"
                                              )

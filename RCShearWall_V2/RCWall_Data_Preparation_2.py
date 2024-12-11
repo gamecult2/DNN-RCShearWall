@@ -114,7 +114,7 @@ def process_data(folder, filename, output_files, file_formats, processed_data_di
                     for file_format in file_formats:
                         output_file = os.path.join(processed_data_dir, f"{name}.{file_format}")
                         save_data(output_file, data, file_format)
-                        print(f"Saved {output_file}")
+                        print(f"\nSaved {output_file}")
                         pbar.update(1)
                 except Exception as e:
                     print(f"Error processing {name} at row index {row_index}: {str(e)}")
@@ -135,25 +135,25 @@ if __name__ == "__main__":
         choice = input("Enter your choice (1, 2, or 3): ").strip()
 
         if choice == '1':
-            FOLDER = "RCWall_Data/OriginalData/Run_Full/FullData"
+            FOLDER = "E:\OriginalData\Run_Full2/FullData"
             FILENAME = "Full_Data.csv"
-            PROCESSED_DATA_DIR = "RCWall_Data/Run_Full/FullData"
+            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Full2/FullData"
         elif choice == '2':
-            FOLDER = "RCWall_Data/OriginalData/Run_Full/CyclicData"
+            FOLDER = "RE:\OriginalData\Run_Full2/CyclicData"
             FILENAME = "Cyclic_Data.csv"
-            PROCESSED_DATA_DIR = "RCWall_Data/Run_Full/CyclicData"
+            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Full2/CyclicData"
         elif choice == '3':
-            FOLDER = "RCWall_Data/OriginalData/Run_Full/MonotonicData"
+            FOLDER = "E:\OriginalData\Run_Full2/MonotonicData"
             FILENAME = "Monotonic_Data.csv"
-            PROCESSED_DATA_DIR = "RCWall_Data/Run_Full/MonotonicData"
+            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Full2/MonotonicData"
         else:
             raise ValueError("Invalid choice. Please choose 1, 2, or 3.")
 
-        FILE_FORMATS = ['csv', 'parquet']
+        FILE_FORMATS = ['parquet']  # ['csv', 'parquet']
         OUTPUT_FILES = {
             'InputParameters': 0,
-            'InputCyclicDisplacement': 1,
-            'OutputCyclicShear': 2,
+            'InputDisplacement': 1,
+            'OutputShear': 2,
             'c1': 3,
             'a1': 4,
             'c2': 5,

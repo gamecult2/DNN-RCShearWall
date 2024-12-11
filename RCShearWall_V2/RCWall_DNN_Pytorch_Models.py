@@ -34,8 +34,8 @@ torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 
 # Define hyperparameters
-DATA_FOLDER = "RCWall_Data/Run_Full/FullData"
-DATA_SIZE = 520
+DATA_FOLDER = ("RCWall_Data/Run_FullM/FullData")
+DATA_SIZE = 500000
 SEQUENCE_LENGTH = 500
 DISPLACEMENT_FEATURES = 1
 PARAMETERS_FEATURES = 17
@@ -43,23 +43,22 @@ TEST_SIZE = 0.02
 VAL_SIZE = 0.20
 BATCH_SIZE = 32
 LEARNING_RATE = 0.0001
-EPOCHS = 3
+EPOCHS = 2
 PATIENCE = 5
 
 # Load and preprocess data
 data, scaler = load_data(DATA_SIZE,SEQUENCE_LENGTH, PARAMETERS_FEATURES, DATA_FOLDER, True, True)
 
 # Split and convert data
-(train_splits, val_splits, test_splits) = split_and_convert(data, TEST_SIZE, VAL_SIZE, 44, device, True)
+(train_splits, val_splits, test_splits) = split_and_convert(data, TEST_SIZE, VAL_SIZE, 41, device, True)
 
 # Create DataLoaders
 train_loader = DataLoader(TensorDataset(*train_splits), BATCH_SIZE, shuffle=True)
-val_loader = DataLoader(TensorDataset(*val_splits), BATCH_SIZE, shuffle=False)
-test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=False)
+val_loader = DataLoader(TensorDataset(*val_splits), BATCH_SIZE, shuffle=True)
+test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=True)
 
 # Initialize model, loss, and optimizer
 # model = LSTM_AE_Model_1(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = LSTM_AE_Model_2(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LSTM_AE_Model_3(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = Transformer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = xLSTM_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
@@ -68,7 +67,7 @@ test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=False)
 # model = InformerModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LLaMAInspiredModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = xLSTMModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-model = TimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+model = TimeSeriesTransformer2(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = ShearTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LSTM_AE_Model_3_slice(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH, WINDOW_SIZE).to(device)
 # model = EnhancedTimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
@@ -104,7 +103,7 @@ for epoch in range(EPOCHS):
         batch_count += 1  # Increment batch counter
         optimizer.zero_grad(set_to_none=True)  # More efficient than zero_grad() Zero gradients
         outputs = model(batch_param, batch_disp)  # Forward pass
-        loss = criterion(outputs, batch_shear)  # Loss computation
+        loss = criterion(outputs, batch_shear)  + 0.1 * model.smooth_loss(predictions) # Loss computation
         r2 = r2_score(batch_shear.detach().cpu().numpy(), outputs.detach().cpu().numpy())
 
         # Backward pass and optimizer step
@@ -216,7 +215,7 @@ plot_metric(train_losses, val_losses, best_epoch, "MSE Loss", "Training and Vali
 plot_metric(train_r2_scores, val_r2_scores, best_epoch, "R2 Score", "Training and Validation R2 Score")
 
 # Select a specific test index (e.g., 2)
-test_index = 3
+test_index = 20
 param_scaler, disp_scaler, shear_scaler = scaler
 
 # Loop over the loader and get the first batch
