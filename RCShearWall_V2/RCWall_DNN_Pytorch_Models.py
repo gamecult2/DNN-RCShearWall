@@ -2,55 +2,62 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchinfo
+from torch.cuda.amp import autocast
+from torch.amp import GradScaler
 from torch.utils.data import DataLoader, TensorDataset
 import gc
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import numpy as np
-import math
 from tqdm import tqdm
-import os
+
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from scipy.stats import pearsonr
+
 from RCWall_Data_Processing import *
 from utils.earlystopping import EarlyStopping
-from DNNModels import *
+from Models_Response import *
 
-# Determine the device (GPU if available, else CPU)
+
+def r2_score_torch(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
+    y_true, y_pred = y_true.float(), y_pred.float()
+    ss_total = torch.sum((y_true - y_true.mean()) ** 2)
+    ss_residual = torch.sum((y_true - y_pred) ** 2)
+    r2 = 1 - (ss_residual / ss_total)
+    return r2
+
+# Device configuration
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"PyTorch version: {torch.__version__} --- Using device: {device}")
+
 gc.collect()
 if device.type == "cuda":
     torch.cuda.empty_cache()
-    torch.cuda.memory_stats()
-    print("CUDA memory cleared.")
-else:
-    print("CUDA not available; no memory to clear.")
-
-# Enable performance optimizations
-torch.backends.cuda.enable_flash_sdp(True)
-torch.backends.cudnn.benchmark = True
-torch.backends.cuda.matmul.allow_tf32 = True
-torch.backends.cudnn.allow_tf32 = True
+    torch.backends.cuda.enable_flash_sdp(True)
+    torch.backends.cudnn.benchmark = True
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cudnn.allow_tf32 = True
+    print(f"GPU: {torch.cuda.get_device_name()}")
+    print(f"CUDA version: {torch.version.cuda}")
 
 # Define hyperparameters
-DATA_FOLDER = ("RCWall_Data/Run_FullM/FullData")
-DATA_SIZE = 500000
+DATA_FOLDER = ("RCWall_Data/Run_Final_Full/FullData")
+DATA_SIZE = 50000000
 SEQUENCE_LENGTH = 500
 DISPLACEMENT_FEATURES = 1
 PARAMETERS_FEATURES = 17
-TEST_SIZE = 0.02
+TEST_SIZE = 0.10
 VAL_SIZE = 0.20
 BATCH_SIZE = 32
 LEARNING_RATE = 0.0001
-EPOCHS = 2
+EPOCHS = 20
 PATIENCE = 5
 
 # Load and preprocess data
-data, scaler = load_data(DATA_SIZE,SEQUENCE_LENGTH, PARAMETERS_FEATURES, DATA_FOLDER, True, True)
+data, normalizer = load_data(DATA_SIZE,SEQUENCE_LENGTH, PARAMETERS_FEATURES, DATA_FOLDER, True, True)
 
 # Split and convert data
-(train_splits, val_splits, test_splits) = split_and_convert(data, TEST_SIZE, VAL_SIZE, 41, device, True)
+train_splits, val_splits, test_splits = split_and_convert(data, TEST_SIZE, VAL_SIZE, 44, device, True)
 
 # Create DataLoaders
 train_loader = DataLoader(TensorDataset(*train_splits), BATCH_SIZE, shuffle=True)
@@ -60,6 +67,7 @@ test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=True)
 # Initialize model, loss, and optimizer
 # model = LSTM_AE_Model_1(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LSTM_AE_Model_3(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = LSTM_AE_Model_3_Optimized(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = Transformer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = xLSTM_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LLaMA2_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
@@ -67,27 +75,27 @@ test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=True)
 # model = InformerModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LLaMAInspiredModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = xLSTMModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-model = TimeSeriesTransformer2(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = ShearTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = LSTM_AE_Model_3_slice(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH, WINDOW_SIZE).to(device)
+# model = LSTM_AE_Model_3_Optimized(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = LSTM_AE_Model_3_slice(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = EnhancedTimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = InformerShearModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+model = DecoderOnlyTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = torch.compile(model)
 
-# Visualize the computation graph
 torchinfo.summary(model)
 
-optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE) # , weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
-# scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=1, min_lr=1e-6)
-scheduler = optim.lr_scheduler.CyclicLR(optimizer, base_lr=0.00005, max_lr=0.001, step_size_up=50, mode='triangular')
-# scheduler = optim.lr_scheduler.OneCycleLR(optimizer, max_lr=1e-3, total_steps=len(train_loader) * EPOCHS)
+# Initialize training component
+scaler = GradScaler('cuda')
+optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=1, min_lr=1e-6)
 criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
-earlystop = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}")
+# earlystop = EarlyStopping(PATIENCE, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}", save_full_model=True, verbose=False)
 
 # Initialize tracking variables
-train_losses, val_losses, train_r2_scores, val_r2_scores = [], [], [], []
-best_val_loss = float("inf")  # Track the best validation loss
-best_epoch = 0  # Track the epoch number corresponding to the best validation loss
+train_losses, val_losses = [], []
+train_r2_scores, val_r2_scores = [], []
+best_val_loss = float("inf")
+best_epoch = 0
 
 # ================ Training phase ================
 for epoch in range(EPOCHS):
@@ -100,30 +108,36 @@ for epoch in range(EPOCHS):
                              postfix=[{"lr": 0.0, "batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
 
     for batch_param, batch_disp, batch_shear in train_loader_tqdm:
-        batch_count += 1  # Increment batch counter
-        optimizer.zero_grad(set_to_none=True)  # More efficient than zero_grad() Zero gradients
-        outputs = model(batch_param, batch_disp)  # Forward pass
-        loss = criterion(outputs, batch_shear)  + 0.1 * model.smooth_loss(predictions) # Loss computation
-        r2 = r2_score(batch_shear.detach().cpu().numpy(), outputs.detach().cpu().numpy())
+        batch_param = batch_param.to(device, non_blocking=True)
+        batch_disp = batch_disp.to(device, non_blocking=True)
+        batch_shear = batch_shear.to(device, non_blocking=True)
+        batch_count += 1
 
-        # Backward pass and optimizer step
-        loss.backward()  # Backward pass
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Gradient clipping
-        optimizer.step()  # Update parameters
+        optimizer.zero_grad(set_to_none=True)
 
-        scheduler.step()
-        lr = scheduler.get_last_lr()[0]
+        with torch.amp.autocast('cuda'):
+            outputs = model(batch_param, batch_disp)
+            loss = criterion(outputs, batch_shear)
+            r2 = r2_score_torch(batch_shear, outputs)
 
-        # Update epoch metrics
+        scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        scaler.step(optimizer)
+        scaler.update()
+        # scheduler.step()  # Uncomment if using per-batch scheduling
+
+        # Update metrics using in-place operations
         epoch_train_loss += loss.item()
-        epoch_train_r2 += r2  # .item()
+        epoch_train_r2 += r2.item()
 
         # Update progress bar with real-time batch metrics
-        train_loader_tqdm.postfix[0]["lr"] = lr
-        train_loader_tqdm.postfix[0]["batch_loss"] = loss.item()
-        train_loader_tqdm.postfix[0]["batch_r2"] = r2  # .item()
-        train_loader_tqdm.postfix[0]["avg_r2"] = epoch_train_r2 / batch_count  # Running average
-        train_loader_tqdm.update(1)
+        train_loader_tqdm.postfix[0].update({
+            "lr" : scheduler.get_last_lr()[0],
+            "batch_loss" : loss.item(),
+            "batch_r2" : r2,
+            "avg_r2" : epoch_train_r2 / batch_count  # Running average
+        })
 
     # Calculate average training loss and R² for the epoch
     epoch_train_loss /= len(train_loader)
@@ -141,21 +155,27 @@ for epoch in range(EPOCHS):
                            bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | Batch Loss: {postfix[0][batch_loss]:.4f} | Batch R²: {postfix[0][batch_r2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
                            postfix=[{"batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
 
-    with torch.no_grad():
+    with torch.no_grad(), torch.amp.autocast('cuda'):
         for batch_param, batch_disp, batch_shear in val_loader_tqdm:
+            batch_param = batch_param.to(device, non_blocking=True)
+            batch_disp = batch_disp.to(device, non_blocking=True)
+            batch_shear = batch_shear.to(device, non_blocking=True)
             batch_count += 1
+
             val_outputs = model(batch_param, batch_disp)
             batch_loss = criterion(val_outputs, batch_shear)
-            batch_r2 = r2_score(batch_shear.detach().cpu().numpy(), val_outputs.detach().cpu().numpy())
+            batch_r2 = r2_score_torch(batch_shear, val_outputs)
+
             # Update validation metrics
             val_loss += batch_loss.item()
-            val_r2 += batch_r2
+            val_r2 += batch_r2.item()
 
             # Update progress bar with real-time batch metrics
-            val_loader_tqdm.postfix[0]["batch_loss"] = batch_loss
-            val_loader_tqdm.postfix[0]["batch_r2"] = batch_r2
-            val_loader_tqdm.postfix[0]["avg_r2"] = val_r2 / batch_count  # Running average
-            val_loader_tqdm.update(1)
+            val_loader_tqdm.postfix[0].update({
+                "batch_loss": batch_loss,
+                "batch_r2": batch_r2,
+                "avg_r2": val_r2 / batch_count   # Running average
+            })
 
     # Calculate average validation loss and R² for the epoch
     val_loss /= len(val_loader)
@@ -164,29 +184,35 @@ for epoch in range(EPOCHS):
     val_r2_scores.append(val_r2)
 
     # Update learning rate
-    lr = scheduler.get_last_lr()[0]  # Assuming a single learning rate group
-    # scheduler.step(val_loss)
+    scheduler.step(val_loss)
 
     # Print epoch summary
-    print(f'Epoch [{epoch + 1}/{EPOCHS}], Learning Rate: {lr}, Train Loss: {epoch_train_loss:.4f}, Train R²: {epoch_train_r2:.4f}, Val Loss: {val_loss:.4f}, Val R²: {val_r2:.4f}\n')
+    print(f'Epoch [{epoch + 1}/{EPOCHS}], Train Loss: {epoch_train_loss:.4f}, Train R²: {epoch_train_r2:.4f}, Val Loss: {val_loss:.4f}, Val R²: {val_r2:.4f}\n')
 
     # Early Stopping
-    if earlystop(val_loss, model):
-        print("Early stopping triggered")
-        break
+    # if earlystop(val_loss, model):
+    #     print("Early stopping triggered")
+    #     break
+
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
 
 best_epoch = np.argmin(val_losses) + 1  # +1 because epochs are 1-indexed
 print(f"Best Epoch: {best_epoch}")
 
-# Final test evaluation
+# Final test evaluation =======================
 model.eval()
 test_loss = test_r2 = 0
 
-with torch.no_grad():
+with torch.no_grad(), torch.amp.autocast('cuda'):
     for batch_param, batch_disp, batch_shear in test_loader:
+        batch_param = batch_param.to(device, non_blocking=True)
+        batch_disp = batch_disp.to(device, non_blocking=True)
+        batch_shear = batch_shear.to(device, non_blocking=True)
+
         test_outputs = model(batch_param, batch_disp)
         test_loss += criterion(batch_shear, test_outputs).item()
-        test_r2 += r2_score(batch_shear.detach().cpu().numpy(), test_outputs.detach().cpu().numpy())
+        test_r2 += r2_score_torch(batch_shear, test_outputs)
 
     test_loss /= len(test_loader)
     test_r2 /= len(test_loader)
@@ -197,6 +223,7 @@ print(f'Final Model Performance - Test Loss: {test_loss:.4f}, Test R2: {test_r2:
 def plot_metric(train_data, val_data, best_epoch, ylabel, title):
     plt.figure(figsize=(10, 6))
     epochs = range(1, len(train_data) + 1)
+
     plt.plot(epochs, train_data, label=f"Training {ylabel}")
     plt.plot(epochs, val_data, label=f"Validation {ylabel}")
     if best_epoch:
@@ -209,14 +236,13 @@ def plot_metric(train_data, val_data, best_epoch, ylabel, title):
     plt.tight_layout()
     plt.show()
 
-
 # Plot loss & Plot R2 score
 plot_metric(train_losses, val_losses, best_epoch, "MSE Loss", "Training and Validation Loss")
 plot_metric(train_r2_scores, val_r2_scores, best_epoch, "R2 Score", "Training and Validation R2 Score")
 
 # Select a specific test index (e.g., 2)
 test_index = 20
-param_scaler, disp_scaler, shear_scaler = scaler
+param_scaler, disp_scaler, shear_scaler = normalizer
 
 # Loop over the loader and get the first batch
 for data, displacement, shear in test_loader:

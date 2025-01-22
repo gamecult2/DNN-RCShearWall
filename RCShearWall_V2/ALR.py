@@ -1,77 +1,87 @@
+import csv
+import numpy as np
+import os
 import torch
-import torch.nn as nn
-import math
 
+# Define the input and output file paths
+input_file = r"K:\RCShearWall_V2\RCWall_Data\original\Run_Final_Full\FullData\Full_Data.csv"
+output_file = r"K:\RCShearWall_V2\RCWall_Data\original\Run_Final_Full\FullData\Full_Data_float16.csv"
 
-class Massive175BModel(nn.Module):
-    def __init__(self,
-                 vocab_size=50257,  # Standard GPT tokenizer size
-                 d_model=12288,  # Massive model dimension
-                 num_heads=96,  # Extremely high number of attention heads
-                 num_layers=96):  # Massive number of transformer layers
-        super().__init__()
+# Set the chunk size
+chunk_size = 40000  # Adjust this as necessary
 
-        # Store key dimensions
-        self.vocab_size = vocab_size
-        self.d_model = d_model
+# Define column ranges based on row position within each batch
+column_ranges = {
+    0: (0, 17),  # First row of each batch: columns 0-16
+    1: (0, 500),  # Second row of each batch: columns 0-499
+    2: (0, 500),  # Third row of each batch: columns 0-499
+    3: (0, 168),  # Fourth row of each batch: columns 0-167
+    4: (0, 168),  # Fifth row of each batch: columns 0-167
+    5: (0, 168),  # Sixth row of each batch: columns 0-167
+    6: (0, 168)  # Seventh row of each batch: columns 0-167
+}
 
-        # Embedding layers
-        self.token_embedding = nn.Embedding(vocab_size, d_model)
-        self.position_embedding = nn.Embedding(2048, d_model)
+# Get total file size for progress calculation
+total_size = os.path.getsize(input_file)
+processed_size = 0
+chunk_count = 0
 
-        # Attention projection layers
-        self.query_proj = nn.Linear(d_model, d_model, bias=False)
-        self.key_proj = nn.Linear(d_model, d_model, bias=False)
-        self.value_proj = nn.Linear(d_model, d_model, bias=False)
+# Open the input and output files
+with open(input_file, 'r') as f_in, open(output_file, 'w', newline='') as f_out:
+    reader = csv.reader(f_in)
+    writer = csv.writer(f_out)
 
-        # Output and up/down projections
-        self.output_proj = nn.Linear(d_model, d_model, bias=False)
-        self.up_proj = nn.Linear(d_model, d_model * 4, bias=False)
-        self.down_proj = nn.Linear(d_model * 4, d_model, bias=False)
+    # Initialize a counter for row positions in batches
+    row_count = 0
 
-        # Unembedding layer
-        self.unembed = nn.Linear(d_model, vocab_size, bias=False)
+    # Process the file in chunks
+    batch = []
+    for row in reader:
+        batch.append(row)
+        processed_size += len(','.join(row).encode('utf-8')) + 1  # +1 for newline
 
-    def count_component_parameters(self):
-        # Detailed parameter counting function
-        def param_count(layer):
-            return sum(p.numel() for p in layer.parameters())
+        if len(batch) >= chunk_size:
+            chunk_count += 1
+            # Calculate progress percentage
+            progress = (processed_size / total_size) * 100
+            print(f"Processing chunk {chunk_count} - Progress: {progress:.2f}% ({processed_size:,} / {total_size:,} bytes)")
 
-        print("\n--- Parameter Breakdown ---")
-        print(f"Token Embedding: {param_count(self.token_embedding):,}")
-        print(f"Position Embedding: {param_count(self.position_embedding):,}")
+            # Process the current chunk (batch)
+            for i, row in enumerate(batch):
+                # Determine the row position and select the column range
+                row_position = (row_count + i) % len(column_ranges)
+                col_start, col_end = column_ranges[row_position]
 
-        print("\nAttention Projections:")
-        print(f"Query Projection: {param_count(self.query_proj):,}")
-        print(f"Key Projection: {param_count(self.key_proj):,}")
-        print(f"Value Projection: {param_count(self.value_proj):,}")
+                # Slice the row based on the column range
+                row = row[col_start:col_end]
 
-        print("\nOther Projections:")
-        print(f"Output Projection: {param_count(self.output_proj):,}")
-        print(f"Up Projection: {param_count(self.up_proj):,}")
-        print(f"Down Projection: {param_count(self.down_proj):,}")
+                # Convert the row elements to float32
+                # row = [np.float16(val) for val in row]
+                # Convert to bfloat16 using PyTorch
+                row = [torch.tensor(float(val)).to(torch.bfloat16).item() for val in row]
 
-        print("\nUnembedding Layer:")
-        print(f"Unembed Projection: {param_count(self.unembed):,}")
+                # Write the converted row to the output file
+                writer.writerow(row)
 
-        total = (
-                param_count(self.token_embedding) +
-                param_count(self.position_embedding) +
-                param_count(self.query_proj) +
-                param_count(self.key_proj) +
-                param_count(self.value_proj) +
-                param_count(self.output_proj) +
-                param_count(self.up_proj) +
-                param_count(self.down_proj) +
-                param_count(self.unembed)
-        )
-        print(f"\nTotal Parameters: {total:,}")
+            # Reset the batch
+            batch = []
 
-        return total
+    # Write any remaining rows if they don't complete a full chunk
+    if batch:
+        chunk_count += 1
+        print(f"Processing final chunk {chunk_count} - Progress: 100.00% (Remaining {len(batch)} rows)")
 
+        for i, row in enumerate(batch):
+            row_position = (row_count + i) % len(column_ranges)
+            col_start, col_end = column_ranges[row_position]
 
-# Instantiate the model
-model = Massive175BModel()
+            # Slice the row based on the column range
+            row = row[col_start:col_end]
 
-# Count and print parameters
-model.count_component_parameters()
+            # Convert to bfloat16 using PyTorch
+            row = [torch.tensor(float(val)).to(torch.bfloat16).item() for val in row]
+
+            # Write the converted row to the output file
+            writer.writerow(row)
+
+print(f"\nProcessing complete! Total chunks processed: {chunk_count}")

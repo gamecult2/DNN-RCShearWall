@@ -72,30 +72,25 @@ def denormalize(data, scaler=None, scaler_filename=None, sequence=False):
     if scaler is None and scaler_filename is None:
         raise ValueError("Either a scaler or a scaler filename must be provided for denormalization.")
 
-    # Ensure input is a NumPy array
     data = np.asarray(data, dtype=np.float32)
 
-    # Load scaler if not provided
     if scaler is None:
         if os.path.exists(scaler_filename):
             scaler = joblib.load(scaler_filename)
         else:
             raise FileNotFoundError(f"Scaler file '{scaler_filename}' not found.")
 
-    # Reshape if sequence
     if sequence:
         original_shape = data.shape
         data_reshaped = data.reshape(-1, 1)
     else:
         data_reshaped = data
 
-    # Inverse transform the scaled data
     try:
         data_restored = scaler.inverse_transform(data_reshaped)
     except Exception as e:
         raise ValueError(f"Error during inverse transformation: {str(e)}")
 
-    # Reshape back if sequence
     if sequence:
         data_restored = data_restored.reshape(original_shape)
 
@@ -111,14 +106,18 @@ def load_data(data_size=100, sequence_length=500, input_parameters=17, data_fold
     scaler_folder.mkdir(parents=True, exist_ok=True)
 
     # Read input and output data from Parquet files
-    InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=float)
-    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
-    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
+    # InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=np.float32)
+    # InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
+    # OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
+    # Read input and output data from Parquet files, starting from the bottom
+    InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[-data_size:, :input_parameters].to_numpy(dtype=np.float32)
+    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[-data_size:, :sequence_length].to_numpy(dtype=np.float32)
+    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[-data_size:, :sequence_length].to_numpy(dtype=np.float32)
     if verbose:
-        print(f"\nDataset shape:")
-        print("  Parameters    :", InParams.shape)
-        print("  Displacement  :", InDisp.shape)
-        print("  Lateral Load  :", OutShear.shape)
+        print(f"\nDataset shape and type:")
+        print("  Parameters    : Shape =", InParams.shape, " , Type =", InParams.dtype)
+        print("  Displacement  : Shape =", InDisp.shape, ", Type =", InDisp.dtype)
+        print("  Lateral Load  : Shape =", OutShear.shape, ", Type =", OutShear.dtype)
 
     if normalize_data:
         NormInParams, param_scaler = normalize(InParams, sequence=False, range=(0, 1), scaling_strategy='robust', fit=True, save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
@@ -137,14 +136,14 @@ def load_data(data_size=100, sequence_length=500, input_parameters=17, data_fold
             print("    Max  :", ", ".join(f"{val:.2f}" for val in np.max(InParams, axis=0)))
             print("    Min  :", ", ".join(f"{val:.2f}" for val in np.min(InParams, axis=0)))
             print("  Normalized Parameters:")
-            print("    Max  :", ", ".join(f"{val:.5f}" for val in np.max(NormInParams, axis=0)))
-            print("    Min  :", ", ".join(f"{val:.5f}" for val in np.min(NormInParams, axis=0)))
+            print("    Max  :", ", ".join(f"{val:.2f}" for val in np.max(NormInParams, axis=0)))
+            print("    Min  :", ", ".join(f"{val:.2f}" for val in np.min(NormInParams, axis=0)))
             print(f"  Displacement:")
-            print(f"    Max  : {np.round(np.max(InDisp), 3)}    |      Max  : {np.round(np.max(NormInDisp), 3)}")
-            print(f"    Min  : {np.round(np.min(InDisp), 3)}   |       Min  : {np.round(np.min(NormInDisp), 3)}")
+            print(f"    Max  : {np.round(np.max(InDisp), 3)}    |      Max  : {np.round(np.max(NormInDisp), 3)}    |     {(np.max(InDisp)).dtype}")
+            print(f"    Min  : {np.round(np.min(InDisp), 3)}   |       Min  : {np.round(np.min(NormInDisp), 3)}    |     {(np.max(InDisp)).dtype}")
             print(f"  Lateral Load:")
-            print(f"    Max  : {np.round(np.max(OutShear), 3)}      |      Max  : {np.round(np.max(NormOutShear), 3)}")
-            print(f"    Min  : {np.round(np.min(OutShear), 3)}     |      Min  : {np.round(np.min(NormOutShear), 3)}")
+            print(f"    Max  : {np.round(np.max(OutShear), 3)}      |      Max  : {np.round(np.max(NormOutShear), 3)}    |     {(np.max(InDisp)).dtype}")
+            print(f"    Min  : {np.round(np.min(OutShear), 3)}     |      Min  : {np.round(np.min(NormOutShear), 3)}    |     {(np.max(InDisp)).dtype}")
 
         return (NormInParams, NormInDisp, NormOutShear), (param_scaler, disp_scaler, shear_scaler)
     else:
@@ -158,15 +157,16 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
     scaler_folder.mkdir(parents=True, exist_ok=True)  # Create folder if it doesn't exist
 
     # Read input and output data from Parquet files
-    InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=float)
-    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
-    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=float)
-
+    InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=np.float32)
+    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
+    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
+    InDisp = np.array([[row.min(), row.max()] for row in InDisp])
+    OutShear = np.array([[row.min(), row.max()] for row in OutShear])
     # New outputs for a1, c1, a2, c2
-    Outa1 = pd.read_parquet(data_folder / "a1.parquet").iloc[:data_size, :crack_length].replace(10, 0).to_numpy(dtype=float)
-    Outc1 = pd.read_parquet(data_folder / "c1.parquet").iloc[:data_size, :crack_length].to_numpy(dtype=float)
-    Outa2 = pd.read_parquet(data_folder / "a2.parquet").iloc[:data_size, :crack_length].replace(10, 0).to_numpy(dtype=float)
-    Outc2 = pd.read_parquet(data_folder / "c2.parquet").iloc[:data_size, :crack_length].to_numpy(dtype=float)
+    Outa1 = pd.read_parquet(data_folder / "a1.parquet").iloc[:data_size, :crack_length].replace(10, 0).to_numpy(dtype=np.float32)
+    Outc1 = pd.read_parquet(data_folder / "c1.parquet").iloc[:data_size, :crack_length].to_numpy(dtype=np.float32)
+    Outa2 = pd.read_parquet(data_folder / "a2.parquet").iloc[:data_size, :crack_length].replace(10, 0).to_numpy(dtype=np.float32)
+    Outc2 = pd.read_parquet(data_folder / "c2.parquet").iloc[:data_size, :crack_length].to_numpy(dtype=np.float32)
 
     if verbose:
         print(f"\nDataset shape:")
@@ -192,7 +192,7 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
         NormInDisp, disp_scaler = normalize(InDisp,
                                              sequence=True,
                                              range=(-1, 1),
-                                             scaling_strategy='symmetric_log',
+                                             scaling_strategy='robust',
                                              fit=True,
                                              save_scaler_path=data_folder / "Scaler/disp_scaler.joblib"
                                              )
@@ -201,7 +201,7 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
         NormOutShear, shear_scaler = normalize(OutShear,
                                                 sequence=True,
                                                 range=(-1, 1),
-                                                scaling_strategy='symmetric_log',
+                                                scaling_strategy='robust',
                                                 fit=True,
                                                 save_scaler_path=data_folder / "Scaler/shear_scaler.joblib"
                                                 )
@@ -283,12 +283,16 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
         return (InParams, InDisp, OutShear, Outa1, Outc1, Outa2, Outc2)
 
 
-def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device='cuda', verbose=True):
+def split_and_convert(data, test_size=0.2, val_size=0.2, random_state=42, device=None, verbose=True):
     # Ensure all arrays have the same number of samples
     n_samples = len(data[0])
     for array in data:
         if len(array) != n_samples:
             raise ValueError("All input arrays must have the same number of samples")
+
+    # Check for device availability and set default to CPU if 'cuda' is not available
+    if device is None:
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # Convert all arrays to PyTorch tensors
     tensors = [torch.tensor(array, dtype=torch.float32, device=device) for array in data]

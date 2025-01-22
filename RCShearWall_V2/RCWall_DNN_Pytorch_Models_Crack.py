@@ -2,88 +2,89 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torchinfo
+from torch.cuda.amp import autocast
+from torch.amp import GradScaler
 from torch.utils.data import DataLoader, TensorDataset
 import gc
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import numpy as np
-import math
 from tqdm import tqdm
+
 import os
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from scipy.stats import pearsonr
 
-from RCShearWall_V2.DNNModels import CrackTimeSeriesTransformer
 from RCWall_Data_Processing import *
 from utils.earlystopping import EarlyStopping
-from DNNModels import *
+from Models_Crack import *
 
-# Determine the device (GPU if available, else CPU)
+
+def r2_score_torch(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
+    y_true, y_pred = y_true.float(), y_pred.float()
+    ss_total = torch.sum((y_true - y_true.mean()) ** 2)
+    ss_residual = torch.sum((y_true - y_pred) ** 2)
+    r2 = 1 - (ss_residual / ss_total)
+    return r2
+
+
+# Device configuration
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"PyTorch version: {torch.__version__} --- Using device: {device}")
+
 gc.collect()
 if device.type == "cuda":
     torch.cuda.empty_cache()
-    torch.cuda.memory_stats()
-    print("CUDA memory cleared.")
-else:
-    print("CUDA not available; no memory to clear.")
-
-# Enable performance optimizations
-torch.backends.cuda.enable_flash_sdp(True)
-torch.backends.cudnn.benchmark = True
-torch.backends.cuda.matmul.allow_tf32 = True
-torch.backends.cudnn.allow_tf32 = True
+    torch.backends.cuda.enable_flash_sdp(True)
+    torch.backends.cudnn.benchmark = True
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cudnn.allow_tf32 = True
+    print(f"GPU: {torch.cuda.get_device_name()}")
+    print(f"CUDA version: {torch.version.cuda}")
 
 # Define hyperparameters
-DATA_FOLDER = "RCWall_Data/Run_Full/FullData"
-DATA_SIZE = 200000
+DATA_FOLDER = "RCWall_Data/Run_Final_Full/FullData"
+DATA_SIZE = 100000
 SEQUENCE_LENGTH = 500
-DISPLACEMENT_FEATURES = 1
-SHEAR_FEATURES = 1
+DISPLACEMENT_FEATURES = 2
+SHEAR_FEATURES = 2
 PARAMETERS_FEATURES = 17
 CRACK_LENGTH = 168
-TEST_SIZE = 0.05
-VAL_SIZE = 0.15
+TEST_SIZE = 0.01
+VAL_SIZE = 0.10
 BATCH_SIZE = 32
-LEARNING_RATE = 0.00001
-EPOCHS = 3
+LEARNING_RATE = 0.001
+EPOCHS = 15
 PATIENCE = 5
 
 # Load and preprocess data
-data, scaler = load_data_crack(DATA_SIZE, SEQUENCE_LENGTH, PARAMETERS_FEATURES, CRACK_LENGTH, DATA_FOLDER, True, True)
+data, normalizer = load_data_crack(DATA_SIZE, SEQUENCE_LENGTH, PARAMETERS_FEATURES, CRACK_LENGTH, DATA_FOLDER, True, True)
 
 # Split and convert data
-(train_splits, val_splits, test_splits) = split_and_convert(data, TEST_SIZE, VAL_SIZE, 44, device, True)
+train_splits, val_splits, test_splits = split_and_convert(data, TEST_SIZE, VAL_SIZE, 44, device, True)
 
 # Create DataLoaders
-train_loader = DataLoader(TensorDataset(*train_splits), batch_size=BATCH_SIZE, shuffle=True)
-val_loader = DataLoader(TensorDataset(*val_splits), batch_size=BATCH_SIZE, shuffle=False)
-test_loader = DataLoader(TensorDataset(*test_splits), batch_size=BATCH_SIZE, shuffle=False)
+train_loader = DataLoader(TensorDataset(*train_splits), BATCH_SIZE, shuffle=True)
+val_loader = DataLoader(TensorDataset(*val_splits), BATCH_SIZE, shuffle=True)
+test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=True)
 
 # Initialize model, loss, and optimizer
-# model = LSTM_AE_Model_1(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = LSTM_AE_Model_2(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = LSTM_AE_Model_3(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = Transformer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = xLSTM_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = LLaMA2_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = AttentionLSTM_AEModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = InformerModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = LLaMAInspiredModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = xLSTMModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-model = CrackTimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SHEAR_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = CrackTimeSeriesTransformer2().to(device)
+model = CrackDetectionModel3(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SHEAR_FEATURES, CRACK_LENGTH, SEQUENCE_LENGTH).to(device)
 # model = EnhancedTimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = InformerShearModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = SpatialAwareCrackTimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SHEAR_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = torch.compile(model)
 
 # Visualize the computation graph
 torchinfo.summary(model)
 
-optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=1, min_lr=1e-6)
+# Initialize training component
+scaler = GradScaler('cuda')
+optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=1, min_lr=1e-6)
 criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
-earlystop = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}")
+earlystop = EarlyStopping(PATIENCE, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}", save_full_model=True, verbose=False)
 
 # Initialize tracking variables
 train_losses, val_losses, train_r2_scores, val_r2_scores = [], [], [], []
@@ -97,44 +98,53 @@ for epoch in range(EPOCHS):
     batch_count = 0
 
     train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{EPOCHS} [Train]",
-                             bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | Loss a1: {postfix[0][r2_a1]:.4f} | Loss c1: {postfix[0][r2_c1]:.4f} | Loss a2: {postfix[0][r2_a2]:.4f} | Loss c2: {postfix[0][r2_c2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
-                             postfix=[{"r2_a1": 0.0, "r2_c1": 0.0, "r2_a2": 0.0, "r2_c2": 0.0, "avg_r2": 0.0}], leave=False)
+                             bar_format=(
+                                 "{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | LR: {postfix[0][lr]:.6f} | Remaining: {remaining} | Loss a1: {postfix[0][r2_a1]:.4f} | Loss c1: {postfix[0][r2_c1]:.4f} | Loss a2: {postfix[0][r2_a2]:.4f} | Loss c2: {postfix[0][r2_c2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
+                             postfix=[{"lr": 0.0, "r2_a1": 0.0, "r2_c1": 0.0, "r2_a2": 0.0, "r2_c2": 0.0, "avg_r2": 0.0}], leave=False)
 
     for batch_param, batch_disp, batch_shear, batch_a1, batch_c1, batch_a2, batch_c2 in train_loader_tqdm:
+        batch_param = batch_param.to(device, non_blocking=True)
+        batch_disp = batch_disp.to(device, non_blocking=True)
+        batch_shear = batch_shear.to(device, non_blocking=True)
+        batch_a1 = batch_a1.to(device, non_blocking=True)
+        batch_c1 = batch_c1.to(device, non_blocking=True)
+        batch_a2 = batch_a2.to(device, non_blocking=True)
+        batch_c2 = batch_c2.to(device, non_blocking=True)
         batch_count += 1  # Increment batch counter
-        optimizer.zero_grad(set_to_none=True)  # More efficient than zero_grad() Zero gradients
 
-        # Forward pass with all inputs
-        a1_pred, c1_pred, a2_pred, c2_pred = model(batch_param, batch_disp, batch_shear)
+        optimizer.zero_grad(set_to_none=True)
 
-        # Compute loss for each output
-        loss_a1 = criterion(a1_pred, batch_a1)
-        loss_c1 = criterion(c1_pred, batch_c1)
-        loss_a2 = criterion(a2_pred, batch_a2)
-        loss_c2 = criterion(c2_pred, batch_c2)
+        with torch.amp.autocast('cuda'):
+            # Forward pass with all inputs
+            a1_pred, c1_pred, a2_pred, c2_pred = model(batch_param, batch_disp, batch_shear)
 
-        # Total loss (you can adjust weights if needed)
-        loss = loss_a1 + loss_c1 + loss_a2 + loss_c2
+            loss_a1 = criterion(a1_pred, batch_a1)
+            loss_c1 = criterion(c1_pred, batch_c1)
+            loss_a2 = criterion(a2_pred, batch_a2)
+            loss_c2 = criterion(c2_pred, batch_c2)
 
-        # Compute R² for each output (you might want to average or choose a specific metric)
-        r2_a1 = r2_score(batch_a1.detach().cpu().numpy(), a1_pred.detach().cpu().numpy())
-        r2_c1 = r2_score(batch_c1.detach().cpu().numpy(), c1_pred.detach().cpu().numpy())
-        r2_a2 = r2_score(batch_a2.detach().cpu().numpy(), a2_pred.detach().cpu().numpy())
-        r2_c2 = r2_score(batch_c2.detach().cpu().numpy(), c2_pred.detach().cpu().numpy())
+            loss = loss_a1 + loss_c1 + loss_a2 + loss_c2
 
-        # Average R²
-        r2 = (r2_a1 + r2_c1 + r2_a2 + r2_c2) / 4
+            r2_a1 = r2_score_torch(batch_a1, a1_pred)
+            r2_c1 = r2_score_torch(batch_c1, c1_pred)
+            r2_a2 = r2_score_torch(batch_a2, a2_pred)
+            r2_c2 = r2_score_torch(batch_c2, c2_pred)
 
-        # Backward pass and optimizer step
-        loss.backward()  # Backward pass
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Gradient clipping
-        optimizer.step()  # Update parameters
+            r2 = (r2_a1 + r2_c1 + r2_a2 + r2_c2) / 4
+
+        scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+        scaler.step(optimizer)
+        scaler.update()
+        # scheduler.step()
 
         # Update epoch metrics
         epoch_train_loss += loss.item()
-        epoch_train_r2 += r2  # .item()
+        epoch_train_r2 += r2.item()
 
         # Update progress bar with real-time batch metrics
+        train_loader_tqdm.postfix[0]["lr"] = scheduler.get_last_lr()[0]
         train_loader_tqdm.postfix[0]["r2_a1"] = r2_a1
         train_loader_tqdm.postfix[0]["r2_c1"] = r2_c1
         train_loader_tqdm.postfix[0]["r2_a2"] = r2_a2
@@ -160,6 +170,13 @@ for epoch in range(EPOCHS):
 
     with torch.no_grad():
         for batch_param, batch_disp, batch_shear, batch_a1, batch_c1, batch_a2, batch_c2 in val_loader_tqdm:
+            batch_param = batch_param.to(device, non_blocking=True)
+            batch_disp = batch_disp.to(device, non_blocking=True)
+            batch_shear = batch_shear.to(device, non_blocking=True)
+            batch_a1 = batch_a1.to(device, non_blocking=True)
+            batch_c1 = batch_c1.to(device, non_blocking=True)
+            batch_a2 = batch_a2.to(device, non_blocking=True)
+            batch_c2 = batch_c2.to(device, non_blocking=True)
             batch_count += 1
 
             # Forward pass with all inputs
@@ -175,19 +192,20 @@ for epoch in range(EPOCHS):
             batch_loss = batch_loss_a1 + batch_loss_c1 + batch_loss_a2 + batch_loss_c2
 
             # Compute R² for each output
-            batch_r2_a1 = r2_score(batch_a1.detach().cpu().numpy(), a1_pred.detach().cpu().numpy())
-            batch_r2_c1 = r2_score(batch_c1.detach().cpu().numpy(), c1_pred.detach().cpu().numpy())
-            batch_r2_a2 = r2_score(batch_a2.detach().cpu().numpy(), a2_pred.detach().cpu().numpy())
-            batch_r2_c2 = r2_score(batch_c2.detach().cpu().numpy(), c2_pred.detach().cpu().numpy())
+            batch_r2_a1 = r2_score_torch(batch_a1, a1_pred)
+            batch_r2_c1 = r2_score_torch(batch_c1, c1_pred)
+            batch_r2_a2 = r2_score_torch(batch_a2, a2_pred)
+            batch_r2_c2 = r2_score_torch(batch_c2, c2_pred)
 
             # Average R²
             batch_r2 = (batch_r2_a1 + batch_r2_c1 + batch_r2_a2 + batch_r2_c2) / 4
 
             # Update validation metrics
             val_loss += batch_loss.item()
-            val_r2 += batch_r2
+            val_r2 += batch_r2.item()
 
             # Update progress bar with real-time batch metrics
+
             val_loader_tqdm.postfix[0]["batch_loss"] = batch_loss.item()
             val_loader_tqdm.postfix[0]["batch_r2"] = batch_r2
             val_loader_tqdm.postfix[0]["avg_r2"] = val_r2 / batch_count  # Running average
@@ -201,13 +219,13 @@ for epoch in range(EPOCHS):
 
     # Update learning rate
     lr = scheduler.get_last_lr()[0]  # Assuming a single learning rate group
-    scheduler.step(val_loss)
+    # scheduler.step(val_loss)
 
     # Print epoch summary
     print(f'Epoch [{epoch + 1}/{EPOCHS}], Learning Rate: {lr}, Train Loss: {epoch_train_loss:.4f}, Train R²: {epoch_train_r2:.4f}, Val Loss: {val_loss:.4f}, Val R²: {val_r2:.4f}\n')
 
     # Early Stopping
-    if early_stopping(val_loss, model):
+    if earlystop(val_loss, model):
         print("Early stopping triggered")
         break
 
@@ -270,76 +288,86 @@ def plot_metric(train_data, val_data, best_epoch, ylabel, title):
 plot_metric(train_losses, val_losses, best_epoch, "MSE Loss", "Training and Validation Loss")
 plot_metric(train_r2_scores, val_r2_scores, best_epoch, "R2 Score", "Training and Validation R2 Score")
 
-# Plotting results
-test_index = 2
-input_param = test_splits[0][:test_index]
-input_disp = test_splits[1][:test_index]
-input_shear = test_splits[2][:test_index]
+# Select a specific test index (e.g., 2)
+test_index = 20
+param_scaler, disp_scaler, shear_scaler, outa1_scaler, outc1_scaler, outa2_scaler, outc2_scaler = normalizer
 
-# Real target values
-real_a1 = test_splits[3][:test_index]
-real_c1 = test_splits[4][:test_index]
-real_a2 = test_splits[5][:test_index]
-real_c2 = test_splits[6][:test_index]
+# Loop over the loader and get the first batch
+for data, displacement, shear, a1, c1, a2, c2 in test_loader:
+    new_input_parameters = data[:test_index, :]
+    new_input_displacement = displacement[:test_index, :]
+    real_shear = shear[:test_index, :]
+    real_a1 = a1[:test_index, :]
+    real_c1 = c1[:test_index, :]
+    real_a2 = a2[:test_index, :]
+    real_c2 = c2[:test_index, :]
+    break
 
 # Restore best weights
 trained_model = torch.load(f"checkpoints/{type(model).__name__}_best_full.pt", weights_only=False)
 trained_model.eval()
 
 with torch.no_grad():
-    # Predict all four outputs
-    predicted_a1, predicted_c1, predicted_a2, predicted_c2 = trained_model(input_param, input_disp, input_shear)
-
-param_scaler, disp_scaler, shear_scaler, outa1_scaler, outc1_scaler, outa2_scaler, outc2_scaler = scaler
+    a1_pred, c1_pred, a2_pred, c2_pred = trained_model(new_input_parameters, new_input_displacement, real_shear)
 
 # Move tensors to CPU for plotting and denormalization
-input_param = denormalize2(input_param.cpu().numpy(), param_scaler,
-                                    sequence=False, scaling_strategy='robust')
-input_disp = denormalize2(input_disp.cpu().numpy(), disp_scaler,
-                                      sequence=True, scaling_strategy='symmetric_log',
-                                      handle_small_values=True, small_value_threshold=1e-3)
-input_shear = denormalize2(input_shear.cpu().numpy(), shear_scaler,
-                               sequence=True, scaling_strategy='symmetric_log',
-                               handle_small_values=True, small_value_threshold=1e-3)
+new_input_parameters = denormalize(new_input_parameters.cpu().numpy(), param_scaler, sequence=False)
+new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
+real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
+real_a1 = denormalize(real_a1.cpu().numpy(), outa1_scaler, sequence=True)
+real_c1 = denormalize(real_c1.cpu().numpy(), outc1_scaler, sequence=True)
+real_a2 = denormalize(real_a2.cpu().numpy(), outa2_scaler, sequence=True)
+real_c2 = denormalize(real_c2.cpu().numpy(), outc2_scaler, sequence=True)
 
-# Denormalize predictions and real values
-predicted_a1 = denormalize2(predicted_a1.cpu().numpy(), outa1_scaler,
-                            sequence=True, scaling_strategy='symmetric_log',
-                            handle_small_values=True, small_value_threshold=1e-3)
-predicted_c1 = denormalize2(predicted_c1.cpu().numpy(), outc1_scaler,
-                            sequence=True, scaling_strategy='symmetric_log',
-                            handle_small_values=True, small_value_threshold=1e-3)
-predicted_a2 = denormalize2(predicted_a2.cpu().numpy(), outa2_scaler,
-                            sequence=True, scaling_strategy='symmetric_log',
-                            handle_small_values=True, small_value_threshold=1e-3)
-predicted_c2 = denormalize2(predicted_c2.cpu().numpy(), outc2_scaler,
-                            sequence=True, scaling_strategy='symmetric_log',
-                            handle_small_values=True, small_value_threshold=1e-3)
+# Denormalize predicted values
+a1_pred = denormalize(a1_pred.cpu().numpy(), outa1_scaler, sequence=True)
+c1_pred = denormalize(c1_pred.cpu().numpy(), outc1_scaler, sequence=True)
+a2_pred = denormalize(a2_pred.cpu().numpy(), outa2_scaler, sequence=True)
+c2_pred = denormalize(c2_pred.cpu().numpy(), outc2_scaler, sequence=True)
 
-real_a1 = denormalize2(real_a1.cpu().numpy(), outa1_scaler,
-                       sequence=True, scaling_strategy='symmetric_log',
-                       handle_small_values=True, small_value_threshold=1e-3)
-real_c1 = denormalize2(real_c1.cpu().numpy(), outc1_scaler,
-                       sequence=True, scaling_strategy='symmetric_log',
-                       handle_small_values=True, small_value_threshold=1e-3)
-real_a2 = denormalize2(real_a2.cpu().numpy(), outa2_scaler,
-                       sequence=True, scaling_strategy='symmetric_log',
-                       handle_small_values=True, small_value_threshold=1e-3)
-real_c2 = denormalize2(real_c2.cpu().numpy(), outc2_scaler,
-                       sequence=True, scaling_strategy='symmetric_log',
-                       handle_small_values=True, small_value_threshold=1e-3)
-
-# Plotting code
+# plotting
 for i in range(test_index):
-    plt.figure(figsize=(10, 6))
-    plt.plot(predicted_a1[i], label=f'Predicted Shear - {i + 1}')
-    plt.plot(real_a1[i], label=f'Real Shear - {i + 1}')
-    plt.xlabel('Time Step', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
-    plt.ylabel('Shear Load', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
-    plt.title('Predicted Shear Time Series', {'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
-    plt.yticks(fontname='Cambria', fontsize=14)
-    plt.xticks(fontname='Cambria', fontsize=14)
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(20, 12))
+
+    # A1 Comparison
+    ax1.plot(a1_pred[i], label=f'A1 Predicted - {i + 1}', color='red')
+    ax1.plot(real_a1[i], label=f'A1 Real - {i + 1}', color='blue', linestyle='--')
+    ax1.set_xlabel('Time Step', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax1.set_ylabel('A1 Load', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax1.set_title('A1 Comparison', {'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
+    ax1.tick_params(axis='both', labelsize=14, labelcolor='black', colors='black')
+    ax1.legend()
+    ax1.grid()
+
+    # C1 Comparison
+    ax2.plot(c1_pred[i], label=f'C1 Predicted - {i + 1}', color='red')
+    ax2.plot(real_c1[i], label=f'C1 Real - {i + 1}', color='blue', linestyle='--')
+    ax2.set_xlabel('Time Step', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax2.set_ylabel('C1 Load', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax2.set_title('C1 Comparison', {'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
+    ax2.tick_params(axis='both', labelsize=14, labelcolor='black', colors='black')
+    ax2.legend()
+    ax2.grid()
+
+    # A2 Comparison
+    ax3.plot(a2_pred[i], label=f'A2 Predicted - {i + 1}', color='red')
+    ax3.plot(real_a2[i], label=f'A2 Real - {i + 1}', color='blue', linestyle='--')
+    ax3.set_xlabel('Time Step', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax3.set_ylabel('A2 Load', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax3.set_title('A2 Comparison', {'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
+    ax3.tick_params(axis='both', labelsize=14, labelcolor='black', colors='black')
+    ax3.legend()
+    ax3.grid()
+
+    # C2 Comparison
+    ax4.plot(c2_pred[i], label=f'C2 Predicted - {i + 1}', color='red')
+    ax4.plot(real_c2[i], label=f'C2 Real - {i + 1}', color='blue', linestyle='--')
+    ax4.set_xlabel('Time Step', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax4.set_ylabel('C2 Load', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+    ax4.set_title('C2 Comparison', {'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
+    ax4.tick_params(axis='both', labelsize=14, labelcolor='black', colors='black')
+    ax4.legend()
+    ax4.grid()
+
     plt.tight_layout()
-    plt.legend()
-    plt.grid()
     plt.show()

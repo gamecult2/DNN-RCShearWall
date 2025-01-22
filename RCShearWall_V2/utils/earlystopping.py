@@ -2,9 +2,10 @@ import torch
 import numpy as np
 import os
 
+
 class EarlyStopping:
-    def __init__(self, patience=7, verbose=False, delta=0, checkpoint_dir='checkpoints',
-                 model_name='model', save_full_model=False):
+    def __init__(self, patience=7, delta=0, checkpoint_dir='checkpoints',
+                 model_name='model', save_full_model=True, verbose=False):
         self.patience = patience
         self.verbose = verbose
         self.counter = 0

@@ -11,20 +11,11 @@ from utils import *
 from RCWall_Data_Processing import *
 
 
-# # Allocate space for Bidirectional(LSTM)
-# os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
-#
-# # Activate the GPU
-# tf.config.list_physical_devices(device_type=None)
-# physical_devices = tf.config.list_physical_devices('GPU')
-# print("Num GPUs:", len(physical_devices))
-
-
 class ShearWallAnalysisApp(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.title("RC Shear Wall Analysis with DNN")
+        self.title("RC Shear Wall Analysis")
         self.geometry("1200x800")
         # Data Folder Path
         self.data_folder = Path("RCWall_Data/Processed_Data/Data_19K")
@@ -39,8 +30,6 @@ class ShearWallAnalysisApp(tk.Tk):
         self.disp_cyclic_scaler = self.data_folder / 'Scaler/disp_scaler.joblib'
         self.shear_cyclic_scaler = self.data_folder / 'Scaler/shear_scaler.joblib'
 
-        # Variables
-        self.load_type = tk.StringVar(value="RC")
         self.parameters = {
             "Tw": {"value": tk.DoubleVar(value=102), "unit": "mm"},
             "Tb": {"value": tk.DoubleVar(value=102), "unit": "mm"},
@@ -54,7 +43,7 @@ class ShearWallAnalysisApp(tk.Tk):
             "rouYw": {"value": tk.DoubleVar(value=0.003 * 100), "unit": "%"},
             "rouXb": {"value": tk.DoubleVar(value=0.0294 * 100), "unit": "%"},
             "rouXw": {"value": tk.DoubleVar(value=0.003 * 100), "unit": "%"},
-            "loadcoef": {"value": tk.DoubleVar(value=0.092), "unit": None}
+            "ALR": {"value": tk.DoubleVar(value=0.092), "unit": None}
         }
 
         self.cyclic_params = {
@@ -78,22 +67,14 @@ class ShearWallAnalysisApp(tk.Tk):
         self.create_plot_section(frame_right)
 
     def create_input_section(self, parent):
-        frame = tk.LabelFrame(parent, text=f"RC Shear Wall Design Parameters")
+        # ========= PARAMETERS ========================================================
+        frame = tk.LabelFrame(parent, text=f"Design Parameters")
         frame.pack(fill=tk.X, pady=10)
 
-        # RC/SC Switch
-        switch_frame = tk.Frame(frame)
-        switch_frame.pack(pady=5)
-        tk.Label(switch_frame, text="Analysis: ").pack(side=tk.LEFT)
-        tk.Radiobutton(switch_frame, text="Monotonic", variable=self.load_type, value="RC").pack(side=tk.LEFT)
-        tk.Radiobutton(switch_frame, text="Cyclic", variable=self.load_type, value="SC").pack(side=tk.LEFT)
-        tk.Label(switch_frame, text="").pack(side=tk.LEFT)
-
-        # Structural Design Parameters with Sliders
         param_ranges = {
             "Tw": {"range": (90, 400), "unit": "mm"},
             "Tb": {"range": (90, 400), "unit": "mm"},
-            "Hw": {"range": (1000, 6000), "unit": "mm"},
+            "Hw": {"range": (1000, 16000), "unit": "mm"},
             "Lw": {"range": (540, 4000), "unit": "mm"},
             "Lbe": {"range": (54, 500), "unit": "mm"},
             "fc": {"range": (20, 70), "unit": "MPa"},
@@ -103,7 +84,7 @@ class ShearWallAnalysisApp(tk.Tk):
             "rouYw": {"range": (0.2, 3.0), "unit": "%"},
             "rouXb": {"range": (0.5, 5.5), "unit": "%"},
             "rouXw": {"range": (0.2, 3.0), "unit": "%"},
-            "loadcoef": {"range": (0.01, 0.1), "unit": None}
+            "loadcoef": {"range": (0.01, 0.1), "unit": "-"}
         }
 
         # Structural Design Parameters
@@ -112,8 +93,8 @@ class ShearWallAnalysisApp(tk.Tk):
             param_frame.pack(fill=tk.X, pady=2)
 
             # Display the parameter name with its unit, if available
-            param_label = f"{param} ({param_ranges[param]['unit']})" if param_ranges[param]["unit"] else param
-            tk.Label(param_frame, text=param_label, width=15, anchor=tk.W).pack(side=tk.LEFT)
+            param_label = f"{param} ({param_ranges[param]['unit']})"
+            tk.Label(param_frame, text=param_label, width=10, anchor=tk.W).pack(side=tk.LEFT)
 
             # Get the variable and range for the parameter
             var = details["value"]
@@ -128,20 +109,27 @@ class ShearWallAnalysisApp(tk.Tk):
             entry = tk.Entry(param_frame, textvariable=var, width=8)
             entry.pack(side=tk.LEFT, padx=5)
 
-        # Cyclic Loading Parameters
-        cyclic_frame = tk.LabelFrame(parent, text="Cyclic Loading Parameters")
-        cyclic_frame.pack(fill=tk.X, pady=10)
+        # ======= LOADING ==========================================================
+        loading_frame = tk.LabelFrame(parent, text="Loading Parameters")
+        loading_frame.pack(fill=tk.X, pady=10)
 
-        # Switch variable
+        self.load_type = tk.StringVar(value="cyclic")
         self.protocol_type = tk.StringVar(value="normal")
 
         # Switch button frame
-        switch_frame = tk.Frame(cyclic_frame)
-        switch_frame.pack(pady=5)
-        tk.Label(switch_frame, text="Protocol: ").pack(side=tk.LEFT)
-        normal_btn = tk.Radiobutton(switch_frame, text="Normal", variable=self.protocol_type, value="normal")
+        loading_switch_frame = tk.Frame(loading_frame)
+        loading_switch_frame.pack(fill=tk.Y, pady=5)
+        tk.Label(loading_switch_frame, text="Analysis: ").pack(side=tk.LEFT)
+        tk.Radiobutton(loading_switch_frame, text="Monotonic", variable=self.load_type, value="monotonic").pack(side=tk.LEFT)
+        tk.Radiobutton(loading_switch_frame, text="Cyclic", variable=self.load_type, value="cyclic").pack(side=tk.LEFT)
+        tk.Label(loading_switch_frame, text="").pack(side=tk.LEFT)
+
+        protocol_switch_frame = tk.Frame(loading_frame)
+        protocol_switch_frame.pack(fill=tk.Y, pady=5)
+        tk.Label(protocol_switch_frame, text="Protocol: ").pack(side=tk.LEFT)
+        normal_btn = tk.Radiobutton(protocol_switch_frame, text="Normal", variable=self.protocol_type, value="normal")
         normal_btn.pack(side=tk.LEFT)
-        exponential_btn = tk.Radiobutton(switch_frame, text="Exponential", variable=self.protocol_type, value="exponential")
+        exponential_btn = tk.Radiobutton(protocol_switch_frame, text="Exponential", variable=self.protocol_type, value="exponential")
         exponential_btn.pack(side=tk.LEFT)
 
         # Cyclic Loading Parameters with Sliders and Entries
@@ -152,9 +140,9 @@ class ShearWallAnalysisApp(tk.Tk):
             "Dm": (10, 160)}
 
         for param, var in self.cyclic_params.items():
-            param_frame = tk.Frame(cyclic_frame)
+            param_frame = tk.Frame(loading_frame)
             param_frame.pack(fill=tk.X, pady=2)
-            tk.Label(param_frame, text=param, width=15, anchor=tk.W).pack(side=tk.LEFT)
+            tk.Label(param_frame, text=param, width=10, anchor=tk.W).pack(side=tk.LEFT)
 
             slider = tk.Scale(param_frame, showvalue=0, variable=var, from_=cyclic_ranges[param][0], to=cyclic_ranges[param][1], orient=tk.HORIZONTAL, length=200, resolution=0.01 if 'D' in param else 1)
             slider.pack(side=tk.LEFT)
@@ -169,10 +157,10 @@ class ShearWallAnalysisApp(tk.Tk):
     def create_plot_section(self, parent):
         self.fig, self.axes = plt.subplots(2, 2, figsize=(10, 10))
         self.fig.tight_layout(pad=5.0)
-        self.axes[0, 0].set_title("RC Shear Wall Elevation")
-        self.axes[1, 0].set_title("RC Shear Wall Section")
+        self.axes[0, 0].set_title("Wall Elevation")
+        self.axes[1, 0].set_title("Wall Section")
         self.axes[0, 1].set_title("Results Output")
-        self.axes[1, 1].set_title("Cyclic Loading Protocol")
+        self.axes[1, 1].set_title("Loading Protocol")
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=parent)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
@@ -216,12 +204,12 @@ class ShearWallAnalysisApp(tk.Tk):
         rouYw = self.parameters["rouYw"]["value"].get()
         rouXb = self.parameters["rouXb"]["value"].get()
         rouXw = self.parameters["rouXw"]["value"].get()
-        loadCoeff = self.parameters["loadcoef"]["value"].get()
+        ALR = self.parameters["ALR"]["value"].get()
 
         displacement = self.generate_cyclic_loading()
 
         # Overall parameters
-        parameters_input = np.array((tw, hw, lw, lbe, fc, fyb, fyw, rouYb / 100, rouYw / 100, loadCoeff)).reshape(1, -1)
+        parameters_input = np.array((tw, hw, lw, lbe, fc, fyb, fyw, rouYb / 100, rouYw / 100, ALR)).reshape(1, -1)
         print("\033[92m USED PARAMETERS -> (Characteristic):", parameters_input)
 
         displacement_input = displacement.reshape(1, -1)[:, 1:500 + 1]
@@ -261,10 +249,10 @@ class ShearWallAnalysisApp(tk.Tk):
         Hw = self.parameters["Hw"]["value"].get()
         Lbe = self.parameters["Lbe"]["value"].get()
         fc = self.parameters["fc"]["value"].get()
-        loadcoef = self.parameters["loadcoef"]["value"].get()
+        ALR = self.parameters["ALR"]["value"].get()
 
         Lweb = Lw - (2 * Lbe)
-        Aload = (0.85 * abs(fc) * Tw * Lw * loadcoef) / 1000
+        Aload = (0.85 * abs(fc) * Tw * Lw * ALR) / 1000
 
         # Draw the shear wall section
         BEx1 = [0, Lbe, Lbe, 0, 0]

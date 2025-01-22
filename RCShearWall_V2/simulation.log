@@ -13865,3 +13865,1314 @@
 [94m2024-11-30 23:13:17,518 - SpawnPoolWorker-3 - INFO - Starting sample 12925 on worker SpawnPoolWorker-3[0m
 [94m2024-11-30 23:13:22,350 - SpawnPoolWorker-2 - WARNING - Invalid sequence length: 32[0m
 [94m2024-11-30 23:13:22,351 - SpawnPoolWorker-2 - INFO - Starting sample 6682 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:08:52,646 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:08:52,646 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:08:55,635 - SpawnPoolWorker-2 - INFO - Starting sample 0 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:08:55,786 - SpawnPoolWorker-3 - INFO - Starting sample 6250 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:08:55,892 - SpawnPoolWorker-4 - INFO - Starting sample 12500 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:08:56,005 - SpawnPoolWorker-1 - INFO - Starting sample 18750 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:08:56,026 - SpawnPoolWorker-5 - INFO - Starting sample 25000 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:08:56,134 - SpawnPoolWorker-9 - INFO - Starting sample 31250 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:08:56,225 - SpawnPoolWorker-6 - INFO - Starting sample 37500 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:08:56,290 - SpawnPoolWorker-7 - INFO - Starting sample 43750 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:08:56,399 - SpawnPoolWorker-8 - INFO - Starting sample 50000 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:08:56,500 - SpawnPoolWorker-10 - INFO - Starting sample 56250 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:08:56,523 - SpawnPoolWorker-13 - INFO - Starting sample 68750 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:08:56,526 - SpawnPoolWorker-11 - INFO - Starting sample 62500 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:08:56,583 - SpawnPoolWorker-12 - INFO - Starting sample 75000 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:08:56,609 - SpawnPoolWorker-16 - INFO - Starting sample 81250 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:08:56,895 - SpawnPoolWorker-15 - INFO - Starting sample 87500 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:08:56,923 - SpawnPoolWorker-14 - INFO - Starting sample 93750 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:09:02,998 - SpawnPoolWorker-8 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:09:03,005 - SpawnPoolWorker-8 - INFO - Starting sample 50001 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:09:03,878 - SpawnPoolWorker-2 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:09:04,316 - SpawnPoolWorker-6 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:09:04,406 - SpawnPoolWorker-6 - INFO - Starting sample 37501 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:09:04,409 - SpawnPoolWorker-2 - INFO - Starting sample 1 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:09:10,344 - SpawnPoolWorker-16 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:09:10,357 - SpawnPoolWorker-16 - INFO - Starting sample 81251 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:09:10,880 - SpawnPoolWorker-11 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:09:10,910 - SpawnPoolWorker-11 - INFO - Starting sample 62501 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:09:12,644 - SpawnPoolWorker-13 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:09:12,653 - SpawnPoolWorker-13 - INFO - Starting sample 68751 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:09:12,799 - SpawnPoolWorker-8 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:09:12,805 - SpawnPoolWorker-8 - INFO - Starting sample 50002 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:09:13,205 - SpawnPoolWorker-14 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:09:13,212 - SpawnPoolWorker-14 - INFO - Starting sample 93751 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:09:14,440 - SpawnPoolWorker-3 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:09:14,454 - SpawnPoolWorker-3 - INFO - Starting sample 6251 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:09:17,597 - SpawnPoolWorker-7 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:09:17,604 - SpawnPoolWorker-7 - INFO - Starting sample 43751 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:09:17,919 - SpawnPoolWorker-6 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:09:17,926 - SpawnPoolWorker-6 - INFO - Starting sample 37502 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:09:19,364 - SpawnPoolWorker-4 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:09:19,373 - SpawnPoolWorker-4 - INFO - Starting sample 12501 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:09:20,399 - SpawnPoolWorker-16 - INFO - Sample 81251 completed successfully[0m
+[94m2025-01-07 15:09:20,405 - SpawnPoolWorker-16 - INFO - Starting sample 81252 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:09:21,046 - SpawnPoolWorker-10 - INFO - Sample 56250 completed successfully[0m
+[94m2025-01-07 15:09:21,054 - SpawnPoolWorker-10 - INFO - Starting sample 56251 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:09:25,032 - SpawnPoolWorker-9 - INFO - Sample 31250 completed successfully[0m
+[94m2025-01-07 15:09:25,040 - SpawnPoolWorker-9 - INFO - Starting sample 31251 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:09:26,604 - SpawnPoolWorker-1 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:09:26,604 - SpawnPoolWorker-1 - INFO - Starting sample 18751 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:09:29,802 - SpawnPoolWorker-15 - INFO - Sample 87500 completed successfully[0m
+[94m2025-01-07 15:09:29,810 - SpawnPoolWorker-15 - INFO - Starting sample 87501 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:09:31,728 - SpawnPoolWorker-6 - INFO - Sample 37502 completed successfully[0m
+[94m2025-01-07 15:09:31,734 - SpawnPoolWorker-6 - INFO - Starting sample 37503 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:09:32,023 - SpawnPoolWorker-5 - INFO - Sample 25000 completed successfully[0m
+[94m2025-01-07 15:09:32,030 - SpawnPoolWorker-5 - INFO - Starting sample 25001 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:09:33,190 - SpawnPoolWorker-2 - INFO - Sample 1 completed successfully[0m
+[94m2025-01-07 15:09:33,197 - SpawnPoolWorker-2 - INFO - Starting sample 2 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:09:35,379 - SpawnPoolWorker-10 - INFO - Sample 56251 completed successfully[0m
+[94m2025-01-07 15:09:35,385 - SpawnPoolWorker-10 - INFO - Starting sample 56252 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:09:36,670 - SpawnPoolWorker-16 - INFO - Sample 81252 completed successfully[0m
+[94m2025-01-07 15:09:36,677 - SpawnPoolWorker-16 - INFO - Starting sample 81253 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:09:37,983 - SpawnPoolWorker-12 - INFO - Sample 75000 completed successfully[0m
+[94m2025-01-07 15:09:38,005 - SpawnPoolWorker-12 - INFO - Starting sample 75001 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:09:38,494 - SpawnPoolWorker-11 - INFO - Sample 62501 completed successfully[0m
+[94m2025-01-07 15:09:38,501 - SpawnPoolWorker-11 - INFO - Starting sample 62502 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:09:41,672 - SpawnPoolWorker-9 - INFO - Sample 31251 completed successfully[0m
+[94m2025-01-07 15:09:41,679 - SpawnPoolWorker-9 - INFO - Starting sample 31252 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:09:44,236 - SpawnPoolWorker-16 - INFO - Sample 81253 completed successfully[0m
+[94m2025-01-07 15:09:44,242 - SpawnPoolWorker-16 - INFO - Starting sample 81254 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:09:49,338 - SpawnPoolWorker-5 - INFO - Sample 25001 completed successfully[0m
+[94m2025-01-07 15:09:49,345 - SpawnPoolWorker-5 - INFO - Starting sample 25002 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:09:49,353 - SpawnPoolWorker-12 - INFO - Sample 75001 completed successfully[0m
+[94m2025-01-07 15:09:49,360 - SpawnPoolWorker-12 - INFO - Starting sample 75002 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:09:52,747 - SpawnPoolWorker-13 - INFO - Sample 68751 completed successfully[0m
+[94m2025-01-07 15:09:52,754 - SpawnPoolWorker-13 - INFO - Starting sample 68752 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:09:53,408 - SpawnPoolWorker-15 - INFO - Sample 87501 completed successfully[0m
+[94m2025-01-07 15:09:53,414 - SpawnPoolWorker-15 - INFO - Starting sample 87502 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:09:56,473 - SpawnPoolWorker-3 - INFO - Sample 6251 completed successfully[0m
+[94m2025-01-07 15:09:56,482 - SpawnPoolWorker-3 - INFO - Starting sample 6252 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:10:00,935 - SpawnPoolWorker-2 - INFO - Sample 2 completed successfully[0m
+[94m2025-01-07 15:10:00,945 - SpawnPoolWorker-2 - INFO - Starting sample 3 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:10:06,634 - SpawnPoolWorker-16 - INFO - Sample 81254 completed successfully[0m
+[94m2025-01-07 15:10:06,641 - SpawnPoolWorker-16 - INFO - Starting sample 81255 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:10:07,728 - SpawnPoolWorker-3 - INFO - Sample 6252 completed successfully[0m
+[94m2025-01-07 15:10:07,736 - SpawnPoolWorker-3 - INFO - Starting sample 6253 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:10:08,565 - SpawnPoolWorker-6 - INFO - Sample 37503 completed successfully[0m
+[94m2025-01-07 15:10:08,571 - SpawnPoolWorker-6 - INFO - Starting sample 37504 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:10:11,042 - SpawnPoolWorker-10 - INFO - Sample 56252 completed successfully[0m
+[94m2025-01-07 15:10:11,053 - SpawnPoolWorker-10 - INFO - Starting sample 56253 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:10:11,356 - SpawnPoolWorker-12 - INFO - Sample 75002 completed successfully[0m
+[94m2025-01-07 15:10:11,372 - SpawnPoolWorker-12 - INFO - Starting sample 75003 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:10:14,091 - SpawnPoolWorker-15 - INFO - Sample 87502 completed successfully[0m
+[94m2025-01-07 15:10:14,097 - SpawnPoolWorker-15 - INFO - Starting sample 87503 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:10:14,219 - SpawnPoolWorker-7 - INFO - Sample 43751 completed successfully[0m
+[94m2025-01-07 15:10:14,226 - SpawnPoolWorker-7 - INFO - Starting sample 43752 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:10:17,837 - SpawnPoolWorker-14 - INFO - Sample 93751 completed successfully[0m
+[94m2025-01-07 15:10:17,846 - SpawnPoolWorker-14 - INFO - Starting sample 93752 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:10:19,006 - SpawnPoolWorker-4 - INFO - Sample 12501 completed successfully[0m
+[94m2025-01-07 15:10:19,014 - SpawnPoolWorker-4 - INFO - Starting sample 12502 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:10:22,996 - SpawnPoolWorker-12 - INFO - Sample 75003 completed successfully[0m
+[94m2025-01-07 15:10:23,003 - SpawnPoolWorker-12 - INFO - Starting sample 75004 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:10:24,690 - SpawnPoolWorker-13 - INFO - Sample 68752 completed successfully[0m
+[94m2025-01-07 15:10:24,696 - SpawnPoolWorker-13 - INFO - Starting sample 68753 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:10:26,082 - SpawnPoolWorker-15 - INFO - Sample 87503 completed successfully[0m
+[94m2025-01-07 15:10:26,088 - SpawnPoolWorker-15 - INFO - Starting sample 87504 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:10:26,794 - SpawnPoolWorker-16 - INFO - Sample 81255 completed successfully[0m
+[94m2025-01-07 15:10:26,889 - SpawnPoolWorker-16 - INFO - Starting sample 81256 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:10:31,422 - SpawnPoolWorker-15 - INFO - Sample 87504 completed successfully[0m
+[94m2025-01-07 15:10:31,462 - SpawnPoolWorker-15 - INFO - Starting sample 87505 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:10:36,191 - SpawnPoolWorker-13 - INFO - Sample 68753 completed successfully[0m
+[94m2025-01-07 15:10:36,197 - SpawnPoolWorker-13 - INFO - Starting sample 68754 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:10:36,437 - SpawnPoolWorker-14 - INFO - Sample 93752 completed successfully[0m
+[94m2025-01-07 15:10:36,447 - SpawnPoolWorker-14 - INFO - Starting sample 93753 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:10:44,434 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:10:44,434 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:10:49,137 - SpawnPoolWorker-1 - INFO - Starting sample 0 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:10:49,376 - SpawnPoolWorker-3 - INFO - Starting sample 6250 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:10:49,600 - SpawnPoolWorker-10 - INFO - Starting sample 12500 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:10:49,925 - SpawnPoolWorker-4 - INFO - Starting sample 18750 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:10:49,939 - SpawnPoolWorker-2 - INFO - Starting sample 25000 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:10:49,979 - SpawnPoolWorker-5 - INFO - Starting sample 31250 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:10:50,008 - SpawnPoolWorker-12 - INFO - Starting sample 37500 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:10:50,026 - SpawnPoolWorker-9 - INFO - Starting sample 43750 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:10:50,056 - SpawnPoolWorker-8 - INFO - Starting sample 50000 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:10:50,085 - SpawnPoolWorker-6 - INFO - Starting sample 56250 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:10:50,107 - SpawnPoolWorker-11 - INFO - Starting sample 62500 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:10:50,115 - SpawnPoolWorker-7 - INFO - Starting sample 68750 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:10:50,163 - SpawnPoolWorker-16 - INFO - Starting sample 75000 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:10:50,198 - SpawnPoolWorker-15 - INFO - Starting sample 81250 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:10:50,282 - SpawnPoolWorker-14 - INFO - Starting sample 87500 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:10:50,335 - SpawnPoolWorker-13 - INFO - Starting sample 93750 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:10:56,011 - SpawnPoolWorker-1 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:10:56,017 - SpawnPoolWorker-1 - INFO - Starting sample 1 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:10:58,416 - SpawnPoolWorker-8 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:10:58,423 - SpawnPoolWorker-8 - INFO - Starting sample 50001 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:10:59,436 - SpawnPoolWorker-12 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:10:59,452 - SpawnPoolWorker-12 - INFO - Starting sample 37501 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:11:03,889 - SpawnPoolWorker-15 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:11:03,896 - SpawnPoolWorker-15 - INFO - Starting sample 81251 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:11:04,893 - SpawnPoolWorker-7 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:11:04,900 - SpawnPoolWorker-7 - INFO - Starting sample 68751 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:11:06,825 - SpawnPoolWorker-8 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:11:06,832 - SpawnPoolWorker-8 - INFO - Starting sample 50002 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:11:06,877 - SpawnPoolWorker-13 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:11:06,884 - SpawnPoolWorker-13 - INFO - Starting sample 93751 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:11:06,999 - SpawnPoolWorker-11 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:11:07,007 - SpawnPoolWorker-11 - INFO - Starting sample 62501 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:11:08,965 - SpawnPoolWorker-10 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:11:08,986 - SpawnPoolWorker-10 - INFO - Starting sample 12501 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:11:09,300 - SpawnPoolWorker-9 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:11:09,308 - SpawnPoolWorker-9 - INFO - Starting sample 43751 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:11:11,103 - SpawnPoolWorker-12 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:11:11,109 - SpawnPoolWorker-12 - INFO - Starting sample 37502 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:11:11,226 - SpawnPoolWorker-3 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:11:11,292 - SpawnPoolWorker-3 - INFO - Starting sample 6251 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:11:13,252 - SpawnPoolWorker-6 - INFO - Sample 56250 completed successfully[0m
+[94m2025-01-07 15:11:13,283 - SpawnPoolWorker-6 - INFO - Starting sample 56251 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:11:13,479 - SpawnPoolWorker-15 - INFO - Sample 81251 completed successfully[0m
+[94m2025-01-07 15:11:13,522 - SpawnPoolWorker-15 - INFO - Starting sample 81252 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:11:13,738 - SpawnPoolWorker-5 - INFO - Sample 31250 completed successfully[0m
+[94m2025-01-07 15:11:13,780 - SpawnPoolWorker-5 - INFO - Starting sample 31251 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:11:19,602 - SpawnPoolWorker-4 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:11:19,602 - SpawnPoolWorker-4 - INFO - Starting sample 18751 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:11:22,154 - SpawnPoolWorker-1 - INFO - Sample 1 completed successfully[0m
+[94m2025-01-07 15:11:22,164 - SpawnPoolWorker-2 - INFO - Sample 25000 completed successfully[0m
+[94m2025-01-07 15:11:22,174 - SpawnPoolWorker-2 - INFO - Starting sample 25001 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:11:22,196 - SpawnPoolWorker-1 - INFO - Starting sample 2 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:11:24,674 - SpawnPoolWorker-12 - INFO - Sample 37502 completed successfully[0m
+[94m2025-01-07 15:11:24,680 - SpawnPoolWorker-12 - INFO - Starting sample 37503 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:11:25,108 - SpawnPoolWorker-14 - INFO - Sample 87500 completed successfully[0m
+[94m2025-01-07 15:11:25,123 - SpawnPoolWorker-14 - INFO - Starting sample 87501 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:11:28,927 - SpawnPoolWorker-6 - INFO - Sample 56251 completed successfully[0m
+[94m2025-01-07 15:11:28,955 - SpawnPoolWorker-6 - INFO - Starting sample 56252 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:11:29,021 - SpawnPoolWorker-15 - INFO - Sample 81252 completed successfully[0m
+[94m2025-01-07 15:11:29,027 - SpawnPoolWorker-15 - INFO - Starting sample 81253 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:11:29,394 - SpawnPoolWorker-11 - INFO - Sample 62501 completed successfully[0m
+[94m2025-01-07 15:11:29,401 - SpawnPoolWorker-11 - INFO - Starting sample 62502 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:11:32,969 - SpawnPoolWorker-5 - INFO - Sample 31251 completed successfully[0m
+[94m2025-01-07 15:11:32,977 - SpawnPoolWorker-5 - INFO - Starting sample 31252 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:11:37,076 - SpawnPoolWorker-16 - INFO - Sample 75000 completed successfully[0m
+[94m2025-01-07 15:11:37,085 - SpawnPoolWorker-16 - INFO - Starting sample 75001 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:11:41,233 - SpawnPoolWorker-15 - INFO - Sample 81253 completed successfully[0m
+[94m2025-01-07 15:11:41,281 - SpawnPoolWorker-15 - INFO - Starting sample 81254 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:11:42,412 - SpawnPoolWorker-2 - INFO - Sample 25001 completed successfully[0m
+[94m2025-01-07 15:11:42,419 - SpawnPoolWorker-2 - INFO - Starting sample 25002 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:11:44,839 - SpawnPoolWorker-7 - INFO - Sample 68751 completed successfully[0m
+[94m2025-01-07 15:11:44,853 - SpawnPoolWorker-7 - INFO - Starting sample 68752 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:11:49,593 - SpawnPoolWorker-16 - INFO - Sample 75001 completed successfully[0m
+[94m2025-01-07 15:11:49,600 - SpawnPoolWorker-16 - INFO - Starting sample 75002 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:11:51,540 - SpawnPoolWorker-1 - INFO - Sample 2 completed successfully[0m
+[94m2025-01-07 15:11:51,548 - SpawnPoolWorker-1 - INFO - Starting sample 3 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:11:55,758 - SpawnPoolWorker-14 - INFO - Sample 87501 completed successfully[0m
+[94m2025-01-07 15:11:55,765 - SpawnPoolWorker-14 - INFO - Starting sample 87502 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:11:57,012 - SpawnPoolWorker-3 - INFO - Sample 6251 completed successfully[0m
+[94m2025-01-07 15:11:57,020 - SpawnPoolWorker-3 - INFO - Starting sample 6252 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:12:00,068 - SpawnPoolWorker-15 - INFO - Sample 81254 completed successfully[0m
+[94m2025-01-07 15:12:00,078 - SpawnPoolWorker-15 - INFO - Starting sample 81255 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:12:04,883 - SpawnPoolWorker-3 - INFO - Sample 6252 completed successfully[0m
+[94m2025-01-07 15:12:04,891 - SpawnPoolWorker-3 - INFO - Starting sample 6253 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:12:06,916 - SpawnPoolWorker-9 - INFO - Sample 43751 completed successfully[0m
+[94m2025-01-07 15:12:06,923 - SpawnPoolWorker-9 - INFO - Starting sample 43752 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:12:07,334 - SpawnPoolWorker-13 - INFO - Sample 93751 completed successfully[0m
+[94m2025-01-07 15:12:07,343 - SpawnPoolWorker-13 - INFO - Starting sample 93752 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:12:08,200 - SpawnPoolWorker-6 - INFO - Sample 56252 completed successfully[0m
+[94m2025-01-07 15:12:08,207 - SpawnPoolWorker-6 - INFO - Starting sample 56253 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:12:08,823 - SpawnPoolWorker-12 - INFO - Sample 37503 completed successfully[0m
+[94m2025-01-07 15:12:08,831 - SpawnPoolWorker-12 - INFO - Starting sample 37504 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:12:09,245 - SpawnPoolWorker-7 - INFO - Sample 68752 completed successfully[0m
+[94m2025-01-07 15:12:09,253 - SpawnPoolWorker-7 - INFO - Starting sample 68753 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:12:11,087 - SpawnPoolWorker-10 - INFO - Sample 12501 completed successfully[0m
+[94m2025-01-07 15:12:11,094 - SpawnPoolWorker-10 - INFO - Starting sample 12502 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:12:11,164 - SpawnPoolWorker-14 - INFO - Sample 87502 completed successfully[0m
+[94m2025-01-07 15:12:11,189 - SpawnPoolWorker-14 - INFO - Starting sample 87503 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:12:13,304 - SpawnPoolWorker-15 - INFO - Sample 81255 completed successfully[0m
+[94m2025-01-07 15:12:13,311 - SpawnPoolWorker-15 - INFO - Starting sample 81256 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:12:18,132 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:12:18,132 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:12:22,396 - SpawnPoolWorker-1 - INFO - Starting sample 0 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:12:22,411 - SpawnPoolWorker-5 - INFO - Starting sample 6250 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:12:22,497 - SpawnPoolWorker-3 - INFO - Starting sample 12500 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:12:22,578 - SpawnPoolWorker-8 - INFO - Starting sample 18750 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:12:22,651 - SpawnPoolWorker-7 - INFO - Starting sample 25000 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:12:22,662 - SpawnPoolWorker-6 - INFO - Starting sample 31250 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:12:22,835 - SpawnPoolWorker-4 - INFO - Starting sample 37500 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:12:22,838 - SpawnPoolWorker-10 - INFO - Starting sample 43750 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:12:22,928 - SpawnPoolWorker-11 - INFO - Starting sample 50000 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:12:23,031 - SpawnPoolWorker-2 - INFO - Starting sample 56250 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:12:23,037 - SpawnPoolWorker-9 - INFO - Starting sample 62500 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:12:23,100 - SpawnPoolWorker-13 - INFO - Starting sample 68750 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:12:23,113 - SpawnPoolWorker-12 - INFO - Starting sample 81250 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:12:23,132 - SpawnPoolWorker-15 - INFO - Starting sample 75000 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:12:23,196 - SpawnPoolWorker-14 - INFO - Starting sample 87500 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:12:23,213 - SpawnPoolWorker-16 - INFO - Starting sample 93750 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:12:29,072 - SpawnPoolWorker-1 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:12:29,090 - SpawnPoolWorker-1 - INFO - Starting sample 1 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:12:29,599 - SpawnPoolWorker-11 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:12:29,616 - SpawnPoolWorker-11 - INFO - Starting sample 50001 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:12:30,115 - SpawnPoolWorker-4 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:12:30,122 - SpawnPoolWorker-4 - INFO - Starting sample 37501 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:12:35,723 - SpawnPoolWorker-13 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:12:35,731 - SpawnPoolWorker-13 - INFO - Starting sample 68751 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:12:36,436 - SpawnPoolWorker-16 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:12:36,443 - SpawnPoolWorker-16 - INFO - Starting sample 93751 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:12:38,820 - SpawnPoolWorker-12 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:12:38,830 - SpawnPoolWorker-12 - INFO - Starting sample 81251 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:12:40,089 - SpawnPoolWorker-11 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:12:40,097 - SpawnPoolWorker-11 - INFO - Starting sample 50002 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:12:40,996 - SpawnPoolWorker-3 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:12:41,003 - SpawnPoolWorker-3 - INFO - Starting sample 12501 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:12:41,059 - SpawnPoolWorker-4 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:12:41,066 - SpawnPoolWorker-4 - INFO - Starting sample 37502 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:12:41,340 - SpawnPoolWorker-9 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:12:41,351 - SpawnPoolWorker-9 - INFO - Starting sample 62501 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:12:41,539 - SpawnPoolWorker-5 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:12:41,546 - SpawnPoolWorker-5 - INFO - Starting sample 6251 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:12:44,769 - SpawnPoolWorker-10 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:12:44,781 - SpawnPoolWorker-10 - INFO - Starting sample 43751 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:12:45,864 - SpawnPoolWorker-6 - INFO - Sample 31250 completed successfully[0m
+[94m2025-01-07 15:12:45,871 - SpawnPoolWorker-6 - INFO - Starting sample 31251 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:12:46,868 - SpawnPoolWorker-2 - INFO - Sample 56250 completed successfully[0m
+[94m2025-01-07 15:12:46,878 - SpawnPoolWorker-2 - INFO - Starting sample 56251 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:12:48,850 - SpawnPoolWorker-12 - INFO - Sample 81251 completed successfully[0m
+[94m2025-01-07 15:12:48,856 - SpawnPoolWorker-12 - INFO - Starting sample 81252 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:12:55,321 - SpawnPoolWorker-7 - INFO - Sample 25000 completed successfully[0m
+[94m2025-01-07 15:12:55,329 - SpawnPoolWorker-7 - INFO - Starting sample 25001 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:12:58,469 - SpawnPoolWorker-8 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:12:58,470 - SpawnPoolWorker-8 - INFO - Starting sample 18751 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:13:00,641 - SpawnPoolWorker-4 - INFO - Sample 37502 completed successfully[0m
+[94m2025-01-07 15:13:00,653 - SpawnPoolWorker-4 - INFO - Starting sample 37503 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:13:01,224 - SpawnPoolWorker-14 - INFO - Sample 87500 completed successfully[0m
+[94m2025-01-07 15:13:01,231 - SpawnPoolWorker-14 - INFO - Starting sample 87501 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:13:04,349 - SpawnPoolWorker-1 - INFO - Sample 1 completed successfully[0m
+[94m2025-01-07 15:13:04,357 - SpawnPoolWorker-1 - INFO - Starting sample 2 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:13:07,080 - SpawnPoolWorker-2 - INFO - Sample 56251 completed successfully[0m
+[94m2025-01-07 15:13:07,088 - SpawnPoolWorker-2 - INFO - Starting sample 56252 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:13:08,789 - SpawnPoolWorker-6 - INFO - Sample 31251 completed successfully[0m
+[94m2025-01-07 15:13:08,801 - SpawnPoolWorker-6 - INFO - Starting sample 31252 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:13:09,597 - SpawnPoolWorker-9 - INFO - Sample 62501 completed successfully[0m
+[94m2025-01-07 15:13:09,605 - SpawnPoolWorker-9 - INFO - Starting sample 62502 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:13:10,694 - SpawnPoolWorker-15 - INFO - Sample 75000 completed successfully[0m
+[94m2025-01-07 15:13:10,701 - SpawnPoolWorker-15 - INFO - Starting sample 75001 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:13:15,883 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:13:15,883 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:13:20,199 - SpawnPoolWorker-2 - INFO - Starting sample 0 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:13:20,233 - SpawnPoolWorker-4 - INFO - Starting sample 6250 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:13:20,360 - SpawnPoolWorker-1 - INFO - Starting sample 12500 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:13:20,456 - SpawnPoolWorker-5 - INFO - Starting sample 18750 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:13:20,634 - SpawnPoolWorker-3 - INFO - Starting sample 25000 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:13:20,677 - SpawnPoolWorker-6 - INFO - Starting sample 31250 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:13:20,721 - SpawnPoolWorker-7 - INFO - Starting sample 37500 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:13:20,900 - SpawnPoolWorker-11 - INFO - Starting sample 43750 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:13:20,999 - SpawnPoolWorker-10 - INFO - Starting sample 50000 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:13:21,020 - SpawnPoolWorker-8 - INFO - Starting sample 56250 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:13:21,032 - SpawnPoolWorker-16 - INFO - Starting sample 62500 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:13:21,063 - SpawnPoolWorker-14 - INFO - Starting sample 68750 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:13:21,091 - SpawnPoolWorker-15 - INFO - Starting sample 75000 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:13:21,092 - SpawnPoolWorker-12 - INFO - Starting sample 81250 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:13:21,129 - SpawnPoolWorker-9 - INFO - Starting sample 87500 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:13:21,223 - SpawnPoolWorker-13 - INFO - Starting sample 93750 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:13:26,046 - SpawnPoolWorker-2 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:13:26,054 - SpawnPoolWorker-2 - INFO - Starting sample 1 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:13:26,241 - SpawnPoolWorker-10 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:13:26,250 - SpawnPoolWorker-10 - INFO - Starting sample 50001 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:13:30,096 - SpawnPoolWorker-7 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:13:30,103 - SpawnPoolWorker-7 - INFO - Starting sample 37501 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:13:34,115 - SpawnPoolWorker-12 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:13:34,123 - SpawnPoolWorker-12 - INFO - Starting sample 81251 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:13:34,420 - SpawnPoolWorker-14 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:13:34,430 - SpawnPoolWorker-14 - INFO - Starting sample 68751 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:13:35,632 - SpawnPoolWorker-13 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:13:35,640 - SpawnPoolWorker-13 - INFO - Starting sample 93751 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:13:37,256 - SpawnPoolWorker-10 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:13:37,266 - SpawnPoolWorker-10 - INFO - Starting sample 50002 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:13:38,143 - SpawnPoolWorker-16 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:13:38,150 - SpawnPoolWorker-16 - INFO - Starting sample 62501 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:13:39,523 - SpawnPoolWorker-1 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:13:39,530 - SpawnPoolWorker-1 - INFO - Starting sample 12501 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:13:39,590 - SpawnPoolWorker-4 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:13:39,598 - SpawnPoolWorker-4 - INFO - Starting sample 6251 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:13:40,621 - SpawnPoolWorker-7 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:13:40,628 - SpawnPoolWorker-7 - INFO - Starting sample 37502 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:13:42,735 - SpawnPoolWorker-11 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:13:42,803 - SpawnPoolWorker-11 - INFO - Starting sample 43751 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:13:49,089 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:13:49,089 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:13:52,586 - SpawnPoolWorker-2 - INFO - Starting sample 0 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:13:52,629 - SpawnPoolWorker-5 - INFO - Starting sample 6250 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:13:52,676 - SpawnPoolWorker-1 - INFO - Starting sample 12500 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:13:52,722 - SpawnPoolWorker-3 - INFO - Starting sample 18750 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:13:52,778 - SpawnPoolWorker-4 - INFO - Starting sample 25000 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:13:52,856 - SpawnPoolWorker-8 - INFO - Starting sample 31250 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:13:52,977 - SpawnPoolWorker-6 - INFO - Starting sample 37500 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:13:53,012 - SpawnPoolWorker-12 - INFO - Starting sample 43750 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:13:53,108 - SpawnPoolWorker-7 - INFO - Starting sample 50000 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:13:53,194 - SpawnPoolWorker-16 - INFO - Starting sample 56250 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:13:53,197 - SpawnPoolWorker-11 - INFO - Starting sample 62500 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:13:53,226 - SpawnPoolWorker-14 - INFO - Starting sample 68750 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:13:53,227 - SpawnPoolWorker-9 - INFO - Starting sample 75000 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:13:53,238 - SpawnPoolWorker-10 - INFO - Starting sample 81250 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:13:53,256 - SpawnPoolWorker-13 - INFO - Starting sample 87500 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:13:53,281 - SpawnPoolWorker-15 - INFO - Starting sample 93750 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:13:58,941 - SpawnPoolWorker-7 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:13:58,954 - SpawnPoolWorker-7 - INFO - Starting sample 50001 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:13:59,490 - SpawnPoolWorker-2 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:13:59,501 - SpawnPoolWorker-2 - INFO - Starting sample 1 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:14:01,010 - SpawnPoolWorker-6 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:14:01,020 - SpawnPoolWorker-6 - INFO - Starting sample 37501 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:14:06,700 - SpawnPoolWorker-14 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:14:06,708 - SpawnPoolWorker-14 - INFO - Starting sample 68751 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:14:06,779 - SpawnPoolWorker-15 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:14:06,785 - SpawnPoolWorker-15 - INFO - Starting sample 93751 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:14:07,245 - SpawnPoolWorker-10 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:14:07,252 - SpawnPoolWorker-10 - INFO - Starting sample 81251 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:14:08,195 - SpawnPoolWorker-7 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:14:08,203 - SpawnPoolWorker-7 - INFO - Starting sample 50002 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:14:09,420 - SpawnPoolWorker-11 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:14:09,427 - SpawnPoolWorker-11 - INFO - Starting sample 62501 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:14:11,025 - SpawnPoolWorker-6 - ERROR - Error in worker 6: [Errno 22] Invalid argument[0m
+[94m2025-01-07 15:14:11,044 - SpawnPoolWorker-9 - ERROR - Error in worker 12: [Errno 22] Invalid argument[0m
+[94m2025-01-07 15:14:11,064 - SpawnPoolWorker-1 - ERROR - Error in worker 2: [Errno 22] Invalid argument[0m
+[94m2025-01-07 15:22:09,157 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:22:09,158 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:22:12,054 - SpawnPoolWorker-2 - INFO - Starting sample 0 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:22:12,092 - SpawnPoolWorker-4 - INFO - Starting sample 6250 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:22:12,132 - SpawnPoolWorker-1 - INFO - Starting sample 12500 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:22:12,182 - SpawnPoolWorker-3 - INFO - Starting sample 18750 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:22:12,252 - SpawnPoolWorker-5 - INFO - Starting sample 25000 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:22:12,313 - SpawnPoolWorker-6 - INFO - Starting sample 31250 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:22:12,384 - SpawnPoolWorker-8 - INFO - Starting sample 37500 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:22:12,613 - SpawnPoolWorker-7 - INFO - Starting sample 43750 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:22:12,657 - SpawnPoolWorker-9 - INFO - Starting sample 50000 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:22:12,663 - SpawnPoolWorker-14 - INFO - Starting sample 56250 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:22:12,666 - SpawnPoolWorker-12 - INFO - Starting sample 62500 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:22:12,688 - SpawnPoolWorker-10 - INFO - Starting sample 68750 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:22:12,744 - SpawnPoolWorker-11 - INFO - Starting sample 75000 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:22:12,747 - SpawnPoolWorker-13 - INFO - Starting sample 81250 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:22:12,772 - SpawnPoolWorker-16 - INFO - Starting sample 87500 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:22:12,814 - SpawnPoolWorker-15 - INFO - Starting sample 93750 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:22:21,552 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:22:21,552 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:22:25,599 - SpawnPoolWorker-4 - INFO - Starting sample 0 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:22:25,761 - SpawnPoolWorker-1 - INFO - Starting sample 6250 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:22:25,865 - SpawnPoolWorker-3 - INFO - Starting sample 12500 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:22:25,935 - SpawnPoolWorker-13 - INFO - Starting sample 18750 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:22:25,958 - SpawnPoolWorker-7 - INFO - Starting sample 25000 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:22:26,022 - SpawnPoolWorker-8 - INFO - Starting sample 31250 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:22:26,023 - SpawnPoolWorker-6 - INFO - Starting sample 37500 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:22:26,119 - SpawnPoolWorker-5 - INFO - Starting sample 43750 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:22:26,204 - SpawnPoolWorker-11 - INFO - Starting sample 50000 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:22:26,262 - SpawnPoolWorker-10 - INFO - Starting sample 56250 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:22:26,340 - SpawnPoolWorker-2 - INFO - Starting sample 62500 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:22:26,349 - SpawnPoolWorker-14 - INFO - Starting sample 68750 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:22:26,381 - SpawnPoolWorker-16 - INFO - Starting sample 75000 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:22:26,425 - SpawnPoolWorker-9 - INFO - Starting sample 81250 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:22:26,498 - SpawnPoolWorker-12 - INFO - Starting sample 87500 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:22:26,671 - SpawnPoolWorker-15 - INFO - Starting sample 93750 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:22:30,088 - SpawnPoolWorker-4 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:22:30,094 - SpawnPoolWorker-4 - INFO - Starting sample 1 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:22:30,720 - SpawnPoolWorker-11 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:22:30,728 - SpawnPoolWorker-11 - INFO - Starting sample 50001 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:22:32,652 - SpawnPoolWorker-6 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:22:32,662 - SpawnPoolWorker-6 - INFO - Starting sample 37501 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:22:37,312 - SpawnPoolWorker-14 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:22:37,319 - SpawnPoolWorker-14 - INFO - Starting sample 68751 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:22:38,108 - SpawnPoolWorker-9 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:22:38,115 - SpawnPoolWorker-9 - INFO - Starting sample 81251 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:22:39,099 - SpawnPoolWorker-11 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:22:39,108 - SpawnPoolWorker-11 - INFO - Starting sample 50002 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:22:39,139 - SpawnPoolWorker-2 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:22:39,144 - SpawnPoolWorker-15 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:22:39,145 - SpawnPoolWorker-2 - INFO - Starting sample 62501 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:22:39,151 - SpawnPoolWorker-15 - INFO - Starting sample 93751 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:22:40,974 - SpawnPoolWorker-3 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:22:40,980 - SpawnPoolWorker-3 - INFO - Starting sample 12501 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:22:41,179 - SpawnPoolWorker-5 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:22:41,186 - SpawnPoolWorker-5 - INFO - Starting sample 43751 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:22:41,882 - SpawnPoolWorker-1 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:22:41,888 - SpawnPoolWorker-1 - INFO - Starting sample 6251 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:22:43,039 - SpawnPoolWorker-6 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:22:43,045 - SpawnPoolWorker-6 - INFO - Starting sample 37502 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:22:43,477 - SpawnPoolWorker-10 - INFO - Sample 56250 completed successfully[0m
+[94m2025-01-07 15:22:43,487 - SpawnPoolWorker-10 - INFO - Starting sample 56251 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:22:45,337 - SpawnPoolWorker-9 - INFO - Sample 81251 completed successfully[0m
+[94m2025-01-07 15:22:45,343 - SpawnPoolWorker-9 - INFO - Starting sample 81252 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:22:45,886 - SpawnPoolWorker-8 - INFO - Sample 31250 completed successfully[0m
+[94m2025-01-07 15:22:45,914 - SpawnPoolWorker-8 - INFO - Starting sample 31251 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:22:50,720 - SpawnPoolWorker-13 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:22:50,721 - SpawnPoolWorker-13 - INFO - Starting sample 18751 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:22:53,243 - SpawnPoolWorker-4 - INFO - Sample 1 completed successfully[0m
+[94m2025-01-07 15:22:53,251 - SpawnPoolWorker-4 - INFO - Starting sample 2 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:22:57,240 - SpawnPoolWorker-7 - INFO - Sample 25000 completed successfully[0m
+[94m2025-01-07 15:22:57,248 - SpawnPoolWorker-7 - INFO - Starting sample 25001 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:22:57,444 - SpawnPoolWorker-12 - INFO - Sample 87500 completed successfully[0m
+[94m2025-01-07 15:22:57,451 - SpawnPoolWorker-12 - INFO - Starting sample 87501 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:22:59,331 - SpawnPoolWorker-10 - INFO - Sample 56251 completed successfully[0m
+[94m2025-01-07 15:22:59,338 - SpawnPoolWorker-10 - INFO - Starting sample 56252 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:23:00,583 - SpawnPoolWorker-6 - INFO - Sample 37502 completed successfully[0m
+[94m2025-01-07 15:23:00,633 - SpawnPoolWorker-6 - INFO - Starting sample 37503 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:23:00,785 - SpawnPoolWorker-2 - INFO - Sample 62501 completed successfully[0m
+[94m2025-01-07 15:23:00,799 - SpawnPoolWorker-2 - INFO - Starting sample 62502 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:23:01,907 - SpawnPoolWorker-8 - INFO - Sample 31251 completed successfully[0m
+[94m2025-01-07 15:23:01,914 - SpawnPoolWorker-8 - INFO - Starting sample 31252 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:23:04,066 - SpawnPoolWorker-16 - INFO - Sample 75000 completed successfully[0m
+[94m2025-01-07 15:23:04,073 - SpawnPoolWorker-16 - INFO - Starting sample 75001 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:23:05,492 - SpawnPoolWorker-9 - INFO - Sample 81252 completed successfully[0m
+[94m2025-01-07 15:23:05,750 - SpawnPoolWorker-9 - INFO - Starting sample 81253 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:23:15,460 - SpawnPoolWorker-16 - INFO - Sample 75001 completed successfully[0m
+[94m2025-01-07 15:23:15,473 - SpawnPoolWorker-16 - INFO - Starting sample 75002 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:23:19,187 - SpawnPoolWorker-9 - INFO - Sample 81253 completed successfully[0m
+[94m2025-01-07 15:23:19,213 - SpawnPoolWorker-9 - INFO - Starting sample 81254 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:23:19,571 - SpawnPoolWorker-7 - INFO - Sample 25001 completed successfully[0m
+[94m2025-01-07 15:23:19,577 - SpawnPoolWorker-7 - INFO - Starting sample 25002 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:23:22,423 - SpawnPoolWorker-2 - WARNING - Invalid sequence length: 425[0m
+[94m2025-01-07 15:23:22,423 - SpawnPoolWorker-2 - INFO - Starting sample 62503 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:23:22,467 - SpawnPoolWorker-14 - INFO - Sample 68751 completed successfully[0m
+[94m2025-01-07 15:23:22,474 - SpawnPoolWorker-14 - INFO - Starting sample 68752 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:23:24,497 - SpawnPoolWorker-1 - INFO - Sample 6251 completed successfully[0m
+[94m2025-01-07 15:23:24,503 - SpawnPoolWorker-1 - INFO - Starting sample 6252 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:23:26,770 - SpawnPoolWorker-4 - INFO - Sample 2 completed successfully[0m
+[94m2025-01-07 15:23:27,038 - SpawnPoolWorker-4 - INFO - Starting sample 3 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:23:28,356 - SpawnPoolWorker-12 - INFO - Sample 87501 completed successfully[0m
+[94m2025-01-07 15:23:28,363 - SpawnPoolWorker-12 - INFO - Starting sample 87502 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:23:32,094 - SpawnPoolWorker-1 - INFO - Sample 6252 completed successfully[0m
+[94m2025-01-07 15:23:32,100 - SpawnPoolWorker-1 - INFO - Starting sample 6253 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:23:39,654 - SpawnPoolWorker-5 - INFO - Sample 43751 completed successfully[0m
+[94m2025-01-07 15:23:39,661 - SpawnPoolWorker-5 - INFO - Starting sample 43752 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:23:39,818 - SpawnPoolWorker-9 - INFO - Sample 81254 completed successfully[0m
+[94m2025-01-07 15:23:39,829 - SpawnPoolWorker-9 - INFO - Starting sample 81255 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:23:40,754 - SpawnPoolWorker-3 - INFO - Sample 12501 completed successfully[0m
+[94m2025-01-07 15:23:40,761 - SpawnPoolWorker-3 - INFO - Starting sample 12502 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:23:41,839 - SpawnPoolWorker-10 - INFO - Sample 56252 completed successfully[0m
+[94m2025-01-07 15:23:41,890 - SpawnPoolWorker-10 - INFO - Starting sample 56253 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:23:43,165 - SpawnPoolWorker-2 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:23:43,165 - SpawnPoolWorker-2 - INFO - Starting sample 62504 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:23:45,349 - SpawnPoolWorker-15 - INFO - Sample 93751 completed successfully[0m
+[94m2025-01-07 15:23:45,362 - SpawnPoolWorker-15 - INFO - Starting sample 93752 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:23:45,672 - SpawnPoolWorker-12 - INFO - Sample 87502 completed successfully[0m
+[94m2025-01-07 15:23:45,678 - SpawnPoolWorker-12 - INFO - Starting sample 87503 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:23:58,567 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:23:58,568 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:24:01,122 - SpawnPoolWorker-1 - INFO - Starting sample 0 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:24:01,161 - SpawnPoolWorker-3 - INFO - Starting sample 6250 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:24:01,300 - SpawnPoolWorker-5 - INFO - Starting sample 12500 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:24:01,302 - SpawnPoolWorker-2 - INFO - Starting sample 18750 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:24:01,334 - SpawnPoolWorker-4 - INFO - Starting sample 25000 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:24:01,365 - SpawnPoolWorker-7 - INFO - Starting sample 31250 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:24:01,368 - SpawnPoolWorker-6 - INFO - Starting sample 37500 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:24:01,432 - SpawnPoolWorker-8 - INFO - Starting sample 43750 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:24:01,623 - SpawnPoolWorker-9 - INFO - Starting sample 50000 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:24:01,642 - SpawnPoolWorker-13 - INFO - Starting sample 56250 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:24:01,665 - SpawnPoolWorker-14 - INFO - Starting sample 62500 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:24:01,690 - SpawnPoolWorker-10 - INFO - Starting sample 68750 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:24:01,720 - SpawnPoolWorker-15 - INFO - Starting sample 75000 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:24:01,755 - SpawnPoolWorker-11 - INFO - Starting sample 81250 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:24:01,781 - SpawnPoolWorker-16 - INFO - Starting sample 87500 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:24:01,841 - SpawnPoolWorker-12 - INFO - Starting sample 93750 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:24:05,565 - SpawnPoolWorker-1 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:24:05,572 - SpawnPoolWorker-1 - INFO - Starting sample 1 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:24:05,782 - SpawnPoolWorker-9 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:24:05,789 - SpawnPoolWorker-9 - INFO - Starting sample 50001 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:24:07,746 - SpawnPoolWorker-6 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:24:07,753 - SpawnPoolWorker-6 - INFO - Starting sample 37501 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:24:12,161 - SpawnPoolWorker-10 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:24:12,167 - SpawnPoolWorker-10 - INFO - Starting sample 68751 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:24:12,696 - SpawnPoolWorker-12 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:24:12,702 - SpawnPoolWorker-12 - INFO - Starting sample 93751 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:24:12,975 - SpawnPoolWorker-11 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:24:12,982 - SpawnPoolWorker-11 - INFO - Starting sample 81251 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:24:13,203 - SpawnPoolWorker-9 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:24:13,210 - SpawnPoolWorker-9 - INFO - Starting sample 50002 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:24:13,994 - SpawnPoolWorker-14 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:24:14,001 - SpawnPoolWorker-14 - INFO - Starting sample 62501 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:24:15,783 - SpawnPoolWorker-8 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:24:15,790 - SpawnPoolWorker-8 - INFO - Starting sample 43751 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:24:16,068 - SpawnPoolWorker-3 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:24:16,075 - SpawnPoolWorker-3 - INFO - Starting sample 6251 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:24:16,250 - SpawnPoolWorker-5 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:24:16,257 - SpawnPoolWorker-5 - INFO - Starting sample 12501 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:24:17,716 - SpawnPoolWorker-6 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:24:17,722 - SpawnPoolWorker-6 - INFO - Starting sample 37502 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:24:26,239 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:24:26,239 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:24:28,709 - SpawnPoolWorker-1 - INFO - Starting sample 0 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:24:28,731 - SpawnPoolWorker-3 - INFO - Starting sample 6250 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:24:28,811 - SpawnPoolWorker-2 - INFO - Starting sample 12500 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:24:28,849 - SpawnPoolWorker-4 - INFO - Starting sample 18750 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:24:28,866 - SpawnPoolWorker-5 - INFO - Starting sample 25000 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:24:28,961 - SpawnPoolWorker-7 - INFO - Starting sample 31250 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:24:29,005 - SpawnPoolWorker-8 - INFO - Starting sample 37500 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:24:29,017 - SpawnPoolWorker-9 - INFO - Starting sample 43750 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:24:29,044 - SpawnPoolWorker-6 - INFO - Starting sample 50000 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:24:29,236 - SpawnPoolWorker-10 - INFO - Starting sample 56250 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:24:29,241 - SpawnPoolWorker-12 - INFO - Starting sample 62500 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:24:29,270 - SpawnPoolWorker-16 - INFO - Starting sample 68750 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:24:29,292 - SpawnPoolWorker-13 - INFO - Starting sample 75000 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:24:29,292 - SpawnPoolWorker-15 - INFO - Starting sample 81250 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:24:29,293 - SpawnPoolWorker-14 - INFO - Starting sample 87500 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:24:29,362 - SpawnPoolWorker-11 - INFO - Starting sample 93750 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:24:33,346 - SpawnPoolWorker-6 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:24:33,352 - SpawnPoolWorker-6 - INFO - Starting sample 50001 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:24:33,403 - SpawnPoolWorker-1 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:24:33,409 - SpawnPoolWorker-1 - INFO - Starting sample 1 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:24:35,852 - SpawnPoolWorker-8 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:24:35,858 - SpawnPoolWorker-8 - INFO - Starting sample 37501 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:25:56,673 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:25:56,673 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:25:59,654 - SpawnPoolWorker-9 - INFO - Starting sample 0 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:25:59,682 - SpawnPoolWorker-3 - INFO - Starting sample 6250 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:25:59,747 - SpawnPoolWorker-2 - INFO - Starting sample 12500 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:25:59,782 - SpawnPoolWorker-6 - INFO - Starting sample 18750 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:25:59,789 - SpawnPoolWorker-5 - INFO - Starting sample 25000 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:25:59,825 - SpawnPoolWorker-7 - INFO - Starting sample 31250 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:25:59,897 - SpawnPoolWorker-1 - INFO - Starting sample 37500 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:25:59,996 - SpawnPoolWorker-11 - INFO - Starting sample 43750 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:26:00,084 - SpawnPoolWorker-10 - INFO - Starting sample 50000 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:26:00,108 - SpawnPoolWorker-4 - INFO - Starting sample 56250 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:26:00,145 - SpawnPoolWorker-8 - INFO - Starting sample 62500 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:26:00,171 - SpawnPoolWorker-13 - INFO - Starting sample 68750 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:26:00,180 - SpawnPoolWorker-12 - INFO - Starting sample 75000 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:26:00,186 - SpawnPoolWorker-15 - INFO - Starting sample 81250 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:26:00,255 - SpawnPoolWorker-14 - INFO - Starting sample 87500 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:26:00,267 - SpawnPoolWorker-16 - INFO - Starting sample 93750 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:26:03,948 - SpawnPoolWorker-9 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:26:03,953 - SpawnPoolWorker-9 - INFO - Starting sample 1 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:26:04,008 - SpawnPoolWorker-10 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:26:04,015 - SpawnPoolWorker-10 - INFO - Starting sample 50001 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:26:05,468 - SpawnPoolWorker-1 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:26:05,475 - SpawnPoolWorker-1 - INFO - Starting sample 37501 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:26:10,427 - SpawnPoolWorker-13 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:26:10,432 - SpawnPoolWorker-13 - INFO - Starting sample 68751 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:26:10,890 - SpawnPoolWorker-15 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:26:10,897 - SpawnPoolWorker-15 - INFO - Starting sample 81251 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:26:10,940 - SpawnPoolWorker-16 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:26:10,946 - SpawnPoolWorker-16 - INFO - Starting sample 93751 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:26:11,325 - SpawnPoolWorker-10 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:26:11,330 - SpawnPoolWorker-10 - INFO - Starting sample 50002 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:26:11,749 - SpawnPoolWorker-8 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:26:11,754 - SpawnPoolWorker-8 - INFO - Starting sample 62501 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:26:13,322 - SpawnPoolWorker-11 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:26:13,329 - SpawnPoolWorker-11 - INFO - Starting sample 43751 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:26:14,038 - SpawnPoolWorker-3 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:26:14,045 - SpawnPoolWorker-3 - INFO - Starting sample 6251 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:26:14,145 - SpawnPoolWorker-2 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:26:14,152 - SpawnPoolWorker-2 - INFO - Starting sample 12501 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:26:14,581 - SpawnPoolWorker-1 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:26:14,588 - SpawnPoolWorker-1 - INFO - Starting sample 37502 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:26:18,263 - SpawnPoolWorker-4 - INFO - Sample 56250 completed successfully[0m
+[94m2025-01-07 15:26:18,270 - SpawnPoolWorker-4 - INFO - Starting sample 56251 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:26:18,825 - SpawnPoolWorker-15 - INFO - Sample 81251 completed successfully[0m
+[94m2025-01-07 15:26:18,832 - SpawnPoolWorker-15 - INFO - Starting sample 81252 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:26:20,109 - SpawnPoolWorker-7 - INFO - Sample 31250 completed successfully[0m
+[94m2025-01-07 15:26:20,116 - SpawnPoolWorker-7 - INFO - Starting sample 31251 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:26:23,446 - SpawnPoolWorker-6 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:26:23,447 - SpawnPoolWorker-6 - INFO - Starting sample 18751 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:28:02,894 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:28:02,894 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:28:05,769 - SpawnPoolWorker-1 - INFO - Starting sample 0 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:28:05,968 - SpawnPoolWorker-3 - INFO - Starting sample 6250 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:28:06,008 - SpawnPoolWorker-6 - INFO - Starting sample 12500 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:28:06,087 - SpawnPoolWorker-2 - INFO - Starting sample 18750 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:28:06,132 - SpawnPoolWorker-4 - INFO - Starting sample 25000 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:28:06,324 - SpawnPoolWorker-7 - INFO - Starting sample 31250 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:28:06,440 - SpawnPoolWorker-11 - INFO - Starting sample 37500 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:28:06,474 - SpawnPoolWorker-13 - INFO - Starting sample 43750 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:28:06,481 - SpawnPoolWorker-9 - INFO - Starting sample 50000 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:28:06,483 - SpawnPoolWorker-5 - INFO - Starting sample 56250 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:28:06,501 - SpawnPoolWorker-8 - INFO - Starting sample 62500 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:28:06,575 - SpawnPoolWorker-12 - INFO - Starting sample 68750 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:28:06,609 - SpawnPoolWorker-15 - INFO - Starting sample 75000 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:28:06,614 - SpawnPoolWorker-10 - INFO - Starting sample 81250 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:28:06,630 - SpawnPoolWorker-14 - INFO - Starting sample 87500 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:28:06,674 - SpawnPoolWorker-16 - INFO - Starting sample 93750 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:28:10,474 - SpawnPoolWorker-9 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:28:10,480 - SpawnPoolWorker-9 - INFO - Starting sample 50001 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:28:10,900 - SpawnPoolWorker-1 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:28:10,906 - SpawnPoolWorker-1 - INFO - Starting sample 1 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:28:13,939 - SpawnPoolWorker-11 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:28:13,946 - SpawnPoolWorker-11 - INFO - Starting sample 37501 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:28:16,578 - SpawnPoolWorker-12 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:28:16,584 - SpawnPoolWorker-12 - INFO - Starting sample 68751 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:28:16,975 - SpawnPoolWorker-9 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:28:16,981 - SpawnPoolWorker-9 - INFO - Starting sample 50002 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:28:18,794 - SpawnPoolWorker-10 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:28:18,801 - SpawnPoolWorker-10 - INFO - Starting sample 81251 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:28:18,911 - SpawnPoolWorker-16 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:28:18,918 - SpawnPoolWorker-16 - INFO - Starting sample 93751 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:28:19,654 - SpawnPoolWorker-8 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:28:19,660 - SpawnPoolWorker-8 - INFO - Starting sample 62501 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:28:21,078 - SpawnPoolWorker-6 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:28:21,085 - SpawnPoolWorker-6 - INFO - Starting sample 12501 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:28:21,143 - SpawnPoolWorker-3 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:28:21,150 - SpawnPoolWorker-3 - INFO - Starting sample 6251 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:28:22,286 - SpawnPoolWorker-13 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:28:22,293 - SpawnPoolWorker-13 - INFO - Starting sample 43751 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:28:23,309 - SpawnPoolWorker-5 - INFO - Sample 56250 completed successfully[0m
+[94m2025-01-07 15:28:23,316 - SpawnPoolWorker-5 - INFO - Starting sample 56251 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:28:24,378 - SpawnPoolWorker-11 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:28:24,387 - SpawnPoolWorker-11 - INFO - Starting sample 37502 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:28:24,841 - SpawnPoolWorker-7 - INFO - Sample 31250 completed successfully[0m
+[94m2025-01-07 15:28:24,848 - SpawnPoolWorker-7 - INFO - Starting sample 31251 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:28:26,950 - SpawnPoolWorker-10 - INFO - Sample 81251 completed successfully[0m
+[94m2025-01-07 15:28:26,956 - SpawnPoolWorker-10 - INFO - Starting sample 81252 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:28:32,083 - SpawnPoolWorker-2 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:28:32,083 - SpawnPoolWorker-2 - INFO - Starting sample 18751 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:28:33,854 - SpawnPoolWorker-4 - INFO - Sample 25000 completed successfully[0m
+[94m2025-01-07 15:28:33,860 - SpawnPoolWorker-4 - INFO - Starting sample 25001 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:28:34,100 - SpawnPoolWorker-14 - INFO - Sample 87500 completed successfully[0m
+[94m2025-01-07 15:28:34,107 - SpawnPoolWorker-14 - INFO - Starting sample 87501 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:28:35,416 - SpawnPoolWorker-1 - INFO - Sample 1 completed successfully[0m
+[94m2025-01-07 15:28:35,422 - SpawnPoolWorker-1 - INFO - Starting sample 2 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:28:36,618 - SpawnPoolWorker-5 - INFO - Sample 56251 completed successfully[0m
+[94m2025-01-07 15:28:36,625 - SpawnPoolWorker-5 - INFO - Starting sample 56252 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:28:37,967 - SpawnPoolWorker-11 - INFO - Sample 37502 completed successfully[0m
+[94m2025-01-07 15:28:37,975 - SpawnPoolWorker-11 - INFO - Starting sample 37503 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:28:38,884 - SpawnPoolWorker-8 - INFO - Sample 62501 completed successfully[0m
+[94m2025-01-07 15:28:38,891 - SpawnPoolWorker-8 - INFO - Starting sample 62502 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:28:39,129 - SpawnPoolWorker-7 - INFO - Sample 31251 completed successfully[0m
+[94m2025-01-07 15:28:39,136 - SpawnPoolWorker-7 - INFO - Starting sample 31252 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:28:42,304 - SpawnPoolWorker-10 - INFO - Sample 81252 completed successfully[0m
+[94m2025-01-07 15:28:42,311 - SpawnPoolWorker-10 - INFO - Starting sample 81253 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:28:42,727 - SpawnPoolWorker-15 - INFO - Sample 75000 completed successfully[0m
+[94m2025-01-07 15:28:42,735 - SpawnPoolWorker-15 - INFO - Starting sample 75001 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:28:44,491 - SpawnPoolWorker-8 - WARNING - Invalid sequence length: 149[0m
+[94m2025-01-07 15:28:44,491 - SpawnPoolWorker-8 - INFO - Starting sample 62503 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:28:46,567 - SpawnPoolWorker-4 - INFO - Sample 25001 completed successfully[0m
+[94m2025-01-07 15:28:46,574 - SpawnPoolWorker-4 - INFO - Starting sample 25002 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:28:48,060 - SpawnPoolWorker-12 - INFO - Sample 68751 completed successfully[0m
+[94m2025-01-07 15:28:48,068 - SpawnPoolWorker-12 - INFO - Starting sample 68752 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:28:49,867 - SpawnPoolWorker-10 - INFO - Sample 81253 completed successfully[0m
+[94m2025-01-07 15:28:49,874 - SpawnPoolWorker-10 - INFO - Starting sample 81254 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:28:52,144 - SpawnPoolWorker-15 - INFO - Sample 75001 completed successfully[0m
+[94m2025-01-07 15:28:52,151 - SpawnPoolWorker-15 - INFO - Starting sample 75002 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:28:55,904 - SpawnPoolWorker-3 - INFO - Sample 6251 completed successfully[0m
+[94m2025-01-07 15:28:55,912 - SpawnPoolWorker-3 - INFO - Starting sample 6252 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:28:56,625 - SpawnPoolWorker-14 - INFO - Sample 87501 completed successfully[0m
+[94m2025-01-07 15:28:56,632 - SpawnPoolWorker-14 - INFO - Starting sample 87502 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:28:59,694 - SpawnPoolWorker-1 - INFO - Sample 2 completed successfully[0m
+[94m2025-01-07 15:28:59,703 - SpawnPoolWorker-1 - INFO - Starting sample 3 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:29:02,630 - SpawnPoolWorker-3 - INFO - Sample 6252 completed successfully[0m
+[94m2025-01-07 15:29:02,639 - SpawnPoolWorker-3 - INFO - Starting sample 6253 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:29:03,234 - SpawnPoolWorker-10 - INFO - Sample 81254 completed successfully[0m
+[94m2025-01-07 15:29:03,241 - SpawnPoolWorker-10 - INFO - Starting sample 81255 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:29:03,422 - SpawnPoolWorker-8 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:29:03,422 - SpawnPoolWorker-8 - INFO - Starting sample 62504 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:29:03,663 - SpawnPoolWorker-16 - INFO - Sample 93751 completed successfully[0m
+[94m2025-01-07 15:29:03,671 - SpawnPoolWorker-16 - INFO - Starting sample 93752 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:29:05,152 - SpawnPoolWorker-6 - INFO - Sample 12501 completed successfully[0m
+[94m2025-01-07 15:29:05,186 - SpawnPoolWorker-6 - INFO - Starting sample 12502 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:29:05,620 - SpawnPoolWorker-5 - INFO - Sample 56252 completed successfully[0m
+[94m2025-01-07 15:29:05,627 - SpawnPoolWorker-5 - INFO - Starting sample 56253 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:29:07,273 - SpawnPoolWorker-12 - INFO - Sample 68752 completed successfully[0m
+[94m2025-01-07 15:29:07,280 - SpawnPoolWorker-12 - INFO - Starting sample 68753 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:29:07,524 - SpawnPoolWorker-2 - INFO - Sample 18751 completed successfully[0m
+[94m2025-01-07 15:29:07,558 - SpawnPoolWorker-2 - INFO - Starting sample 18752 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:29:08,134 - SpawnPoolWorker-13 - INFO - Sample 43751 completed successfully[0m
+[94m2025-01-07 15:29:08,141 - SpawnPoolWorker-13 - INFO - Starting sample 43752 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:29:09,165 - SpawnPoolWorker-11 - INFO - Sample 37503 completed successfully[0m
+[94m2025-01-07 15:29:09,172 - SpawnPoolWorker-11 - INFO - Starting sample 37504 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:29:10,700 - SpawnPoolWorker-14 - INFO - Sample 87502 completed successfully[0m
+[94m2025-01-07 15:29:10,708 - SpawnPoolWorker-14 - INFO - Starting sample 87503 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:29:10,988 - SpawnPoolWorker-3 - WARNING - Invalid sequence length: 333[0m
+[94m2025-01-07 15:29:10,989 - SpawnPoolWorker-3 - INFO - Starting sample 6254 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:29:14,604 - SpawnPoolWorker-12 - INFO - Sample 68753 completed successfully[0m
+[94m2025-01-07 15:29:14,611 - SpawnPoolWorker-12 - INFO - Starting sample 68754 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:29:15,408 - SpawnPoolWorker-10 - INFO - Sample 81255 completed successfully[0m
+[94m2025-01-07 15:29:15,415 - SpawnPoolWorker-10 - INFO - Starting sample 81256 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:29:16,072 - SpawnPoolWorker-16 - INFO - Sample 93752 completed successfully[0m
+[94m2025-01-07 15:29:16,079 - SpawnPoolWorker-16 - INFO - Starting sample 93753 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:29:19,616 - SpawnPoolWorker-14 - INFO - Sample 87503 completed successfully[0m
+[94m2025-01-07 15:29:19,623 - SpawnPoolWorker-14 - INFO - Starting sample 87504 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:29:19,787 - SpawnPoolWorker-6 - INFO - Sample 12502 completed successfully[0m
+[94m2025-01-07 15:29:19,795 - SpawnPoolWorker-6 - INFO - Starting sample 12503 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:29:19,928 - SpawnPoolWorker-8 - INFO - Sample 62504 completed successfully[0m
+[94m2025-01-07 15:29:19,937 - SpawnPoolWorker-8 - INFO - Starting sample 62505 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:29:23,059 - SpawnPoolWorker-1 - INFO - Sample 3 completed successfully[0m
+[94m2025-01-07 15:29:23,066 - SpawnPoolWorker-1 - INFO - Starting sample 4 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:29:24,900 - SpawnPoolWorker-15 - INFO - Sample 75002 completed successfully[0m
+[94m2025-01-07 15:29:24,922 - SpawnPoolWorker-15 - INFO - Starting sample 75003 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:29:25,026 - SpawnPoolWorker-14 - INFO - Sample 87504 completed successfully[0m
+[94m2025-01-07 15:29:25,033 - SpawnPoolWorker-14 - INFO - Starting sample 87505 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:29:27,856 - SpawnPoolWorker-7 - INFO - Sample 31252 completed successfully[0m
+[94m2025-01-07 15:29:27,863 - SpawnPoolWorker-7 - INFO - Starting sample 31253 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:29:28,111 - SpawnPoolWorker-11 - INFO - Sample 37504 completed successfully[0m
+[94m2025-01-07 15:29:28,117 - SpawnPoolWorker-6 - INFO - Sample 12503 completed successfully[0m
+[94m2025-01-07 15:29:28,122 - SpawnPoolWorker-11 - INFO - Starting sample 37505 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:29:28,124 - SpawnPoolWorker-6 - INFO - Starting sample 12504 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:29:30,210 - SpawnPoolWorker-12 - INFO - Sample 68754 completed successfully[0m
+[94m2025-01-07 15:29:30,218 - SpawnPoolWorker-12 - INFO - Starting sample 68755 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:29:31,534 - SpawnPoolWorker-9 - INFO - Sample 50002 completed successfully[0m
+[94m2025-01-07 15:29:31,542 - SpawnPoolWorker-9 - INFO - Starting sample 50003 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:29:32,409 - SpawnPoolWorker-15 - INFO - Sample 75003 completed successfully[0m
+[94m2025-01-07 15:29:32,415 - SpawnPoolWorker-15 - INFO - Starting sample 75004 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:29:36,286 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:29:36,286 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:29:39,367 - SpawnPoolWorker-1 - INFO - Starting sample 0 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:29:39,371 - SpawnPoolWorker-3 - INFO - Starting sample 6250 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:29:39,447 - SpawnPoolWorker-6 - INFO - Starting sample 12500 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:29:39,536 - SpawnPoolWorker-2 - INFO - Starting sample 18750 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:29:39,582 - SpawnPoolWorker-4 - INFO - Starting sample 25000 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:29:39,653 - SpawnPoolWorker-9 - INFO - Starting sample 31250 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:29:39,687 - SpawnPoolWorker-7 - INFO - Starting sample 37500 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:29:39,719 - SpawnPoolWorker-5 - INFO - Starting sample 43750 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:29:39,799 - SpawnPoolWorker-8 - INFO - Starting sample 50000 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:29:39,866 - SpawnPoolWorker-10 - INFO - Starting sample 56250 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:29:39,918 - SpawnPoolWorker-14 - INFO - Starting sample 62500 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:29:39,949 - SpawnPoolWorker-12 - INFO - Starting sample 68750 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:29:39,982 - SpawnPoolWorker-13 - INFO - Starting sample 75000 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:29:39,998 - SpawnPoolWorker-11 - INFO - Starting sample 81250 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:29:40,011 - SpawnPoolWorker-15 - INFO - Starting sample 87500 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:29:40,059 - SpawnPoolWorker-16 - INFO - Starting sample 93750 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:29:44,748 - SpawnPoolWorker-1 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:29:44,755 - SpawnPoolWorker-1 - INFO - Starting sample 1 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:29:45,173 - SpawnPoolWorker-8 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:29:45,180 - SpawnPoolWorker-8 - INFO - Starting sample 50001 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:29:49,615 - SpawnPoolWorker-7 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:29:49,623 - SpawnPoolWorker-7 - INFO - Starting sample 37501 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:29:53,942 - SpawnPoolWorker-11 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:29:53,949 - SpawnPoolWorker-11 - INFO - Starting sample 81251 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:29:55,251 - SpawnPoolWorker-14 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:29:55,259 - SpawnPoolWorker-14 - INFO - Starting sample 62501 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:29:55,484 - SpawnPoolWorker-8 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:29:55,491 - SpawnPoolWorker-8 - INFO - Starting sample 50002 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:29:57,121 - SpawnPoolWorker-12 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:29:57,129 - SpawnPoolWorker-12 - INFO - Starting sample 68751 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:29:57,296 - SpawnPoolWorker-16 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:29:57,303 - SpawnPoolWorker-16 - INFO - Starting sample 93751 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:29:58,200 - SpawnPoolWorker-3 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:29:58,208 - SpawnPoolWorker-3 - INFO - Starting sample 6251 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:29:59,309 - SpawnPoolWorker-6 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:29:59,316 - SpawnPoolWorker-6 - INFO - Starting sample 12501 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:30:00,196 - SpawnPoolWorker-5 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:30:00,204 - SpawnPoolWorker-5 - INFO - Starting sample 43751 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:30:01,937 - SpawnPoolWorker-7 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:30:01,945 - SpawnPoolWorker-7 - INFO - Starting sample 37502 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:30:02,121 - SpawnPoolWorker-11 - INFO - Sample 81251 completed successfully[0m
+[94m2025-01-07 15:30:02,128 - SpawnPoolWorker-11 - INFO - Starting sample 81252 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:30:03,997 - SpawnPoolWorker-10 - INFO - Sample 56250 completed successfully[0m
+[94m2025-01-07 15:30:04,004 - SpawnPoolWorker-10 - INFO - Starting sample 56251 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:30:18,709 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:30:18,710 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:30:21,108 - SpawnPoolWorker-1 - INFO - Starting sample 0 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:30:21,138 - SpawnPoolWorker-2 - INFO - Starting sample 6250 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:30:21,169 - SpawnPoolWorker-3 - INFO - Starting sample 12500 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:30:21,218 - SpawnPoolWorker-4 - INFO - Starting sample 18750 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:30:21,266 - SpawnPoolWorker-6 - INFO - Starting sample 25000 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:30:21,349 - SpawnPoolWorker-5 - INFO - Starting sample 31250 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:30:21,480 - SpawnPoolWorker-7 - INFO - Starting sample 37500 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:30:21,490 - SpawnPoolWorker-8 - INFO - Starting sample 43750 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:30:21,516 - SpawnPoolWorker-9 - INFO - Starting sample 50000 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:30:21,588 - SpawnPoolWorker-10 - INFO - Starting sample 56250 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:30:21,634 - SpawnPoolWorker-14 - INFO - Starting sample 62500 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:30:21,649 - SpawnPoolWorker-12 - INFO - Starting sample 68750 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:30:21,660 - SpawnPoolWorker-11 - INFO - Starting sample 75000 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:30:21,689 - SpawnPoolWorker-13 - INFO - Starting sample 81250 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:30:21,697 - SpawnPoolWorker-16 - INFO - Starting sample 93750 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:30:21,697 - SpawnPoolWorker-15 - INFO - Starting sample 87500 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:30:26,049 - SpawnPoolWorker-1 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:30:26,056 - SpawnPoolWorker-1 - INFO - Starting sample 1 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:30:26,325 - SpawnPoolWorker-9 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:30:26,336 - SpawnPoolWorker-9 - INFO - Starting sample 50001 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:30:28,910 - SpawnPoolWorker-7 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:30:28,917 - SpawnPoolWorker-7 - INFO - Starting sample 37501 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:30:34,856 - SpawnPoolWorker-13 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:30:34,863 - SpawnPoolWorker-13 - INFO - Starting sample 81251 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:30:35,013 - SpawnPoolWorker-14 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:30:35,028 - SpawnPoolWorker-14 - INFO - Starting sample 62501 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:30:35,251 - SpawnPoolWorker-12 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:30:35,257 - SpawnPoolWorker-12 - INFO - Starting sample 68751 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:30:35,397 - SpawnPoolWorker-9 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:30:35,404 - SpawnPoolWorker-9 - INFO - Starting sample 50002 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:30:35,820 - SpawnPoolWorker-16 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:30:35,829 - SpawnPoolWorker-16 - INFO - Starting sample 93751 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:30:37,213 - SpawnPoolWorker-2 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:30:37,220 - SpawnPoolWorker-2 - INFO - Starting sample 6251 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:30:37,939 - SpawnPoolWorker-8 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:30:37,947 - SpawnPoolWorker-8 - INFO - Starting sample 43751 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:30:39,328 - SpawnPoolWorker-3 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:30:39,335 - SpawnPoolWorker-3 - INFO - Starting sample 12501 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:30:40,088 - SpawnPoolWorker-4 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:30:40,088 - SpawnPoolWorker-4 - INFO - Starting sample 18751 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:30:40,823 - SpawnPoolWorker-10 - INFO - Sample 56250 completed successfully[0m
+[94m2025-01-07 15:30:40,831 - SpawnPoolWorker-10 - INFO - Starting sample 56251 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:30:41,223 - SpawnPoolWorker-7 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:30:41,230 - SpawnPoolWorker-7 - INFO - Starting sample 37502 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:30:42,513 - SpawnPoolWorker-6 - INFO - Sample 25000 completed successfully[0m
+[94m2025-01-07 15:30:42,521 - SpawnPoolWorker-6 - INFO - Starting sample 25001 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:30:43,569 - SpawnPoolWorker-13 - INFO - Sample 81251 completed successfully[0m
+[94m2025-01-07 15:30:43,577 - SpawnPoolWorker-13 - INFO - Starting sample 81252 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:30:43,595 - SpawnPoolWorker-15 - INFO - Sample 87500 completed successfully[0m
+[94m2025-01-07 15:30:43,607 - SpawnPoolWorker-15 - INFO - Starting sample 87501 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:30:45,591 - SpawnPoolWorker-5 - INFO - Sample 31250 completed successfully[0m
+[94m2025-01-07 15:30:45,599 - SpawnPoolWorker-5 - INFO - Starting sample 31251 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:30:51,724 - SpawnPoolWorker-1 - INFO - Sample 1 completed successfully[0m
+[94m2025-01-07 15:30:51,747 - SpawnPoolWorker-1 - INFO - Starting sample 2 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:30:54,365 - SpawnPoolWorker-7 - INFO - Sample 37502 completed successfully[0m
+[94m2025-01-07 15:30:54,373 - SpawnPoolWorker-7 - INFO - Starting sample 37503 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:30:55,253 - SpawnPoolWorker-10 - INFO - Sample 56251 completed successfully[0m
+[94m2025-01-07 15:30:55,260 - SpawnPoolWorker-10 - INFO - Starting sample 56252 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:30:55,787 - SpawnPoolWorker-14 - INFO - Sample 62501 completed successfully[0m
+[94m2025-01-07 15:30:55,792 - SpawnPoolWorker-6 - INFO - Sample 25001 completed successfully[0m
+[94m2025-01-07 15:30:55,794 - SpawnPoolWorker-14 - INFO - Starting sample 62502 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:30:55,809 - SpawnPoolWorker-6 - INFO - Starting sample 25002 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:31:01,750 - SpawnPoolWorker-13 - INFO - Sample 81252 completed successfully[0m
+[94m2025-01-07 15:31:01,757 - SpawnPoolWorker-13 - INFO - Starting sample 81253 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:31:02,170 - SpawnPoolWorker-5 - INFO - Sample 31251 completed successfully[0m
+[94m2025-01-07 15:31:02,177 - SpawnPoolWorker-5 - INFO - Starting sample 31252 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:31:04,443 - SpawnPoolWorker-15 - INFO - Sample 87501 completed successfully[0m
+[94m2025-01-07 15:31:04,451 - SpawnPoolWorker-15 - INFO - Starting sample 87502 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:31:06,629 - SpawnPoolWorker-11 - INFO - Sample 75000 completed successfully[0m
+[94m2025-01-07 15:31:06,637 - SpawnPoolWorker-11 - INFO - Starting sample 75001 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:31:08,890 - SpawnPoolWorker-13 - INFO - Sample 81253 completed successfully[0m
+[94m2025-01-07 15:31:08,897 - SpawnPoolWorker-13 - INFO - Starting sample 81254 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:31:09,073 - SpawnPoolWorker-2 - INFO - Sample 6251 completed successfully[0m
+[94m2025-01-07 15:31:09,080 - SpawnPoolWorker-2 - INFO - Starting sample 6252 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:31:14,424 - SpawnPoolWorker-10 - INFO - Sample 56252 completed successfully[0m
+[94m2025-01-07 15:31:14,431 - SpawnPoolWorker-10 - INFO - Starting sample 56253 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:31:14,774 - SpawnPoolWorker-11 - INFO - Sample 75001 completed successfully[0m
+[94m2025-01-07 15:31:14,781 - SpawnPoolWorker-11 - INFO - Starting sample 75002 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:31:16,026 - SpawnPoolWorker-2 - INFO - Sample 6252 completed successfully[0m
+[94m2025-01-07 15:31:16,033 - SpawnPoolWorker-2 - INFO - Starting sample 6253 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:31:16,782 - SpawnPoolWorker-16 - INFO - Sample 93751 completed successfully[0m
+[94m2025-01-07 15:31:16,820 - SpawnPoolWorker-16 - INFO - Starting sample 93752 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:31:18,429 - SpawnPoolWorker-15 - INFO - Sample 87502 completed successfully[0m
+[94m2025-01-07 15:31:18,436 - SpawnPoolWorker-15 - INFO - Starting sample 87503 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:31:22,088 - SpawnPoolWorker-12 - INFO - Sample 68751 completed successfully[0m
+[94m2025-01-07 15:31:22,100 - SpawnPoolWorker-12 - INFO - Starting sample 68752 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:31:22,714 - SpawnPoolWorker-1 - INFO - Sample 2 completed successfully[0m
+[94m2025-01-07 15:31:22,722 - SpawnPoolWorker-1 - INFO - Starting sample 3 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:31:24,061 - SpawnPoolWorker-13 - INFO - Sample 81254 completed successfully[0m
+[94m2025-01-07 15:31:24,069 - SpawnPoolWorker-13 - INFO - Starting sample 81255 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:31:26,362 - SpawnPoolWorker-7 - INFO - Sample 37503 completed successfully[0m
+[94m2025-01-07 15:31:26,369 - SpawnPoolWorker-7 - INFO - Starting sample 37504 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:31:26,404 - SpawnPoolWorker-15 - INFO - Sample 87503 completed successfully[0m
+[94m2025-01-07 15:31:26,411 - SpawnPoolWorker-15 - INFO - Starting sample 87504 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:31:27,276 - SpawnPoolWorker-11 - INFO - Sample 75002 completed successfully[0m
+[94m2025-01-07 15:31:27,283 - SpawnPoolWorker-11 - INFO - Starting sample 75003 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:31:28,336 - SpawnPoolWorker-9 - INFO - Sample 50002 completed successfully[0m
+[94m2025-01-07 15:31:28,339 - SpawnPoolWorker-8 - INFO - Sample 43751 completed successfully[0m
+[94m2025-01-07 15:31:28,344 - SpawnPoolWorker-9 - INFO - Starting sample 50003 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:31:28,348 - SpawnPoolWorker-8 - INFO - Starting sample 43752 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:31:29,394 - SpawnPoolWorker-16 - INFO - Sample 93752 completed successfully[0m
+[94m2025-01-07 15:31:29,402 - SpawnPoolWorker-16 - INFO - Starting sample 93753 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:31:31,193 - SpawnPoolWorker-15 - INFO - Sample 87504 completed successfully[0m
+[94m2025-01-07 15:31:31,200 - SpawnPoolWorker-15 - INFO - Starting sample 87505 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:31:34,452 - SpawnPoolWorker-11 - INFO - Sample 75003 completed successfully[0m
+[94m2025-01-07 15:31:34,459 - SpawnPoolWorker-11 - INFO - Starting sample 75004 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:31:36,881 - SpawnPoolWorker-9 - INFO - Sample 50003 completed successfully[0m
+[94m2025-01-07 15:31:36,888 - SpawnPoolWorker-9 - INFO - Starting sample 50004 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:31:36,924 - SpawnPoolWorker-5 - INFO - Sample 31252 completed successfully[0m
+[94m2025-01-07 15:31:36,932 - SpawnPoolWorker-5 - INFO - Starting sample 31253 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:31:38,632 - SpawnPoolWorker-13 - INFO - Sample 81255 completed successfully[0m
+[94m2025-01-07 15:31:38,639 - SpawnPoolWorker-13 - INFO - Starting sample 81256 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:31:39,069 - SpawnPoolWorker-10 - INFO - Sample 56253 completed successfully[0m
+[94m2025-01-07 15:31:39,076 - SpawnPoolWorker-10 - INFO - Starting sample 56254 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:31:43,308 - SpawnPoolWorker-14 - WARNING - Invalid sequence length: 463[0m
+[94m2025-01-07 15:31:43,309 - SpawnPoolWorker-14 - INFO - Starting sample 62503 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:31:43,498 - SpawnPoolWorker-10 - INFO - Sample 56254 completed successfully[0m
+[94m2025-01-07 15:31:43,504 - SpawnPoolWorker-10 - INFO - Starting sample 56255 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:31:43,889 - SpawnPoolWorker-12 - INFO - Sample 68752 completed successfully[0m
+[94m2025-01-07 15:31:43,896 - SpawnPoolWorker-12 - INFO - Starting sample 68753 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:31:44,597 - SpawnPoolWorker-4 - INFO - Sample 18751 completed successfully[0m
+[94m2025-01-07 15:31:44,604 - SpawnPoolWorker-4 - INFO - Starting sample 18752 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:31:47,275 - SpawnPoolWorker-16 - WARNING - Invalid sequence length: 254[0m
+[94m2025-01-07 15:31:47,275 - SpawnPoolWorker-16 - INFO - Starting sample 93754 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:31:50,969 - SpawnPoolWorker-1 - INFO - Sample 3 completed successfully[0m
+[94m2025-01-07 15:31:50,976 - SpawnPoolWorker-1 - INFO - Starting sample 4 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:31:51,362 - SpawnPoolWorker-12 - INFO - Sample 68753 completed successfully[0m
+[94m2025-01-07 15:31:51,369 - SpawnPoolWorker-12 - INFO - Starting sample 68754 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:31:53,928 - SpawnPoolWorker-14 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:31:53,928 - SpawnPoolWorker-14 - INFO - Starting sample 62504 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:31:54,041 - SpawnPoolWorker-2 - WARNING - Invalid sequence length: 334[0m
+[94m2025-01-07 15:31:54,042 - SpawnPoolWorker-2 - INFO - Starting sample 6254 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:31:58,869 - SpawnPoolWorker-7 - INFO - Sample 37504 completed successfully[0m
+[94m2025-01-07 15:31:58,876 - SpawnPoolWorker-7 - INFO - Starting sample 37505 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:32:04,148 - SpawnPoolWorker-13 - INFO - Sample 81256 completed successfully[0m
+[94m2025-01-07 15:32:04,156 - SpawnPoolWorker-13 - INFO - Starting sample 81257 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:32:08,242 - SpawnPoolWorker-10 - INFO - Sample 56255 completed successfully[0m
+[94m2025-01-07 15:32:08,249 - SpawnPoolWorker-10 - INFO - Starting sample 56256 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:32:11,463 - SpawnPoolWorker-6 - INFO - Sample 25002 completed successfully[0m
+[94m2025-01-07 15:32:11,469 - SpawnPoolWorker-6 - INFO - Starting sample 25003 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:32:11,596 - SpawnPoolWorker-3 - INFO - Sample 12501 completed successfully[0m
+[94m2025-01-07 15:32:11,610 - SpawnPoolWorker-3 - INFO - Starting sample 12502 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:32:12,776 - SpawnPoolWorker-14 - INFO - Sample 62504 completed successfully[0m
+[94m2025-01-07 15:32:12,787 - SpawnPoolWorker-14 - INFO - Starting sample 62505 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:32:14,290 - SpawnPoolWorker-13 - INFO - Sample 81257 completed successfully[0m
+[94m2025-01-07 15:32:14,298 - SpawnPoolWorker-13 - INFO - Starting sample 81258 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:32:14,483 - SpawnPoolWorker-5 - INFO - Sample 31253 completed successfully[0m
+[94m2025-01-07 15:32:14,490 - SpawnPoolWorker-5 - INFO - Starting sample 31254 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:32:14,994 - SpawnPoolWorker-15 - INFO - Sample 87505 completed successfully[0m
+[94m2025-01-07 15:32:15,001 - SpawnPoolWorker-15 - INFO - Starting sample 87506 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:32:15,315 - SpawnPoolWorker-11 - INFO - Sample 75004 completed successfully[0m
+[94m2025-01-07 15:32:15,322 - SpawnPoolWorker-11 - INFO - Starting sample 75005 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:32:20,307 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:32:20,307 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:32:24,377 - SpawnPoolWorker-1 - INFO - Starting sample 0 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:32:24,399 - SpawnPoolWorker-4 - INFO - Starting sample 6250 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:32:24,410 - SpawnPoolWorker-2 - INFO - Starting sample 12500 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:32:24,580 - SpawnPoolWorker-7 - INFO - Starting sample 18750 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:32:24,611 - SpawnPoolWorker-5 - INFO - Starting sample 25000 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:32:24,744 - SpawnPoolWorker-6 - INFO - Starting sample 31250 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:32:24,803 - SpawnPoolWorker-3 - INFO - Starting sample 37500 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:32:24,961 - SpawnPoolWorker-9 - INFO - Starting sample 43750 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:32:25,011 - SpawnPoolWorker-8 - INFO - Starting sample 50000 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:32:25,090 - SpawnPoolWorker-10 - INFO - Starting sample 56250 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:32:25,102 - SpawnPoolWorker-14 - INFO - Starting sample 62500 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:32:25,105 - SpawnPoolWorker-16 - INFO - Starting sample 68750 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:32:25,229 - SpawnPoolWorker-11 - INFO - Starting sample 75000 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:32:25,255 - SpawnPoolWorker-12 - INFO - Starting sample 81250 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:32:25,285 - SpawnPoolWorker-13 - INFO - Starting sample 87500 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:32:25,314 - SpawnPoolWorker-15 - INFO - Starting sample 93750 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:32:29,739 - SpawnPoolWorker-1 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:32:29,746 - SpawnPoolWorker-1 - INFO - Starting sample 1 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:32:30,149 - SpawnPoolWorker-8 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:32:30,156 - SpawnPoolWorker-8 - INFO - Starting sample 50001 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:32:32,533 - SpawnPoolWorker-3 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:32:32,539 - SpawnPoolWorker-3 - INFO - Starting sample 37501 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:32:40,443 - SpawnPoolWorker-12 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:32:40,450 - SpawnPoolWorker-12 - INFO - Starting sample 81251 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:32:40,667 - SpawnPoolWorker-8 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:32:40,674 - SpawnPoolWorker-8 - INFO - Starting sample 50002 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:32:43,911 - SpawnPoolWorker-15 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:32:43,918 - SpawnPoolWorker-15 - INFO - Starting sample 93751 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:32:44,764 - SpawnPoolWorker-14 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:32:44,771 - SpawnPoolWorker-14 - INFO - Starting sample 62501 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:32:44,947 - SpawnPoolWorker-16 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:32:44,954 - SpawnPoolWorker-16 - INFO - Starting sample 68751 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:32:45,359 - SpawnPoolWorker-4 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:32:45,433 - SpawnPoolWorker-9 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:32:45,441 - SpawnPoolWorker-4 - INFO - Starting sample 6251 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:32:45,454 - SpawnPoolWorker-9 - INFO - Starting sample 43751 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:32:47,114 - SpawnPoolWorker-2 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:32:47,121 - SpawnPoolWorker-2 - INFO - Starting sample 12501 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:32:49,979 - SpawnPoolWorker-7 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:32:49,979 - SpawnPoolWorker-7 - INFO - Starting sample 18751 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:32:51,585 - SpawnPoolWorker-12 - INFO - Sample 81251 completed successfully[0m
+[94m2025-01-07 15:32:51,592 - SpawnPoolWorker-12 - INFO - Starting sample 81252 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:32:51,724 - SpawnPoolWorker-5 - INFO - Sample 25000 completed successfully[0m
+[94m2025-01-07 15:32:51,732 - SpawnPoolWorker-5 - INFO - Starting sample 25001 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:32:52,494 - SpawnPoolWorker-3 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:32:52,501 - SpawnPoolWorker-3 - INFO - Starting sample 37502 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:32:54,402 - SpawnPoolWorker-10 - INFO - Sample 56250 completed successfully[0m
+[94m2025-01-07 15:32:54,411 - SpawnPoolWorker-10 - INFO - Starting sample 56251 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:32:54,948 - SpawnPoolWorker-13 - INFO - Sample 87500 completed successfully[0m
+[94m2025-01-07 15:32:54,956 - SpawnPoolWorker-13 - INFO - Starting sample 87501 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:33:03,352 - MainProcess - INFO - Starting simulation with 100000 samples using 16 processes[0m
+[94m2025-01-07 15:33:03,352 - MainProcess - INFO - Starting parallel simulation with 16 processes[0m
+[94m2025-01-07 15:33:07,262 - SpawnPoolWorker-1 - INFO - Starting sample 0 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:33:07,329 - SpawnPoolWorker-6 - INFO - Starting sample 6250 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:33:07,462 - SpawnPoolWorker-2 - INFO - Starting sample 12500 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:33:07,476 - SpawnPoolWorker-3 - INFO - Starting sample 18750 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:33:07,590 - SpawnPoolWorker-4 - INFO - Starting sample 25000 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:33:07,689 - SpawnPoolWorker-9 - INFO - Starting sample 31250 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:33:07,766 - SpawnPoolWorker-8 - INFO - Starting sample 37500 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:33:07,831 - SpawnPoolWorker-15 - INFO - Starting sample 43750 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:33:07,855 - SpawnPoolWorker-5 - INFO - Starting sample 50000 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:33:07,916 - SpawnPoolWorker-7 - INFO - Starting sample 56250 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:33:07,974 - SpawnPoolWorker-13 - INFO - Starting sample 62500 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:33:08,000 - SpawnPoolWorker-14 - INFO - Starting sample 68750 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:33:08,030 - SpawnPoolWorker-12 - INFO - Starting sample 75000 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:33:08,060 - SpawnPoolWorker-16 - INFO - Starting sample 87500 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:33:08,072 - SpawnPoolWorker-11 - INFO - Starting sample 81250 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:33:08,101 - SpawnPoolWorker-10 - INFO - Starting sample 93750 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:33:12,099 - SpawnPoolWorker-1 - INFO - Sample 0 completed successfully[0m
+[94m2025-01-07 15:33:12,106 - SpawnPoolWorker-1 - INFO - Starting sample 1 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:33:12,757 - SpawnPoolWorker-5 - INFO - Sample 50000 completed successfully[0m
+[94m2025-01-07 15:33:12,764 - SpawnPoolWorker-5 - INFO - Starting sample 50001 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:33:15,576 - SpawnPoolWorker-8 - INFO - Sample 37500 completed successfully[0m
+[94m2025-01-07 15:33:15,583 - SpawnPoolWorker-8 - INFO - Starting sample 37501 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:33:21,260 - SpawnPoolWorker-11 - INFO - Sample 81250 completed successfully[0m
+[94m2025-01-07 15:33:21,267 - SpawnPoolWorker-11 - INFO - Starting sample 81251 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:33:22,041 - SpawnPoolWorker-13 - INFO - Sample 62500 completed successfully[0m
+[94m2025-01-07 15:33:22,048 - SpawnPoolWorker-13 - INFO - Starting sample 62501 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:33:22,381 - SpawnPoolWorker-10 - INFO - Sample 93750 completed successfully[0m
+[94m2025-01-07 15:33:22,388 - SpawnPoolWorker-10 - INFO - Starting sample 93751 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:33:22,969 - SpawnPoolWorker-5 - INFO - Sample 50001 completed successfully[0m
+[94m2025-01-07 15:33:22,977 - SpawnPoolWorker-5 - INFO - Starting sample 50002 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:33:23,650 - SpawnPoolWorker-14 - INFO - Sample 68750 completed successfully[0m
+[94m2025-01-07 15:33:23,662 - SpawnPoolWorker-14 - INFO - Starting sample 68751 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:33:25,240 - SpawnPoolWorker-6 - INFO - Sample 6250 completed successfully[0m
+[94m2025-01-07 15:33:25,247 - SpawnPoolWorker-6 - INFO - Starting sample 6251 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:33:26,742 - SpawnPoolWorker-15 - INFO - Sample 43750 completed successfully[0m
+[94m2025-01-07 15:33:26,750 - SpawnPoolWorker-15 - INFO - Starting sample 43751 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:33:27,241 - SpawnPoolWorker-3 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:33:27,242 - SpawnPoolWorker-3 - INFO - Starting sample 18751 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:33:27,668 - SpawnPoolWorker-2 - INFO - Sample 12500 completed successfully[0m
+[94m2025-01-07 15:33:27,675 - SpawnPoolWorker-2 - INFO - Starting sample 12501 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:33:29,298 - SpawnPoolWorker-7 - INFO - Sample 56250 completed successfully[0m
+[94m2025-01-07 15:33:29,465 - SpawnPoolWorker-7 - INFO - Starting sample 56251 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:33:30,227 - SpawnPoolWorker-8 - INFO - Sample 37501 completed successfully[0m
+[94m2025-01-07 15:33:30,234 - SpawnPoolWorker-8 - INFO - Starting sample 37502 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:33:30,905 - SpawnPoolWorker-4 - INFO - Sample 25000 completed successfully[0m
+[94m2025-01-07 15:33:30,912 - SpawnPoolWorker-4 - INFO - Starting sample 25001 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:33:31,620 - SpawnPoolWorker-11 - INFO - Sample 81251 completed successfully[0m
+[94m2025-01-07 15:33:31,627 - SpawnPoolWorker-11 - INFO - Starting sample 81252 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:33:33,757 - SpawnPoolWorker-16 - INFO - Sample 87500 completed successfully[0m
+[94m2025-01-07 15:33:33,798 - SpawnPoolWorker-16 - INFO - Starting sample 87501 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:33:36,810 - SpawnPoolWorker-9 - INFO - Sample 31250 completed successfully[0m
+[94m2025-01-07 15:33:36,818 - SpawnPoolWorker-9 - INFO - Starting sample 31251 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:33:39,335 - SpawnPoolWorker-1 - INFO - Sample 1 completed successfully[0m
+[94m2025-01-07 15:33:39,348 - SpawnPoolWorker-1 - INFO - Starting sample 2 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:33:42,916 - SpawnPoolWorker-4 - INFO - Sample 25001 completed successfully[0m
+[94m2025-01-07 15:33:42,923 - SpawnPoolWorker-4 - INFO - Starting sample 25002 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:33:44,179 - SpawnPoolWorker-8 - INFO - Sample 37502 completed successfully[0m
+[94m2025-01-07 15:33:44,190 - SpawnPoolWorker-8 - INFO - Starting sample 37503 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:33:49,379 - SpawnPoolWorker-11 - INFO - Sample 81252 completed successfully[0m
+[94m2025-01-07 15:33:49,386 - SpawnPoolWorker-11 - INFO - Starting sample 81253 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:33:49,583 - SpawnPoolWorker-13 - INFO - Sample 62501 completed successfully[0m
+[94m2025-01-07 15:33:49,591 - SpawnPoolWorker-13 - INFO - Starting sample 62502 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:33:50,985 - SpawnPoolWorker-7 - INFO - Sample 56251 completed successfully[0m
+[94m2025-01-07 15:33:50,992 - SpawnPoolWorker-7 - INFO - Starting sample 56252 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:33:55,308 - SpawnPoolWorker-9 - INFO - Sample 31251 completed successfully[0m
+[94m2025-01-07 15:33:55,316 - SpawnPoolWorker-9 - INFO - Starting sample 31252 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:33:56,514 - SpawnPoolWorker-11 - INFO - Sample 81253 completed successfully[0m
+[94m2025-01-07 15:33:56,522 - SpawnPoolWorker-11 - INFO - Starting sample 81254 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:34:00,230 - SpawnPoolWorker-16 - INFO - Sample 87501 completed successfully[0m
+[94m2025-01-07 15:34:00,238 - SpawnPoolWorker-16 - INFO - Starting sample 87502 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:34:00,287 - SpawnPoolWorker-6 - INFO - Sample 6251 completed successfully[0m
+[94m2025-01-07 15:34:00,294 - SpawnPoolWorker-6 - INFO - Starting sample 6252 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:34:03,668 - SpawnPoolWorker-2 - INFO - Sample 12501 completed successfully[0m
+[94m2025-01-07 15:34:03,675 - SpawnPoolWorker-2 - INFO - Starting sample 12502 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:34:04,747 - SpawnPoolWorker-12 - INFO - Sample 75000 completed successfully[0m
+[94m2025-01-07 15:34:04,755 - SpawnPoolWorker-12 - INFO - Starting sample 75001 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:34:06,289 - SpawnPoolWorker-6 - INFO - Sample 6252 completed successfully[0m
+[94m2025-01-07 15:34:06,295 - SpawnPoolWorker-6 - INFO - Starting sample 6253 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:34:08,082 - SpawnPoolWorker-10 - INFO - Sample 93751 completed successfully[0m
+[94m2025-01-07 15:34:08,090 - SpawnPoolWorker-10 - INFO - Starting sample 93752 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:34:11,414 - SpawnPoolWorker-1 - INFO - Sample 2 completed successfully[0m
+[94m2025-01-07 15:34:11,422 - SpawnPoolWorker-1 - INFO - Starting sample 3 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:34:11,503 - SpawnPoolWorker-11 - INFO - Sample 81254 completed successfully[0m
+[94m2025-01-07 15:34:11,510 - SpawnPoolWorker-11 - INFO - Starting sample 81255 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:34:12,982 - SpawnPoolWorker-12 - INFO - Sample 75001 completed successfully[0m
+[94m2025-01-07 15:34:12,989 - SpawnPoolWorker-12 - INFO - Starting sample 75002 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:34:13,334 - SpawnPoolWorker-16 - INFO - Sample 87502 completed successfully[0m
+[94m2025-01-07 15:34:13,341 - SpawnPoolWorker-16 - INFO - Starting sample 87503 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:34:13,656 - SpawnPoolWorker-7 - INFO - Sample 56252 completed successfully[0m
+[94m2025-01-07 15:34:13,664 - SpawnPoolWorker-7 - INFO - Starting sample 56253 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:34:17,612 - SpawnPoolWorker-5 - INFO - Sample 50002 completed successfully[0m
+[94m2025-01-07 15:34:17,619 - SpawnPoolWorker-5 - INFO - Starting sample 50003 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:34:17,737 - SpawnPoolWorker-14 - INFO - Sample 68751 completed successfully[0m
+[94m2025-01-07 15:34:17,744 - SpawnPoolWorker-14 - INFO - Starting sample 68752 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:34:18,015 - SpawnPoolWorker-2 - INFO - Sample 12502 completed successfully[0m
+[94m2025-01-07 15:34:18,021 - SpawnPoolWorker-2 - INFO - Starting sample 12503 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:34:18,963 - SpawnPoolWorker-10 - INFO - Sample 93752 completed successfully[0m
+[94m2025-01-07 15:34:18,970 - SpawnPoolWorker-10 - INFO - Starting sample 93753 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:34:21,312 - SpawnPoolWorker-16 - INFO - Sample 87503 completed successfully[0m
+[94m2025-01-07 15:34:21,319 - SpawnPoolWorker-16 - INFO - Starting sample 87504 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:34:21,336 - SpawnPoolWorker-8 - INFO - Sample 37503 completed successfully[0m
+[94m2025-01-07 15:34:21,343 - SpawnPoolWorker-8 - INFO - Starting sample 37504 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:34:25,023 - SpawnPoolWorker-12 - INFO - Sample 75002 completed successfully[0m
+[94m2025-01-07 15:34:25,030 - SpawnPoolWorker-12 - INFO - Starting sample 75003 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:34:25,314 - SpawnPoolWorker-11 - INFO - Sample 81255 completed successfully[0m
+[94m2025-01-07 15:34:25,320 - SpawnPoolWorker-11 - INFO - Starting sample 81256 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:34:26,347 - SpawnPoolWorker-16 - INFO - Sample 87504 completed successfully[0m
+[94m2025-01-07 15:34:26,354 - SpawnPoolWorker-16 - INFO - Starting sample 87505 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:34:26,625 - SpawnPoolWorker-5 - INFO - Sample 50003 completed successfully[0m
+[94m2025-01-07 15:34:26,632 - SpawnPoolWorker-5 - INFO - Starting sample 50004 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:34:26,832 - SpawnPoolWorker-15 - INFO - Sample 43751 completed successfully[0m
+[94m2025-01-07 15:34:26,849 - SpawnPoolWorker-15 - INFO - Starting sample 43752 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:34:28,285 - SpawnPoolWorker-3 - INFO - Sample 18751 completed successfully[0m
+[94m2025-01-07 15:34:28,291 - SpawnPoolWorker-3 - INFO - Starting sample 18752 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:34:28,833 - SpawnPoolWorker-9 - INFO - Sample 31252 completed successfully[0m
+[94m2025-01-07 15:34:28,841 - SpawnPoolWorker-9 - INFO - Starting sample 31253 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:34:30,904 - SpawnPoolWorker-2 - INFO - Sample 12503 completed successfully[0m
+[94m2025-01-07 15:34:30,917 - SpawnPoolWorker-2 - INFO - Starting sample 12504 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:34:31,153 - SpawnPoolWorker-12 - INFO - Sample 75003 completed successfully[0m
+[94m2025-01-07 15:34:31,160 - SpawnPoolWorker-12 - INFO - Starting sample 75004 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:34:31,715 - SpawnPoolWorker-6 - INFO - Sample 6253 completed successfully[0m
+[94m2025-01-07 15:34:31,722 - SpawnPoolWorker-6 - INFO - Starting sample 6254 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:34:35,603 - SpawnPoolWorker-13 - WARNING - Invalid sequence length: 158[0m
+[94m2025-01-07 15:34:35,604 - SpawnPoolWorker-13 - INFO - Starting sample 62503 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:34:35,724 - SpawnPoolWorker-1 - INFO - Sample 3 completed successfully[0m
+[94m2025-01-07 15:34:35,731 - SpawnPoolWorker-1 - INFO - Starting sample 4 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:34:40,941 - SpawnPoolWorker-10 - INFO - Sample 93753 completed successfully[0m
+[94m2025-01-07 15:34:40,975 - SpawnPoolWorker-10 - INFO - Starting sample 93754 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:34:41,610 - SpawnPoolWorker-14 - INFO - Sample 68752 completed successfully[0m
+[94m2025-01-07 15:34:41,617 - SpawnPoolWorker-14 - INFO - Starting sample 68753 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:34:41,737 - SpawnPoolWorker-7 - INFO - Sample 56253 completed successfully[0m
+[94m2025-01-07 15:34:41,744 - SpawnPoolWorker-7 - INFO - Starting sample 56254 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:34:45,871 - SpawnPoolWorker-8 - INFO - Sample 37504 completed successfully[0m
+[94m2025-01-07 15:34:45,877 - SpawnPoolWorker-8 - INFO - Starting sample 37505 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:34:47,320 - SpawnPoolWorker-7 - INFO - Sample 56254 completed successfully[0m
+[94m2025-01-07 15:34:47,327 - SpawnPoolWorker-7 - INFO - Starting sample 56255 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:34:49,575 - SpawnPoolWorker-11 - INFO - Sample 81256 completed successfully[0m
+[94m2025-01-07 15:34:49,582 - SpawnPoolWorker-11 - INFO - Starting sample 81257 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:34:49,738 - SpawnPoolWorker-14 - INFO - Sample 68753 completed successfully[0m
+[94m2025-01-07 15:34:49,745 - SpawnPoolWorker-14 - INFO - Starting sample 68754 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:34:54,750 - SpawnPoolWorker-6 - INFO - Sample 6254 completed successfully[0m
+[94m2025-01-07 15:34:54,757 - SpawnPoolWorker-6 - INFO - Starting sample 6255 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:34:55,407 - SpawnPoolWorker-12 - INFO - Sample 75004 completed successfully[0m
+[94m2025-01-07 15:34:55,414 - SpawnPoolWorker-12 - INFO - Starting sample 75005 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:34:56,557 - SpawnPoolWorker-11 - INFO - Sample 81257 completed successfully[0m
+[94m2025-01-07 15:34:56,564 - SpawnPoolWorker-11 - INFO - Starting sample 81258 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:34:57,250 - SpawnPoolWorker-9 - INFO - Sample 31253 completed successfully[0m
+[94m2025-01-07 15:34:57,257 - SpawnPoolWorker-9 - INFO - Starting sample 31254 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:34:57,419 - SpawnPoolWorker-13 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:34:57,419 - SpawnPoolWorker-13 - INFO - Starting sample 62504 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:34:59,434 - SpawnPoolWorker-4 - INFO - Sample 25002 completed successfully[0m
+[94m2025-01-07 15:34:59,441 - SpawnPoolWorker-4 - INFO - Starting sample 25003 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:35:01,085 - SpawnPoolWorker-1 - INFO - Sample 4 completed successfully[0m
+[94m2025-01-07 15:35:01,094 - SpawnPoolWorker-1 - INFO - Starting sample 5 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:35:02,442 - SpawnPoolWorker-6 - INFO - Sample 6255 completed successfully[0m
+[94m2025-01-07 15:35:02,449 - SpawnPoolWorker-6 - INFO - Starting sample 6256 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:35:03,111 - SpawnPoolWorker-16 - INFO - Sample 87505 completed successfully[0m
+[94m2025-01-07 15:35:03,118 - SpawnPoolWorker-16 - INFO - Starting sample 87506 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:35:03,781 - SpawnPoolWorker-2 - INFO - Sample 12504 completed successfully[0m
+[94m2025-01-07 15:35:03,789 - SpawnPoolWorker-2 - INFO - Starting sample 12505 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:35:06,592 - SpawnPoolWorker-16 - WARNING - Invalid sequence length: 180[0m
+[94m2025-01-07 15:35:06,592 - SpawnPoolWorker-16 - INFO - Starting sample 87507 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:35:06,876 - SpawnPoolWorker-11 - INFO - Sample 81258 completed successfully[0m
+[94m2025-01-07 15:35:06,884 - SpawnPoolWorker-11 - INFO - Starting sample 81259 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:35:06,999 - SpawnPoolWorker-12 - INFO - Sample 75005 completed successfully[0m
+[94m2025-01-07 15:35:07,006 - SpawnPoolWorker-12 - INFO - Starting sample 75006 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:35:09,361 - SpawnPoolWorker-9 - INFO - Sample 31254 completed successfully[0m
+[94m2025-01-07 15:35:09,368 - SpawnPoolWorker-9 - INFO - Starting sample 31255 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:35:10,176 - SpawnPoolWorker-4 - INFO - Sample 25003 completed successfully[0m
+[94m2025-01-07 15:35:10,194 - SpawnPoolWorker-4 - INFO - Starting sample 25004 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:35:10,244 - SpawnPoolWorker-7 - INFO - Sample 56255 completed successfully[0m
+[94m2025-01-07 15:35:10,252 - SpawnPoolWorker-7 - INFO - Starting sample 56256 on worker SpawnPoolWorker-7[0m
+[94m2025-01-07 15:35:11,222 - SpawnPoolWorker-14 - INFO - Sample 68754 completed successfully[0m
+[94m2025-01-07 15:35:11,229 - SpawnPoolWorker-14 - INFO - Starting sample 68755 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:35:11,529 - SpawnPoolWorker-16 - INFO - Sample 87507 completed successfully[0m
+[94m2025-01-07 15:35:11,539 - SpawnPoolWorker-16 - INFO - Starting sample 87508 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:35:11,745 - SpawnPoolWorker-10 - INFO - Sample 93754 completed successfully[0m
+[94m2025-01-07 15:35:11,752 - SpawnPoolWorker-10 - INFO - Starting sample 93755 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:35:12,380 - SpawnPoolWorker-12 - INFO - Sample 75006 completed successfully[0m
+[94m2025-01-07 15:35:12,388 - SpawnPoolWorker-12 - INFO - Starting sample 75007 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:35:13,832 - SpawnPoolWorker-13 - INFO - Sample 62504 completed successfully[0m
+[94m2025-01-07 15:35:13,839 - SpawnPoolWorker-13 - INFO - Starting sample 62505 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:35:16,820 - SpawnPoolWorker-5 - INFO - Sample 50004 completed successfully[0m
+[94m2025-01-07 15:35:16,827 - SpawnPoolWorker-5 - INFO - Starting sample 50005 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:35:22,313 - SpawnPoolWorker-9 - INFO - Sample 31255 completed successfully[0m
+[94m2025-01-07 15:35:22,321 - SpawnPoolWorker-9 - INFO - Starting sample 31256 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:35:24,306 - SpawnPoolWorker-15 - WARNING - Invalid sequence length: 294[0m
+[94m2025-01-07 15:35:24,307 - SpawnPoolWorker-15 - INFO - Starting sample 43753 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:35:25,557 - SpawnPoolWorker-1 - INFO - Sample 5 completed successfully[0m
+[94m2025-01-07 15:35:25,565 - SpawnPoolWorker-1 - INFO - Starting sample 6 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:35:28,337 - SpawnPoolWorker-11 - INFO - Sample 81259 completed successfully[0m
+[94m2025-01-07 15:35:28,351 - SpawnPoolWorker-11 - INFO - Starting sample 81260 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:35:29,099 - SpawnPoolWorker-3 - INFO - Sample 18752 completed successfully[0m
+[94m2025-01-07 15:35:29,107 - SpawnPoolWorker-3 - INFO - Starting sample 18753 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:35:33,048 - SpawnPoolWorker-12 - INFO - Sample 75007 completed successfully[0m
+[94m2025-01-07 15:35:33,056 - SpawnPoolWorker-12 - INFO - Starting sample 75008 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:35:34,752 - SpawnPoolWorker-10 - INFO - Sample 93755 completed successfully[0m
+[94m2025-01-07 15:35:34,759 - SpawnPoolWorker-10 - INFO - Starting sample 93756 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:35:35,201 - SpawnPoolWorker-9 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:35:35,202 - SpawnPoolWorker-9 - INFO - Starting sample 31257 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:35:36,403 - SpawnPoolWorker-2 - INFO - Sample 12505 completed successfully[0m
+[94m2025-01-07 15:35:36,412 - SpawnPoolWorker-2 - INFO - Starting sample 12506 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:35:36,644 - SpawnPoolWorker-3 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:35:36,645 - SpawnPoolWorker-3 - INFO - Starting sample 18754 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:35:37,107 - SpawnPoolWorker-5 - INFO - Sample 50005 completed successfully[0m
+[94m2025-01-07 15:35:37,115 - SpawnPoolWorker-5 - INFO - Starting sample 50006 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:35:38,427 - SpawnPoolWorker-4 - INFO - Sample 25004 completed successfully[0m
+[94m2025-01-07 15:35:38,435 - SpawnPoolWorker-4 - INFO - Starting sample 25005 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:35:39,165 - SpawnPoolWorker-13 - INFO - Sample 62505 completed successfully[0m
+[94m2025-01-07 15:35:39,172 - SpawnPoolWorker-13 - INFO - Starting sample 62506 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:35:40,603 - SpawnPoolWorker-8 - WARNING - Invalid sequence length: 449[0m
+[94m2025-01-07 15:35:40,603 - SpawnPoolWorker-8 - INFO - Starting sample 37506 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:35:45,168 - SpawnPoolWorker-8 - WARNING - Invalid sequence length: 112[0m
+[94m2025-01-07 15:35:45,168 - SpawnPoolWorker-8 - INFO - Starting sample 37507 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:35:45,955 - SpawnPoolWorker-2 - INFO - Sample 12506 completed successfully[0m
+[94m2025-01-07 15:35:45,963 - SpawnPoolWorker-2 - INFO - Starting sample 12507 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:35:46,357 - SpawnPoolWorker-1 - INFO - Sample 6 completed successfully[0m
+[94m2025-01-07 15:35:46,365 - SpawnPoolWorker-1 - INFO - Starting sample 7 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:35:47,452 - SpawnPoolWorker-3 - INFO - Sample 18754 completed successfully[0m
+[94m2025-01-07 15:35:47,458 - SpawnPoolWorker-3 - INFO - Starting sample 18755 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:35:47,529 - SpawnPoolWorker-12 - INFO - Sample 75008 completed successfully[0m
+[94m2025-01-07 15:35:47,538 - SpawnPoolWorker-12 - INFO - Starting sample 75009 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:35:50,188 - SpawnPoolWorker-9 - INFO - Sample 31257 completed successfully[0m
+[94m2025-01-07 15:35:50,240 - SpawnPoolWorker-9 - INFO - Starting sample 31258 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:35:59,097 - SpawnPoolWorker-2 - INFO - Sample 12507 completed successfully[0m
+[94m2025-01-07 15:35:59,104 - SpawnPoolWorker-2 - INFO - Starting sample 12508 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:35:59,739 - SpawnPoolWorker-15 - INFO - Sample 43753 completed successfully[0m
+[94m2025-01-07 15:35:59,745 - SpawnPoolWorker-15 - INFO - Starting sample 43754 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:36:00,792 - SpawnPoolWorker-12 - INFO - Sample 75009 completed successfully[0m
+[94m2025-01-07 15:36:00,799 - SpawnPoolWorker-12 - INFO - Starting sample 75010 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:36:02,171 - SpawnPoolWorker-11 - INFO - Sample 81260 completed successfully[0m
+[94m2025-01-07 15:36:02,179 - SpawnPoolWorker-11 - INFO - Starting sample 81261 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:36:02,273 - SpawnPoolWorker-6 - INFO - Sample 6256 completed successfully[0m
+[94m2025-01-07 15:36:02,280 - SpawnPoolWorker-6 - INFO - Starting sample 6257 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:36:04,709 - SpawnPoolWorker-1 - INFO - Sample 7 completed successfully[0m
+[94m2025-01-07 15:36:04,720 - SpawnPoolWorker-1 - INFO - Starting sample 8 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:36:05,600 - SpawnPoolWorker-3 - INFO - Sample 18755 completed successfully[0m
+[94m2025-01-07 15:36:05,607 - SpawnPoolWorker-3 - INFO - Starting sample 18756 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:36:06,579 - SpawnPoolWorker-10 - INFO - Sample 93756 completed successfully[0m
+[94m2025-01-07 15:36:06,586 - SpawnPoolWorker-10 - INFO - Starting sample 93757 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:36:06,965 - SpawnPoolWorker-9 - INFO - Sample 31258 completed successfully[0m
+[94m2025-01-07 15:36:06,972 - SpawnPoolWorker-9 - INFO - Starting sample 31259 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:36:10,133 - SpawnPoolWorker-4 - INFO - Sample 25005 completed successfully[0m
+[94m2025-01-07 15:36:10,142 - SpawnPoolWorker-4 - INFO - Starting sample 25006 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:36:17,703 - SpawnPoolWorker-1 - WARNING - Invalid sequence length: 500[0m
+[94m2025-01-07 15:36:17,703 - SpawnPoolWorker-1 - INFO - Starting sample 9 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:36:18,082 - SpawnPoolWorker-2 - INFO - Sample 12508 completed successfully[0m
+[94m2025-01-07 15:36:18,092 - SpawnPoolWorker-2 - INFO - Starting sample 12509 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:36:20,162 - SpawnPoolWorker-13 - INFO - Sample 62506 completed successfully[0m
+[94m2025-01-07 15:36:20,170 - SpawnPoolWorker-13 - INFO - Starting sample 62507 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:36:24,594 - SpawnPoolWorker-11 - INFO - Sample 81261 completed successfully[0m
+[94m2025-01-07 15:36:24,601 - SpawnPoolWorker-11 - INFO - Starting sample 81262 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:36:25,895 - SpawnPoolWorker-14 - INFO - Sample 68755 completed successfully[0m
+[94m2025-01-07 15:36:25,902 - SpawnPoolWorker-14 - INFO - Starting sample 68756 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:36:28,123 - SpawnPoolWorker-8 - INFO - Sample 37507 completed successfully[0m
+[94m2025-01-07 15:36:28,129 - SpawnPoolWorker-8 - INFO - Starting sample 37508 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:36:32,722 - SpawnPoolWorker-12 - INFO - Sample 75010 completed successfully[0m
+[94m2025-01-07 15:36:32,729 - SpawnPoolWorker-12 - INFO - Starting sample 75011 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:36:33,604 - SpawnPoolWorker-5 - INFO - Sample 50006 completed successfully[0m
+[94m2025-01-07 15:36:33,612 - SpawnPoolWorker-5 - INFO - Starting sample 50007 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:36:35,615 - SpawnPoolWorker-1 - INFO - Sample 9 completed successfully[0m
+[94m2025-01-07 15:36:35,625 - SpawnPoolWorker-1 - INFO - Starting sample 10 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:36:42,150 - SpawnPoolWorker-5 - INFO - Sample 50007 completed successfully[0m
+[94m2025-01-07 15:36:42,159 - SpawnPoolWorker-5 - INFO - Starting sample 50008 on worker SpawnPoolWorker-5[0m
+[94m2025-01-07 15:36:46,035 - SpawnPoolWorker-11 - INFO - Sample 81262 completed successfully[0m
+[94m2025-01-07 15:36:46,041 - SpawnPoolWorker-11 - INFO - Starting sample 81263 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:36:48,065 - SpawnPoolWorker-15 - INFO - Sample 43754 completed successfully[0m
+[94m2025-01-07 15:36:48,072 - SpawnPoolWorker-15 - INFO - Starting sample 43755 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:36:49,397 - SpawnPoolWorker-3 - INFO - Sample 18756 completed successfully[0m
+[94m2025-01-07 15:36:49,416 - SpawnPoolWorker-3 - INFO - Starting sample 18757 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:36:49,783 - SpawnPoolWorker-2 - INFO - Sample 12509 completed successfully[0m
+[94m2025-01-07 15:36:49,790 - SpawnPoolWorker-2 - INFO - Starting sample 12510 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:36:50,184 - SpawnPoolWorker-6 - INFO - Sample 6257 completed successfully[0m
+[94m2025-01-07 15:36:50,191 - SpawnPoolWorker-6 - INFO - Starting sample 6258 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:36:54,334 - SpawnPoolWorker-12 - INFO - Sample 75011 completed successfully[0m
+[94m2025-01-07 15:36:54,345 - SpawnPoolWorker-12 - INFO - Starting sample 75012 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:36:57,085 - SpawnPoolWorker-15 - INFO - Sample 43755 completed successfully[0m
+[94m2025-01-07 15:36:57,092 - SpawnPoolWorker-15 - INFO - Starting sample 43756 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:36:57,373 - SpawnPoolWorker-11 - INFO - Sample 81263 completed successfully[0m
+[94m2025-01-07 15:36:57,389 - SpawnPoolWorker-11 - INFO - Starting sample 81264 on worker SpawnPoolWorker-11[0m
+[94m2025-01-07 15:36:57,722 - SpawnPoolWorker-1 - INFO - Sample 10 completed successfully[0m
+[94m2025-01-07 15:36:57,728 - SpawnPoolWorker-1 - INFO - Starting sample 11 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:36:57,891 - SpawnPoolWorker-12 - INFO - Sample 75012 completed successfully[0m
+[94m2025-01-07 15:36:57,897 - SpawnPoolWorker-12 - INFO - Starting sample 75013 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:36:59,001 - SpawnPoolWorker-13 - WARNING - Invalid sequence length: 110[0m
+[94m2025-01-07 15:36:59,001 - SpawnPoolWorker-13 - INFO - Starting sample 62508 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:36:59,963 - SpawnPoolWorker-9 - WARNING - Invalid sequence length: 271[0m
+[94m2025-01-07 15:36:59,964 - SpawnPoolWorker-9 - INFO - Starting sample 31260 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:37:00,240 - SpawnPoolWorker-8 - INFO - Sample 37508 completed successfully[0m
+[94m2025-01-07 15:37:00,250 - SpawnPoolWorker-8 - INFO - Starting sample 37509 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:37:08,572 - SpawnPoolWorker-13 - INFO - Sample 62508 completed successfully[0m
+[94m2025-01-07 15:37:08,581 - SpawnPoolWorker-13 - INFO - Starting sample 62509 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:37:09,356 - SpawnPoolWorker-3 - INFO - Sample 18757 completed successfully[0m
+[94m2025-01-07 15:37:09,381 - SpawnPoolWorker-3 - INFO - Starting sample 18758 on worker SpawnPoolWorker-3[0m
+[94m2025-01-07 15:37:12,784 - SpawnPoolWorker-6 - WARNING - Invalid sequence length: 352[0m
+[94m2025-01-07 15:37:12,785 - SpawnPoolWorker-6 - INFO - Starting sample 6259 on worker SpawnPoolWorker-6[0m
+[94m2025-01-07 15:37:15,517 - SpawnPoolWorker-2 - INFO - Sample 12510 completed successfully[0m
+[94m2025-01-07 15:37:15,525 - SpawnPoolWorker-2 - INFO - Starting sample 12511 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:37:15,539 - SpawnPoolWorker-12 - INFO - Sample 75013 completed successfully[0m
+[94m2025-01-07 15:37:15,547 - SpawnPoolWorker-12 - INFO - Starting sample 75014 on worker SpawnPoolWorker-12[0m
+[94m2025-01-07 15:37:16,128 - SpawnPoolWorker-16 - INFO - Sample 87508 completed successfully[0m
+[94m2025-01-07 15:37:16,135 - SpawnPoolWorker-16 - INFO - Starting sample 87509 on worker SpawnPoolWorker-16[0m
+[94m2025-01-07 15:37:16,470 - SpawnPoolWorker-15 - INFO - Sample 43756 completed successfully[0m
+[94m2025-01-07 15:37:16,478 - SpawnPoolWorker-15 - INFO - Starting sample 43757 on worker SpawnPoolWorker-15[0m
+[94m2025-01-07 15:37:17,414 - SpawnPoolWorker-1 - INFO - Sample 11 completed successfully[0m
+[94m2025-01-07 15:37:17,423 - SpawnPoolWorker-1 - INFO - Starting sample 12 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:37:17,807 - SpawnPoolWorker-8 - INFO - Sample 37509 completed successfully[0m
+[94m2025-01-07 15:37:17,817 - SpawnPoolWorker-8 - INFO - Starting sample 37510 on worker SpawnPoolWorker-8[0m
+[94m2025-01-07 15:37:24,524 - SpawnPoolWorker-9 - INFO - Sample 31260 completed successfully[0m
+[94m2025-01-07 15:37:24,530 - SpawnPoolWorker-9 - INFO - Starting sample 31261 on worker SpawnPoolWorker-9[0m
+[94m2025-01-07 15:37:26,858 - SpawnPoolWorker-1 - INFO - Sample 12 completed successfully[0m
+[94m2025-01-07 15:37:26,893 - SpawnPoolWorker-1 - INFO - Starting sample 13 on worker SpawnPoolWorker-1[0m
+[94m2025-01-07 15:37:28,888 - SpawnPoolWorker-14 - WARNING - Invalid sequence length: 487[0m
+[94m2025-01-07 15:37:28,888 - SpawnPoolWorker-14 - INFO - Starting sample 68757 on worker SpawnPoolWorker-14[0m
+[94m2025-01-07 15:37:30,170 - SpawnPoolWorker-2 - INFO - Sample 12511 completed successfully[0m
+[94m2025-01-07 15:37:30,178 - SpawnPoolWorker-2 - INFO - Starting sample 12512 on worker SpawnPoolWorker-2[0m
+[94m2025-01-07 15:37:31,503 - SpawnPoolWorker-10 - INFO - Sample 93757 completed successfully[0m
+[94m2025-01-07 15:37:31,512 - SpawnPoolWorker-10 - INFO - Starting sample 93758 on worker SpawnPoolWorker-10[0m
+[94m2025-01-07 15:37:32,293 - SpawnPoolWorker-13 - INFO - Sample 62509 completed successfully[0m
+[94m2025-01-07 15:37:32,301 - SpawnPoolWorker-13 - INFO - Starting sample 62510 on worker SpawnPoolWorker-13[0m
+[94m2025-01-07 15:37:32,309 - SpawnPoolWorker-4 - INFO - Sample 25006 completed successfully[0m
+[94m2025-01-07 15:37:32,318 - SpawnPoolWorker-4 - INFO - Starting sample 25007 on worker SpawnPoolWorker-4[0m
+[94m2025-01-07 15:37:33,468 - SpawnPoolWorker-15 - INFO - Sample 43757 completed successfully[0m
+[94m2025-01-07 15:37:33,476 - SpawnPoolWorker-15 - INFO - Starting sample 43758 on worker SpawnPoolWorker-15[0m

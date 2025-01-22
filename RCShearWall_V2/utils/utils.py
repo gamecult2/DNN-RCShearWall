@@ -2,7 +2,6 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 # ------------------------------------------------------------------------
 # Define units - All results will be in { mm, N, MPa and Sec }
 # ------------------------------------------------------------------------

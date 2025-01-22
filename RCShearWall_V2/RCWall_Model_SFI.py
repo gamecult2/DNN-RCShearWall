@@ -3,7 +3,11 @@ import openseespy.opensees as ops
 # import vfo.vfo as vfo
 # import opsvis as opsv
 from functions import *
+import os
+import sys
 
+# Redirect stderr to suppress error messages
+# sys.stderr = open(os.devnull, 'w')
 
 def reset_analysis():
     ops.setTime(0.0)  # Set the time in the Domain to zero
@@ -18,7 +22,7 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
     ops.model('Basic', '-ndm', 2, '-ndf', 3)
 
     # Geometry and material properties
-    eleBE = 2*2
+    eleBE = 2 * 2
 
     lweb = lw - (2 * lbe)  # Web length
 
@@ -40,9 +44,9 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
 
     # Define Axial Load on Top Node in N according to (ACI 318-19 Section 22.4.2.2)
     global Aload
-    Aload = 0.85 * abs(fc) * Ag * loadF # Axial load
+    Aload = 0.85 * abs(fc) * Ag * loadF  # Axial load
     if printProgression:
-        print('Axial load = ', Aload/1000)
+        print('Axial load = ', Aload / 1000)
 
     # ---------------------------------------------------------------------------------------
     # Define Steel uni-axial materials
@@ -51,7 +55,7 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
     R0, cR1, cR2 = 20.0, 0.925, 0.0015  # Strain-hardening and curve parameters
     byb = 0.01  # STEEL Y BE - strain hardening - tension & compression
     byw = 0.02  # STEEL Y WEB - strain hardening - tension & compression
-    bX = 0.02   # STEEL X - strain hardening - tension & compression
+    bX = 0.02  # STEEL X - strain hardening - tension & compression
 
     # SteelMPF model
     ops.uniaxialMaterial('SteelMPF', IDsYb, fyb, fyb, Es, byb, byb, R0, cR1, cR2)  # Steel Y boundary
@@ -61,7 +65,7 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
         print('--------------------------------------------------------------------------------------------------')
         print('SteelMPF', IDsYb, fyb, fyb, Es, byb, byb, R0, cR1, cR2)  # Steel Y boundary
         print('SteelMPF', IDsYw, fyw, fyw, Es, byw, byw, R0, cR1, cR2)  # Steel Y web
-        print('SteelMPF', IDsX, fx, fx, Es, bX, bX, R0, cR1, cR2) # Steel X
+        print('SteelMPF', IDsX, fx, fx, Es, bX, bX, R0, cR1, cR2)  # Steel X
 
     # Define "ConcreteCM" uni-axial materials
     IDconcWeb, IDconcBE = 4, 5  # Concrete ID
@@ -156,11 +160,11 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
     # MVLEM_mat = [IDmatBE if i in (0, eleL - 1) else IDmatWeb for i in range(eleL)]
 
     MVLEM_thick = [tb if i in (0, 1, eleL - 2, eleL - 1) else tw for i in range(eleL)]
-    MVLEM_width = [lbe/2 if i in (0, 1, eleL - 2, eleL - 1) else elelweb for i in range(eleL)]
+    MVLEM_width = [lbe / 2 if i in (0, 1, eleL - 2, eleL - 1) else elelweb for i in range(eleL)]
     MVLEM_mat = [IDmatBE if i in (0, 1, eleL - 2, eleL - 1) else IDmatWeb for i in range(eleL)]
-    # MVLEM_rho = [rouYb if i in (0, eleL - 1) else rouYw for i in range(eleL)]
-    # MVLEM_matConcrete = [IDconcBE if i in (0, eleL - 1) else IDconcWeb for i in range(eleL)]
-    # MVLEM_matSteel = [IDsYb if i in (0, eleL - 1) else IDsYw for i in range(eleL)]
+    MVLEM_rho = [rouYb if i in (0, eleL - 1) else rouYw for i in range(eleL)]
+    MVLEM_matConcrete = [IDconcBE if i in (0, eleL - 1) else IDconcWeb for i in range(eleL)]
+    MVLEM_matSteel = [IDsYb if i in (0, eleL - 1) else IDsYw for i in range(eleL)]
 
     for i in range(eleH):
         # ------------------ MVLEM ----------------------------------------------
@@ -177,15 +181,15 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
         ops.element('E_SFI', i + 1, *[i + 1, i + 2], eleL, 0.4, '-thick', *MVLEM_thick, '-width', *MVLEM_width, '-mat', *MVLEM_mat)
         if printProgression:
             print('E_SFI', i + 1, *[i + 1, i + 2], eleL, 0.4, '-thick', *MVLEM_thick, '-width', *MVLEM_width, '-mat', *MVLEM_mat)
+
     Ag = tw * (lw - (2 * lbe)) + 2 * (tb * lbe)  # Calculate Ag based on provided formula
-    ar = hw/lw
+    ar = hw / lw
     # parameter_values = [tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, round(rouYb, 4), round(rouYw, 4), round(rouXb, 4), round(rouXw, 4), loadF, Ag]
     parameter_values = [tw, tb, hw, lw, ar, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag]
 
-
     if printProgression:
         print('--------------------------------------------------------------------------------------------------')
-        print("\033[92mModel Built Successfully --> Using the following parameters :", parameter_values,  "\033[0m")
+        print("\033[92mModel Built Successfully --> Using the following parameters :", parameter_values, "\033[0m")
         print('--------------------------------------------------------------------------------------------------')
 
 
@@ -208,7 +212,7 @@ def run_gravity(steps=10, printProgression=False):
         print("GRAVITY ANALYSIS DONE!")
 
 
-def run_analysis(displacement_step, analysis='cyclic', printProgression=True, enablePlotting=False):
+def run_analysis(displacement_step, analysis='cyclic', printProgression=True, enablePlotting=False, enableRTPlotting=False):
     if printProgression:
         print(f"RUNNING {analysis.upper()} ANALYSIS")
 
@@ -226,34 +230,35 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
             # ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_steelY_ele_{i + 1}_panel_{j + 1}.txt', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_steelY')
 
             # Unaxial Concrete Recorders for all panels
-            ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_concr1_ele_{i + 1}_panel_{j + 1}.txt', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_concrete1')
-            ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_concr2_ele_{i + 1}_panel_{j + 1}.txt',  '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_concrete2')
+            # ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_concr1_ele_{i + 1}_panel_{j + 1}.txt', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_concrete1')
+            # ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_concr2_ele_{i + 1}_panel_{j + 1}.txt',  '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_concrete2')
 
             # Shear Concrete Recorders for all panels
             # ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_inter1_ele_{i + 1}_panel_{j + 1}.txt', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_interlock1')
             # ops.recorder('Element', '-file', f'plot/MVLEM_strain_stress_inter2_ele_{i + 1}_panel_{j + 1}.txt', '-ele', i + 1, 'RCPanel', j + 1, 'strain_stress_interlock2')
 
             ops.recorder('Element', '-file', f'plot/MVLEM_cracking_angle_ele_{i + 1}_panel_{j + 1}.txt', '-ele', i + 1, 'RCPanel', j + 1, 'cracking_angles')
-            ops.recorder('Element', '-file', f'plot/MVLEM_panel_crack_{i + 1}_panel_{j + 1}.txt', '-ele', i + 1, 'RCPanel', j + 1, 'panel_crack')
+            # ops.recorder('Element', '-file', f'plot/MVLEM_panel_crack_{i + 1}_panel_{j + 1}.txt', '-ele', i + 1, 'RCPanel', j + 1, 'panel_crack')
     # '''  # Recorders
 
     # define parameters for adaptive time-step
     max_factor = 0.12  # 1.0 -> don't make it larger than initial time step
-    min_factor = 1e-06  # at most initial/1e6
+    min_factor = 1e-6  # at most initial/1e6
     max_factor_increment = 1.5  # define how fast the factor can increase
-    min_factor_increment = 1e-06  # define how fast the factor can decrease
-    max_iter = 2500
+    min_factor_increment = 1e-6  # define how fast the factor can decrease
+    max_iter = 3000
     desired_iter = int(max_iter / 2)  # should be higher than the desired number of iterations
 
     # -------------CYCLIC-----------------
     ops.timeSeries('Linear', 2, '-factor', 1.0)
     ops.pattern('Plain', 2, 2)
-    RefLoad = 1000e3
+    RefLoad = 200e3
     ops.load(controlNode, *[RefLoad, 0.0, 0.0])
     ops.constraints('Transformation')  # Transformation 'Penalty', 1e20, 1e20
     ops.numberer('RCM')
     ops.system("ProfileSPD")  # UmfPack 19
-    ops.test('NormDispIncr', 1e-6, desired_iter, 0)
+    # ops.system("UmfPack")  # UmfPack 19
+    ops.test('NormDispIncr', 1e-4, desired_iter, 0)
     ops.algorithm('KrylovNewton')  # KrylovNewton
     ops.analysis("Static")
 
@@ -276,6 +281,21 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
     # nels = len(el_tags)
     # Eds = np.zeros((Nsteps, nels, 6))
     # timeV = np.zeros(Nsteps)
+    if enableRTPlotting:
+        # Initialize the plot
+        plt.ion()  # Turn on interactive mode
+        plt.rcParams.update({'font.size': 10, "font.family": ["Times New Roman", "Cambria"]})
+        fig, ax = plt.subplots(figsize=(4.0, 4.2), dpi=100)
+        ax.set_xlabel('Displacement (m)', fontdict={'fontname': 'Times New Roman', 'size': 10})
+        ax.set_ylabel('Load (kN)', fontdict={'fontname': 'Times New Roman', 'size': 10})
+        ax.axhline(0, color='black', linewidth=0.4)
+        ax.axvline(0, color='black', linewidth=0.4)
+        ax.grid(linestyle='dotted')
+        # Set the x and y limits as per your request
+        ax.set_xlim(min(displacement_step), max(displacement_step))
+        ax.set_ylim(-1000, 1000)
+        line, = ax.plot([], [], color='#3152a1', linewidth=1.5, label='Numerical Test')
+        ax.legend(fontsize='small')
 
     finishedSteps = 0
     D0 = 0.0
@@ -316,7 +336,7 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
             #                        ops.nodeDisp(nd2)[1],
             #                        ops.nodeDisp(nd2)[2]]
             # adapt if necessary
-            if ok == 0: # Convergence achieved
+            if ok == 0:  # Convergence achieved
                 num_iter = ops.testIter()
                 norms = ops.testNorms()
                 error_norm = norms[num_iter - 1] if num_iter > 0 else 0.0
@@ -333,7 +353,7 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
                         print("Increasing increment factor due to faster convergence. Factor = {:.3g}".format(factor))
                 old_factor = factor
                 dU_cumulative += dU_adapt
-            else: # Convergence failed, reduce factor
+            else:  # Convergence failed, reduce factor
                 num_iter = max_iter
                 factor_increment = max(min_factor_increment, desired_iter / num_iter)
                 factor *= factor_increment
@@ -358,16 +378,26 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
         loadData[j + 1] = baseLoad
         # forceData[j + 1] = eleForce
 
+        if enableRTPlotting:
+            # Update the plot in real-time
+            line.set_xdata(dispData[:finishedSteps + 1])
+            line.set_ydata(loadData[:finishedSteps + 1])
+            ax.draw_artist(ax.patch)
+            ax.draw_artist(line)
+            fig.canvas.flush_events()
+
         # Loop to store the response for each panel at each timestep
+        panel_keys = []  # Initialize list for panel keys
         for i in range(eH):
             for k in range(eL):
                 panel_key = (i, k)
+                panel_keys.append(panel_key)
                 # Layer 1: Get strain/stress response and crack angle
-                crack_strain_1 = ops.eleResponse(i + 1, "RCPanel", k + 1, "strain_stress_concrete1")[0]
+                crack_strain_1 = ops.eleResponse(i + 1, "RCPanel", k + 1, "strain_stress_concrete2")[0]
                 strain_matrix_1[j, i, k] = crack_strain_1
 
                 # Layer 2: Get strain/stress response and crack angle
-                crack_strain_2 = ops.eleResponse(i + 1, "RCPanel", k + 1, "strain_stress_concrete2")[0]
+                crack_strain_2 = ops.eleResponse(i + 1, "RCPanel", k + 1, "strain_stress_concrete1")[0]
                 strain_matrix_2[j, i, k] = crack_strain_2
 
                 crack_angle_1, crack_angle_2 = ops.eleResponse(i + 1, "RCPanel", k + 1, "cracking_angles")
@@ -382,6 +412,15 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
                     max_crack_angle_2[i, k, 0] = crack_strain_2
                     max_crack_angle_2[i, k, 1] = crack_angle_2
 
+    if enableRTPlotting:
+        # Turn off interactive mode after the analysis is done
+        plt.ioff()
+        # plt.tight_layout()
+        # plt.show()
+
+    # if printProgression:
+    #     print("Panel keys:", panel_keys)  # Print panel keys after the loop
+
     # Convert the arrays to NumPy arrays and flatten them
     max_cracks_1 = max_crack_angle_1[:, :, 0].flatten()
     max_angles_1 = max_crack_angle_1[:, :, 1].flatten()
@@ -389,24 +428,17 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
     max_angles_2 = max_crack_angle_2[:, :, 1].flatten()
 
     # Plotting section
-    # if enablePlotting:
-        # fig = plot_max_panel_response(eH, eL,
-        #                               max_cracks_1,
-        #                               max_angles_1,
-        #                               max_cracks_2,
-        #                               max_angles_2)
-        # ani = plot_panel_response_animation(eH, eL, Nsteps,
-        #                                     strain_matrix_1,
-        #                                     strain_matrix_2,
-        #                                     crack_angles_1,
-        #                                     crack_angles_2)
+    if enablePlotting:
+        # fig = plot_max_panel_response(eH, eL, max_cracks_1, max_angles_1, max_cracks_2, max_angles_2)
+        ani = plot_panel_response_animation(eH, eL, Nsteps,
+                                            strain_matrix_1,
+                                            strain_matrix_2,
+                                            crack_angles_1,
+                                            crack_angles_2)
+        plt.show()
 
-        # plt.show()
-
-        # ani2 = plot_deformation_animation(Eds, timeV)
-        # plt.show()
-
-
+    # ani2 = plot_deformation_animation(Eds, timeV)
+    # plt.show()
 
     # Stack the arrays vertically (each array as a column)
     # combined_data = np.column_stack((max_cracks_1, max_angles_1, max_cracks_2, max_angles_2))
@@ -414,6 +446,3 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
 
     # return [dispData[0:finishedSteps], loadData[0:finishedSteps]
     return [dispData[0:finishedSteps], loadData[0:finishedSteps], max_cracks_1, max_angles_1, max_cracks_2, max_angles_2]
-
-
-

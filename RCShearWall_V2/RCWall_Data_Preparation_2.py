@@ -68,6 +68,9 @@ def save_data(filename, data, file_type='csv'):
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         df = pd.DataFrame(data)
 
+        # Cast data to float32 before saving
+        df = df.astype('float32')
+
         if df.empty:
             print(f"Warning: Empty data for file {filename}")
             return
@@ -135,17 +138,17 @@ if __name__ == "__main__":
         choice = input("Enter your choice (1, 2, or 3): ").strip()
 
         if choice == '1':
-            FOLDER = "E:\OriginalData\Run_Full2/FullData"
+            FOLDER = "K:\RCShearWall_V2\RCWall_Data\original\Run_Final_3/FullData"
             FILENAME = "Full_Data.csv"
-            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Full2/FullData"
+            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Final_3/FullData"
         elif choice == '2':
-            FOLDER = "RE:\OriginalData\Run_Full2/CyclicData"
+            FOLDER = "K:\RCShearWall_V2\RCWall_Data\original\Run_Final_3/CyclicData"
             FILENAME = "Cyclic_Data.csv"
-            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Full2/CyclicData"
+            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Final_3/CyclicData"
         elif choice == '3':
-            FOLDER = "E:\OriginalData\Run_Full2/MonotonicData"
+            FOLDER = "K:\RCShearWall_V2\RCWall_Data\original\Run_Final_3/MonotonicData"
             FILENAME = "Monotonic_Data.csv"
-            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Full2/MonotonicData"
+            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Final_3/MonotonicData"
         else:
             raise ValueError("Invalid choice. Please choose 1, 2, or 3.")
 

@@ -10,16 +10,17 @@ import sys
 import logging
 from multiprocessing import Pool, cpu_count, current_process, Lock, Manager
 from contextlib import contextmanager
-
+import io
 import RCWall_Model_SFI as rcmodel
 from RCWall_Parameters_Range import parameter_ranges, loading_ranges
 from functions import generate_cyclic_loading_linear, generate_cyclic_loading_exponential
 
+
 # Define SEQUENCE_LENGTH as a global constant
 SEQUENCE_LENGTH = 501
-OUTPUT_DIR = Path("RCWall_Data/OriginalData/Run_3")
+OUTPUT_DIR = Path("RCWall_Data/Run_Final")
 FORCE_THRESHOLD = 21000
-DISP_THRESHOLD = 480
+DISP_THRESHOLD = 640
 
 
 # Set up logging
@@ -41,7 +42,7 @@ logger = setup_logging()
 def generate_parameters():
     """Generate random parameters based on defined ranges."""
     tw = round(np.random.uniform(*parameter_ranges['tw']))
-    tb = round(np.random.uniform(tw, tw * 3))
+    tb = round(np.random.uniform(tw * 1.2, tw * 3))
     lw = round(np.random.uniform(tw * 6, parameter_ranges['lw'][1]) / 10) * 10
     ar = round(np.random.uniform(*parameter_ranges['ar']), 1)
     hw = round(lw * ar, 2)
@@ -102,15 +103,13 @@ def analyse_sample(instance_id, sample_index, run_index=22):
     eleH, eleL = 14, 12
     rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, eleH, eleL, printProgression=False)
     rcmodel.run_gravity()
-    x1, y1, c1, a1, c2, a2 = rcmodel.run_analysis(displacement_step, analysis=analysis, printProgression=False)
+    x1, y1, c1, a1, c2, a2 = rcmodel.run_analysis(displacement_step, analysis=analysis, printProgression=False, enablePlotting=False, enableRTPlotting=False)
     rcmodel.reset_analysis()
 
-    # Validate results
     if len(y1) != SEQUENCE_LENGTH:
         logger.warning(f"Invalid sequence length: {len(y1)}")
         return None
 
-    # Validate results
     if np.any(np.abs(x1) > DISP_THRESHOLD):
         logger.warning("Displacement threshold exceeded")
         return None

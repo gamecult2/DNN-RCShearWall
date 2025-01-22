@@ -14,7 +14,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from scipy.stats import pearsonr
 from RCWall_Data_Processing import *
 from utils.earlystopping import EarlyStopping
-from DNNModels import *
+from Models_Response import *
 
 # Determine the device (GPU if available, else CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
