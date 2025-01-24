@@ -49,7 +49,7 @@ class xLSTMBlock(nn.Module):
         self.norm = nn.LayerNorm(hidden_size)
         self.activation = nn.GELU()
         self.dropout_layer = nn.Dropout(dropout)
-        self.proj = nn.Linear(hidden_size, input_size)
+        self.proj = nn.Linear(hidden_size, hidden_size)
 
     def forward(self, input_seq, hidden_state=None):
         """
@@ -64,9 +64,8 @@ class xLSTMBlock(nn.Module):
         """
 
         lstm_output, hidden_state = self.lstm(input_seq, hidden_state)
-        print('here')
         output = self.activation(lstm_output)
         output = self.norm(output)
         output = self.proj(output)
-        output = self.dropout_layer(output + input_seq)  # Residual connection
+        # output = self.dropout_layer(output + input_seq)  # Residual connection
         return output, hidden_state

@@ -19,7 +19,6 @@ def search_csv_files_for_value(folder_path, search_value, tolerance=0.01):
             # Read the CSV file as float
             df = pd.read_csv(file_path, dtype=float)
             # Print the first 10 rows of the DataFrame
-
             # Flatten and handle NaN values
             flat_values = df.values.flatten()
             flat_values = flat_values[~np.isnan(flat_values)]

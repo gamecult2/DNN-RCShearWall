@@ -5,7 +5,6 @@ from tqdm import tqdm
 
 
 def open_csv_file(filename):
-    """Opens a CSV file and returns a list of rows, where each row is a list of values."""
     try:
         with open(filename, "r") as f:
             return list(csv.reader(f))
@@ -18,19 +17,11 @@ def open_csv_file(filename):
 
 
 def split_rows(rows, batch_row=7):
-    """
-    Splits a list of rows into batches of 7 rows each.
-    This function handles the entire dataset, not just the first 7 rows.
-    """
     total_batches = len(rows) // batch_row
     return [rows[i:i + batch_row] for i in range(0, total_batches * batch_row, batch_row)]
 
 
 def extract_values(data_points, row_index):
-    """
-    Extracts values from the specified row index of each batch and converts them to floats.
-    Handles the specific column ranges for each row type within the batches.
-    """
     # Define column ranges based on row position within each batch
     column_ranges = {
         0: (0, 17),  # First row of each batch: columns 0-16
@@ -63,7 +54,6 @@ def extract_values(data_points, row_index):
 
 
 def save_data(filename, data, file_type='csv'):
-    """Saves data to a file in the specified format (CSV or Parquet)."""
     try:
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         df = pd.DataFrame(data)
@@ -87,7 +77,6 @@ def save_data(filename, data, file_type='csv'):
 
 
 def process_data(folder, filename, output_files, file_formats, processed_data_dir):
-    """Process data with error handling and progress tracking."""
     try:
         full_path = os.path.join(folder, filename)
         if not os.path.exists(full_path):
@@ -137,21 +126,12 @@ if __name__ == "__main__":
 
         choice = input("Enter your choice (1, 2, or 3): ").strip()
 
-        if choice == '1':
-            FOLDER = "K:\RCShearWall_V2\RCWall_Data\original\Run_Final_3/FullData"
-            FILENAME = "Full_Data.csv"
-            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Final_3/FullData"
-        elif choice == '2':
-            FOLDER = "K:\RCShearWall_V2\RCWall_Data\original\Run_Final_3/CyclicData"
-            FILENAME = "Cyclic_Data.csv"
-            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Final_3/CyclicData"
-        elif choice == '3':
-            FOLDER = "K:\RCShearWall_V2\RCWall_Data\original\Run_Final_3/MonotonicData"
-            FILENAME = "Monotonic_Data.csv"
-            PROCESSED_DATA_DIR = f"RCWall_Data/Run_Final_3/MonotonicData"
-        else:
-            raise ValueError("Invalid choice. Please choose 1, 2, or 3.")
+        # Define global variables for base paths and common subfolder
+        FOLDER_BASE = r"K:\RCShearWall_V2\RCWall_Data\original"
+        OUTPUT_BASE = r"RCWall_Data"
+        RUN_FOLDER = "Run_Final_Full"  # Common subfolder
 
+        # Define constants
         FILE_FORMATS = ['parquet']  # ['csv', 'parquet']
         OUTPUT_FILES = {
             'InputParameters': 0,
@@ -163,6 +143,24 @@ if __name__ == "__main__":
             'a2': 6
         }
 
+        # Define subfolder and filename mappings based on choice
+        if choice == '1':
+            DATA_TYPE = "FullData"
+            FILENAME = "Full_Data.csv"
+        elif choice == '2':
+            DATA_TYPE = "CyclicData"
+            FILENAME = "Cyclic_Data.csv"
+        elif choice == '3':
+            DATA_TYPE = "MonotonicData"
+            FILENAME = "Monotonic_Data.csv"
+        else:
+            raise ValueError("Invalid choice. Please choose 1, 2, or 3.")
+
+        # Construct full paths
+        FOLDER = f"{FOLDER_BASE}\\{RUN_FOLDER}\\{DATA_TYPE}"
+        PROCESSED_DATA_DIR = f"{OUTPUT_BASE}\\{RUN_FOLDER}\\{DATA_TYPE}"
+
+        # Process data
         process_data(FOLDER, FILENAME, OUTPUT_FILES, FILE_FORMATS, PROCESSED_DATA_DIR)
         print("\nProcessing completed successfully!")
 

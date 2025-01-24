@@ -12,7 +12,7 @@ import numpy as np
 from tqdm import tqdm
 import logging
 import sys
-
+from torchinfo import summary
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from scipy.stats import pearsonr
 
@@ -51,7 +51,7 @@ TEST_SIZE = 0.10
 VAL_SIZE = 0.20
 BATCH_SIZE = 32
 LEARNING_RATE = 0.0001
-EPOCHS = 5
+EPOCHS = 3
 PATIENCE = 5
 
 # Load and preprocess data
@@ -66,23 +66,29 @@ val_loader = DataLoader(TensorDataset(*val_splits), BATCH_SIZE, shuffle=True)
 test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=True)
 
 # Initialize model, loss, and optimizer
+# model = LLaMA2_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# ==============================================================================================================
+# model = xLSTM_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = AttentionLSTM_AEModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# ==============================================================================================================
 # model = LSTM_AE_Model_1(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LSTM_AE_Model_3(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LSTM_AE_Model_3_Optimized(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = Transformer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = xLSTM_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = LLaMA2_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = AttentionLSTM_AEModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = InformerModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = LLaMAInspiredModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = xLSTMModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = LSTM_AE_Model_3_Optimized(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = LSTM_AE_Model_3_slice(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = EnhancedTimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# ==============================================================================================================
+# model = Transformer_Model(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = Transformer_Model_2(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = TransformerAEModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# ==============================================================================================================
+# model = ShearTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = InformerShearModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = InformerModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# ==============================================================================================================
+# model = TimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
+# ==============================================================================================================
 model = DecoderOnlyTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
-# model = torch.compile(model)
 
+# model = torch.compile(model)
 torchinfo.summary(model)
 
 # Initialize training component
@@ -106,7 +112,7 @@ for epoch in range(EPOCHS):
 
     train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{EPOCHS} [Train]",
                              bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | LR: {postfix[0][lr]:.6f} | Batch Loss: {postfix[0][batch_loss]:.4f} | Batch R²: {postfix[0][batch_r2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
-                             postfix=[{"lr": 0.0, "batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
+                             postfix=[{"lr": 0.0, "batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=True)
 
     for batch_param, batch_disp, batch_shear in train_loader_tqdm:
         batch_param = batch_param.to(device, non_blocking=False)
@@ -244,7 +250,7 @@ def plot_metric(train_data, val_data, best_epoch, ylabel, title, model_name=None
         # Save the figure as an SVG file
         filename = f"figures/{model_name}_{title.replace(' ', '_')}.svg"
         plt.savefig(filename, format='svg', bbox_inches='tight')  # Save as SVG
-    plt.show()
+    # plt.show()
 
 # Plot loss & Plot R2 score
 plot_metric(train_losses, val_losses, best_epoch, "Loss", "Training and Validation Loss", f"{type(model).__name__}" , save_figure=True)
@@ -274,7 +280,7 @@ new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_
 real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
 predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
 
-
+'''
 # plotting
 for i in range(test_index):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 6))
@@ -301,3 +307,70 @@ for i in range(test_index):
 
     plt.tight_layout()
     plt.show()
+'''
+
+# Define the training folder
+training_folder = "training"
+
+# Create the training folder if it doesn't exist
+if not os.path.exists(training_folder):
+    os.makedirs(training_folder)
+
+# Save all information to a file in the training folder
+file_name = f"{type(model).__name__}_training_summary.txt"
+file_path = os.path.join(training_folder, file_name)  # Full file path
+
+with open(file_path, "w", encoding="utf-8") as f:  # Specify encoding as utf-8
+    f.write("=== Model Training Summary ===\n\n")
+    # Save hyperparameters
+    f.write("=== Hyperparameters ===\n")
+    f.write(f"DATA_FOLDER: {DATA_FOLDER}\n")
+    f.write(f"DATA_SIZE: {DATA_SIZE}\n")
+    f.write(f"SEQUENCE_LENGTH: {SEQUENCE_LENGTH}\n")
+    f.write(f"DISPLACEMENT_FEATURES: {DISPLACEMENT_FEATURES}\n")
+    f.write(f"PARAMETERS_FEATURES: {PARAMETERS_FEATURES}\n")
+    f.write(f"TEST_SIZE: {TEST_SIZE}\n")
+    f.write(f"VAL_SIZE: {VAL_SIZE}\n")
+    f.write(f"BATCH_SIZE: {BATCH_SIZE}\n")
+    f.write(f"LEARNING_RATE: {LEARNING_RATE}\n")
+    f.write(f"EPOCHS: {EPOCHS}\n")
+    f.write(f"PATIENCE: {PATIENCE}\n")
+    f.write(f"Model Type: {type(model).__name__}\n\n")
+
+    # Save training and validation metrics in a table
+    f.write("=== Training and Validation Metrics ===\n")
+    f.write("| Epoch | Train Loss | Train R2 | Val Loss | Val R2  |\n")
+    f.write("|-------|------------|----------|----------|---------|\n")
+    for epoch in range(len(train_losses)):
+        f.write(f"| {epoch + 1:^5} | {train_losses[epoch]:^10.4f} | {train_r2_scores[epoch]:^8.4f} | {val_losses[epoch]:^8.4f} | {val_r2_scores[epoch]:^7.4f} |\n")
+    f.write("\n")
+    f.write(f"Best Epoch: {best_epoch}\n\n")
+
+    # Save test metrics
+    f.write("=== Test Metrics ===\n")
+    f.write(f"Test Loss: {test_loss:.4f}\n")
+    f.write(f"Test R2: {test_r2:.4f}\n\n")
+
+    # Save best validation metrics and equivalent training metrics
+    best_epoch_index = best_epoch - 1  # Convert to 0-based index
+    best_val_loss = val_losses[best_epoch_index]  # Best validation loss
+    best_val_r2 = val_r2_scores[best_epoch_index]  # Corresponding validation R²
+    train_loss_at_best_val = train_losses[best_epoch_index]  # Training loss at best validation epoch
+    train_r2_at_best_val = train_r2_scores[best_epoch_index]  # Training R² at best validation epoch
+
+    f.write("=== Best Validation Metrics ===\n")
+    f.write(f"Best Validation Loss: {best_val_loss:.4f}\n")
+    f.write(f"Best Validation R²: {best_val_r2:.4f}\n\n")
+
+    f.write("=== Training Metrics at Best Validation Epoch ===\n")
+    f.write(f"Training Loss: {train_loss_at_best_val:.4f}\n")
+    f.write(f"Training R²: {train_r2_at_best_val:.4f}\n\n")
+
+    # Save model summary and total parameters
+    f.write("=== Model Summary ===\n")
+    # model_summary = summary(model, verbose=0)  # Get model summary
+    total_params = sum(p.numel() for p in model.parameters())  # Calculate total parameters
+    f.write(f"Total Parameters: {total_params:,}\n")  # Format with commas for readability
+    # f.write(str(model_summary))  # Save the model summary
+
+print(f"Model training summary saved to '{file_name}'")

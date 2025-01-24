@@ -11,56 +11,45 @@ class ModelConfig:
     dim: int = 512
     n_layers: int = 2
     n_heads: int = 4
-    n_kv_heads: int = 32
-    vocab_size: int = 50257
+    n_kv_heads: int = 4  # Corrected to match n_heads
+    vocab_size: int = -1  # Not used in LLaMA2_Model
     norm_eps: float = 1e-5
     max_batch_size: int = 32
-    max_seq_len: int = 512
-    device: str = None
+    max_seq_len: int = 512  # Not used in LLaMA2_Model
+    device: str = 'cuda'  # Set device to 'cuda'
     ffn_dim_multiplier: Optional[float] = None
-    multiple_of: int = 256  # Add this line
+    multiple_of: int = 256
 
 
 class RotaryPositionEmbedding(nn.Module):
-
     def __init__(self, head_dim: int, seq_len: int, device: str) -> None:
         super().__init__()
         self.dim = head_dim
         assert self.dim % 2 == 0, "head_dim must be divisible by 2"
 
-        # Calculate the rotation frequencies for positional embeddings
         theta_numerator = torch.arange(0, self.dim, 2, dtype=torch.float32)
         theta = 1.0 / torch.pow(10000, theta_numerator / self.dim).to(device)
 
-        # Generate frequency values for positional embeddings
         m = torch.arange(seq_len, dtype=torch.float32).to(device)
         freqs = torch.outer(m, theta).float()
 
-        # Convert frequency values to complex numbers (polar form)
         freqs_complex = torch.polar(torch.ones_like(freqs), freqs)
         self.register_buffer("freqs_cis", freqs_complex)
 
     def forward(self, x: torch.Tensor, start_pos: int) -> torch.Tensor:
-        batch_size, seq_len, dim = x.shape
+        batch_size, seq_len, n_heads, dim = x.shape
         assert dim == self.dim, "dim must be equal to self.dim"
 
-        # Reshape the input into a complex tensor for rotational operations
-        x_complex = torch.view_as_complex(x.float().reshape(*x.shape[:-1], -1, 2))
-
-        # Extract rotational frequencies for the given sequence length and start position
+        x_complex = torch.view_as_complex(x.float().reshape(batch_size, seq_len, n_heads, -1, 2))
         freq_complex = self.freqs_cis[start_pos:start_pos + seq_len]
         freq_complex = freq_complex.unsqueeze(0).unsqueeze(2)
 
-        # Apply rotational transformation to the input using frequency values
         x_rotated = x_complex * freq_complex
-
-        # Convert the rotated complex tensor back to real-valued tensor
         x_out = torch.view_as_real(x_rotated)
-
-        # Reshape to match the original input shape
-        x_out = x_out.reshape(*x.shape)
+        x_out = x_out.reshape(batch_size, seq_len, n_heads, dim)
 
         return x_out.type_as(x).to(x.device)
+
 
 
 class RMSNorm(nn.Module):
@@ -83,38 +72,26 @@ class RMSNorm(nn.Module):
 
 
 class SelfAttention(nn.Module):
-
     def __init__(self, args: ModelConfig):
         super().__init__()
-        self.dim = args.dim  # Add this line
-        # Determine the number of key-value heads (defaults to n_heads if not specified)
+        self.dim = args.dim
         self.n_kv_heads = args.n_kv_heads if args.n_kv_heads is not None else args.n_heads
-
-        # Set the number of query heads and the number of repetitions for K and V
         self.n_heads_q = args.n_heads
         self.n_rep = self.n_heads_q // self.n_kv_heads
-
-        # Calculate the head dimension
         self.head_dim = args.dim // args.n_heads
 
-        # Linear transformations for queries, keys, values, and output
         self.Wq = nn.Linear(args.dim, args.n_heads * self.head_dim, bias=False)
         self.Wk = nn.Linear(args.dim, args.n_kv_heads * self.head_dim, bias=False)
         self.Wv = nn.Linear(args.dim, args.n_kv_heads * self.head_dim, bias=False)
         self.Wo = nn.Linear(args.n_heads * self.head_dim, args.dim, bias=False)
 
-        # Initialize key and value caches with zeros
-        self.cache_k = torch.zeros((args.max_batch_size, args.max_seq_len, args.n_kv_heads, self.head_dim))
-        self.cache_v = torch.zeros((args.max_batch_size, args.max_seq_len, args.n_kv_heads, self.head_dim))
+        self.cache_k = torch.zeros((args.max_batch_size, args.max_seq_len, args.n_kv_heads, self.head_dim)).to(args.device)
+        self.cache_v = torch.zeros((args.max_batch_size, args.max_seq_len, args.n_kv_heads, self.head_dim)).to(args.device)
 
-        # Rotary Position Embedding
         self.rope = RotaryPositionEmbedding(self.head_dim, args.max_seq_len, args.device)
 
     @staticmethod
     def repeat_heads(x: torch.Tensor, n_rep: int) -> torch.Tensor:
-
-        # Repeat the heads of K and V to match the number of heads in Q
-
         batch_size, seq_len, n_kv_heads, head_dim = x.shape
         if n_rep == 1:
             return x
@@ -125,63 +102,45 @@ class SelfAttention(nn.Module):
                     )
 
     def forward(self, x: torch.Tensor, start_pos: int) -> torch.Tensor:
-        batch_size, seq_len, dim = x.shape  # (B, 1, dim)
+        batch_size, seq_len, dim = x.shape
         assert dim == self.dim, "dim must be equal to self.dim"
 
-        # (B, 1, dim) -> (B, 1, n_heads_q * head_dim)
         xq = self.Wq(x)
-
-        # (B, 1, dim) -> (B, 1, n_kv_heads * head_dim)
         xk = self.Wk(x)
-
-        # (B, 1, dim) -> (B, 1, n_kv_heads * head_dim)
         xv = self.Wv(x)
 
-        # (B, 1, n_heads_q * head_dim) -> (B, 1, n_heads_q, head_dim)
         xq = xq.view(batch_size, seq_len, self.n_heads_q, self.head_dim)
-
-        # (B, 1, n_kv_heads * head_dim) -> (B, 1, n_kv_heads, head_dim)
         xk = xk.view(batch_size, seq_len, self.n_kv_heads, self.head_dim)
         xv = xv.view(batch_size, seq_len, self.n_kv_heads, self.head_dim)
 
         xq = self.rope(xq, start_pos)
         xk = self.rope(xk, start_pos)
 
-        # Update key and value caches
         self.cache_k[:batch_size, start_pos:start_pos + seq_len] = xk
         self.cache_v[:batch_size, start_pos:start_pos + seq_len] = xv
 
-        # Retrieve key and value caches
         keys = self.cache_k[:batch_size, :start_pos + seq_len]
         values = self.cache_v[:batch_size, :start_pos + seq_len]
 
-        # Repeat the heads of K and V to match the number of heads in Q
         keys = self.repeat_heads(keys, self.n_rep)
         values = self.repeat_heads(values, self.n_rep)
 
-        # (B, 1, n_heads_q, head_dim) -> (B, n_heads_q, 1, head_dim)
         xq = xq.transpose(1, 2)
         keys = keys.transpose(1, 2)
         values = values.transpose(1, 2)
 
-        # (B, n_heads_q, 1, head_dim) * (B, n_heads_q, head_dim, SeqLen) -> (B, n_heads_q, 1, SeqLen)
         scores = torch.matmul(xq, keys.transpose(-2, -1)) / math.sqrt(self.head_dim)
         scores = F.softmax(scores.float(), dim=-1).type_as(xq)
 
-        # (B, n_heads_q, 1, SeqLen) * (B, n_heads_q, SeqLen, head_dim) -> (B, n_heads_q, 1, head_dim)
         context = torch.matmul(scores, values)
-
-        # (B, n_heads_q, 1, head_dim) -> (B, 1, head_dim)
         context = context.transpose(1, 2).contiguous().view(batch_size, seq_len, -1)
 
-        # (B, 1, head_dim) -> (B, 1, dim)
         output = self.Wo(context)
 
         return output
 
 
 class FeedForward(nn.Module):
-
     def __init__(self, args: ModelConfig):
         super().__init__()
 
@@ -221,13 +180,9 @@ class EncoderBlock(nn.Module):
         self.ffn_norm = RMSNorm(args.dim, args.norm_eps)
 
     def forward(self, x: torch.Tensor, start_pos: int):
-        print(f"EncoderBlock input shape: {x.shape}")
         h = x + self.attention(self.norm1(x), start_pos)
-        print(f"After attention shape: {h.shape}")
-        out = h + self.feed_forward(self.norm2(h))
-        print(f"EncoderBlock output shape: {out.shape}")
+        out = h + self.feed_forward(self.ffn_norm(h))  # Corrected to use ffn_norm
         return out
-
 
 class Transformer(nn.Module):
 

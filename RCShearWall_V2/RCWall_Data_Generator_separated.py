@@ -17,7 +17,7 @@ from functions import generate_cyclic_loading_linear, generate_cyclic_loading_ex
 
 
 # Define SEQUENCE_LENGTH as a global constant
-SEQUENCE_LENGTH = 501
+SEQUENCE_LENGTH = 500+1
 OUTPUT_DIR = Path("RCWall_Data/Run_Final")
 FORCE_THRESHOLD = 21000
 DISP_THRESHOLD = 640

@@ -14,6 +14,7 @@ from informer.attn import FullAttention, ProbAttention, AttentionLayer
 from informer.encoder import Encoder, EncoderLayer
 from informer.decoder import Decoder, DecoderLayer
 
+
 # ======= Global Use Layers  ====================================================================
 class ProbSparseAttention(nn.Module):
     def __init__(self, d_model, n_heads):
@@ -177,6 +178,9 @@ class AttentionLSTM_AEModel(nn.Module):
         # Attention Mechanism
         self.attention = nn.MultiheadAttention(embed_dim=300, num_heads=6, dropout=0.1)
 
+        # Positional encoding
+        self.pos_encoder = PositionalEncoding(d_model=300)
+
         # LSTM Encoder
         self.lstm_encoder1 = nn.LSTM(displacement_features + parameters_features, 300, batch_first=True)
         self.lstm_encoder2 = nn.LSTM(300, 100, batch_first=True)
@@ -206,8 +210,12 @@ class AttentionLSTM_AEModel(nn.Module):
         # Encoding
         lstm_out, _ = self.lstm_encoder1(concatenated_tensor)
 
+        # Apply positional encoding
+        lstm_out = self.pos_encoder(lstm_out)
+
         # Attention Mechanism
-        attention_out, _ = self.attention(lstm_out, lstm_out, lstm_out)
+        attention_out, _ = self.attention(lstm_out.transpose(0, 1), lstm_out.transpose(0, 1), lstm_out.transpose(0, 1))
+        attention_out = attention_out.transpose(0, 1)
 
         # Further Encoding
         encoded_sequence, _ = self.lstm_encoder2(attention_out)
@@ -223,75 +231,74 @@ class AttentionLSTM_AEModel(nn.Module):
 
 
 class xLSTM_Model(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length):
+    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=256):
         super(xLSTM_Model, self).__init__()
         self.sequence_length = sequence_length
-        self.norm = nn.LayerNorm(200)
-        self.norm2 = nn.LayerNorm(1)
-        self.activation = nn.GELU()
-        self.dropout_layer = nn.Dropout(0.1)
+        self.parameters_features = parameters_features
+        self.displacement_features = displacement_features
 
+        self.param_encoder = nn.Sequential(
+            nn.Linear(parameters_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.2)
+        )
+
+        self.series_encoder = nn.Sequential(
+            nn.Linear(displacement_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.2)
+
+        )
         '''
         # #  xLSTM encoder
-        self.lstm_encoder1 = xLSTMBlock(displacement_features + parameters_features, 200, num_layers=1, lstm_type="slstm")
+        self.lstm_encoder1 = xLSTMBlock(d_model, 200, num_layers=1, lstm_type="slstm")
         self.lstm_encoder2 = xLSTMBlock(200, 50, num_layers=1, lstm_type="slstm")
         # # xLSTM decoder
         self.lstm_decoder1 = xLSTMBlock(50, 200, num_layers=1, lstm_type="slstm")
-        self.lstm_decoder2 = xLSTMBlock(200, displacement_features, num_layers=1, lstm_type="slstm")
+        self.lstm_decoder2 = xLSTMBlock(200, d_model, num_layers=2, lstm_type="slstm")
         '''
         #  xLSTM encoder
-        self.lstm_encoder1 = sLSTM(displacement_features + parameters_features, 200, num_layers=2)
-        self.lstm_encoder2 = sLSTM(200, 50, num_layers=1)
+        self.lstm_encoder1 = mLSTM(d_model, 200, num_layers=2)
+        self.lstm_encoder2 = mLSTM(200, 50, num_layers=1)
 
         # xLSTM decoder
-        self.lstm_decoder1 = sLSTM(50, 200, num_layers=1)
-        self.lstm_decoder2 = sLSTM(200, displacement_features, num_layers=2)
+        self.lstm_decoder1 = mLSTM(50, 200, num_layers=1)
+        self.lstm_decoder2 = mLSTM(200, d_model, num_layers=2)
 
-        # Adjusting dimensions
-        self.dense1 = nn.Linear(displacement_features, 200)
-        self.dropout1 = nn.Dropout(0.2)
-        self.dense2 = nn.Linear(200, 100)
-        self.dropout2 = nn.Dropout(0.2)
-        self.output = nn.Linear(100, 1)
+        self.output_layer = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.2),
+            nn.Linear(d_model // 2, 100),
+            nn.GELU(),
+            nn.Dropout(0.2),
+            nn.Linear(100, 50),
+            nn.GELU(),
+            nn.Linear(50, displacement_features)
+        )
 
     def forward(self, parameters_input, displacement_input):
-        # Repeat parameters for each time step
-        distributed_parameters = parameters_input.unsqueeze(1).repeat(1, displacement_input.shape[1], 1)
-        # print('distributed_parameters', distributed_parameters.shape)
+        params_encoded = self.param_encoder(parameters_input)
+        params_encoded = params_encoded.unsqueeze(1).expand(-1, self.sequence_length, -1)
 
-        # Concatenate displacement and parameters
-        concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
-        # print('concatenated_tensor', concatenated_tensor.shape)
+        displacement_input = displacement_input.unsqueeze(-1)
+        disp_encoded = self.series_encoder(displacement_input)
+
+        combined = torch.cat([params_encoded, disp_encoded], dim=-1)
 
         # Encoding
-        lstm_out, _ = self.lstm_encoder1(concatenated_tensor)
-        lstm_out = self.activation(lstm_out)
-        # print('lstm_out activation', lstm_out.shape)
-        # lstm_out = self.norm(lstm_out)
-        # print('lstm_out norm', lstm_out.shape)
-        # encoded_sequence, _ = self.lstm_encoder2(lstm_out)
-        # encoded_sequence = self.activation(encoded_sequence)
-        #
-        # # Decoding
-        # lstm_out, _ = self.lstm_decoder1(encoded_sequence)
-        # lstm_out = self.activation(lstm_out)
+        lstm_out, _ = self.lstm_encoder1(combined)
+        lstm_out, _ = self.lstm_encoder2(lstm_out)
 
-        decoded_sequence, _ = self.lstm_decoder2(lstm_out)
-        decoded_sequence = self.activation(decoded_sequence)
-        # Dense layers
-        x = self.dense1(decoded_sequence)
-        x = torch.tanh(x)
-        x = self.dropout1(x)
-        x = self.dense2(x)
-        x = torch.tanh(x)
-        x = self.dropout2(x)
+        # Decoding
+        lstm_out, _ = self.lstm_decoder1(lstm_out)
+        lstm_out, _ = self.lstm_decoder2(lstm_out)
 
-        # Output layer
-        output_shear = self.output(x)
-        # print('output_shear', output_shear.shape)
-        output_shear = output_shear.reshape(output_shear.size(0), -1)
+        output_shear = self.output_layer(lstm_out)
 
-        return output_shear
+        return output_shear.squeeze(-1)
 
 
 # ================================================================================================
@@ -704,6 +711,137 @@ class LSTM_AE_Model_3_Optimized(nn.Module):
         return output_shear.squeeze(-1)
 
 
+class LSTM_AE_Model_3_slice(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length, window_size=50, d_model=400):
+        super(LSTM_AE_Model_3_slice, self).__init__()
+        self.sequence_length = sequence_length
+        self.parameters_features = parameters_features
+        self.displacement_features = displacement_features
+        self.window_size = window_size  # Window size for sliding window approach
+        self.overlap_size = window_size // 2  # Half of the window size for overlap
+
+        # Parameter Processing Branch
+        self.param_encoder = nn.Sequential(
+            nn.Linear(parameters_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.1)
+        )
+
+        # Time Series Processing Branch
+        self.series_encoder = nn.Sequential(
+            nn.Linear(displacement_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.1)
+        )
+
+        self.pos_encoder = PositionalEncoding(d_model, max_len=window_size)
+
+        # Encoder
+        self.lstm_encoder1 = nn.LSTM(d_model, 150, batch_first=True)
+        self.lstm_encoder2 = nn.LSTM(150, 50, batch_first=True)
+
+        # Decoder
+        self.lstm_decoder1 = nn.LSTM(50, 150, batch_first=True)
+        self.lstm_decoder2 = nn.LSTM(150, d_model, batch_first=True)
+
+        # Dense layers reduction
+        self.dense1 = nn.Linear(d_model, d_model // 2)
+        self.layer_norm1 = nn.LayerNorm(d_model // 2)
+        self.dropout1 = nn.Dropout(0.1)
+
+        # Output layers
+        self.dense2 = nn.Linear(d_model // 2, 100)
+        self.layer_norm2 = nn.LayerNorm(100)
+        self.dropout2 = nn.Dropout(0.1)
+
+        self.pre_output = nn.Linear(100, 50)
+        self.output = nn.Linear(50, 1)
+
+    def forward(self, parameters_input, displacement_input):
+        batch_size = parameters_input.size(0)
+        full_output = torch.zeros(batch_size, self.sequence_length, device=parameters_input.device)
+
+        # Adjust the sliding window to ensure we cover the entire sequence
+        for start in range(0, self.sequence_length, self.window_size - self.overlap_size):
+            # Ensure we don't go beyond the sequence length
+            end = min(start + self.window_size, self.sequence_length)
+
+            disp_window = displacement_input[:, start:end]
+
+            # Pad the window if it's shorter than window_size
+            if disp_window.size(1) < self.window_size:
+                pad_size = self.window_size - disp_window.size(1)
+                disp_window = F.pad(disp_window, (0, pad_size))
+
+            disp_window = disp_window.unsqueeze(-1)
+
+            # Encode parameters
+            params_encoded = self.param_encoder(parameters_input)
+            params_expanded = params_encoded.unsqueeze(1).repeat(1, self.window_size, 1)
+
+            # Encode displacement
+            series_encoded = self.series_encoder(disp_window)
+
+            # Combine encoded params and series
+            combined = torch.cat([params_expanded, series_encoded], dim=-1)
+            combined = self.pos_encoder(combined)
+
+            # LSTM Encoder and Decoder transition
+            lstm_out, _ = self.lstm_encoder1(combined)
+            encoded_sequence, _ = self.lstm_encoder2(lstm_out)
+            lstm_out, _ = self.lstm_decoder1(encoded_sequence)
+            decoded_sequence, _ = self.lstm_decoder2(lstm_out)
+
+            # Dense Transformation
+            x = decoded_sequence.reshape(-1, decoded_sequence.size(-1))
+            x = self.dense1(x)
+            x = self.layer_norm1(x)
+            x = torch.relu(x)
+            x = self.dropout1(x)
+
+            x = self.dense2(x)
+            x = self.layer_norm2(x)
+            x = torch.relu(x)
+            x = self.dropout2(x)
+
+            x = self.pre_output(x)
+
+            # Generating shear output for current window
+            smoothed_prediction = self.output(x)
+            smoothed_prediction = smoothed_prediction.view(batch_size, self.window_size)
+
+            # Weighted overlap blending
+            if start > 0:
+                overlap_region = min(self.overlap_size, full_output.shape[1] - start)
+                weights = torch.linspace(1, 0, overlap_region, device=full_output.device)
+
+                # Blend overlapping predictions
+                full_output[:, start:start + overlap_region] = (
+                        full_output[:, start:start + overlap_region] * (1 - weights) +
+                        smoothed_prediction[:, :overlap_region] * weights
+                )
+
+            # Add non-overlapping or remaining parts
+            non_overlap_start = start + (self.overlap_size if start > 0 else 0)
+            non_overlap_end = min(start + self.window_size, self.sequence_length)
+
+            full_output[:, non_overlap_start:non_overlap_end] = smoothed_prediction[
+                                                                :,
+                                                                (self.overlap_size if start > 0 else 0):(non_overlap_end - non_overlap_start + (self.overlap_size if start > 0 else 0))
+                                                                ]
+
+        # Trim or pad to ensure exactly 500 points
+        if full_output.size(1) > 500:
+            full_output = full_output[:, :500]
+        elif full_output.size(1) < 500:
+            pad_size = 500 - full_output.size(1)
+            full_output = F.pad(full_output, (0, pad_size))
+
+        return full_output
+
+
 # =================================================================================================
 
 # ======= TimeSeriesTransformer ===================================================================
@@ -766,7 +904,7 @@ class TimeSeriesTransformer(nn.Module):
             nn.Dropout(dropout)
         )
         self.series_encoder = nn.Sequential(
-            nn.Linear(displacement_features, d_model // 2),
+            nn.Linear(displacement_features, d_model // 2),  # Ensure this matches displacement_features
             nn.GELU(),
             nn.LayerNorm(d_model // 2),
             nn.Dropout(dropout)
@@ -788,12 +926,15 @@ class TimeSeriesTransformer(nn.Module):
         )
 
     def forward(self, parameters, time_series):
+        # Reshape time_series to add the displacement_features dimension
+        time_series = time_series.unsqueeze(-1)  # Shape: (batch_size, sequence_length, 1)
+
         # Encode Parameters and Time Series
-        params_encoded = self.param_encoder(parameters).unsqueeze(1).repeat(1, time_series.size(1), 1)
-        series_encoded = self.series_encoder(time_series)
+        params_encoded = self.param_encoder(parameters).unsqueeze(1).repeat(1, time_series.size(1), 1)  # Shape: (batch_size, sequence_length, d_model // 2)
+        series_encoded = self.series_encoder(time_series)  # Shape: (batch_size, sequence_length, d_model // 2)
 
         # Combine Encoded Features
-        combined = torch.cat([params_encoded, series_encoded], dim=-1)
+        combined = torch.cat([params_encoded, series_encoded], dim=-1)  # Shape: (batch_size, sequence_length, d_model)
 
         # Positional Encoding
         x = self.pos_encoder(combined)
@@ -803,8 +944,8 @@ class TimeSeriesTransformer(nn.Module):
             x = block(x)
 
         # Generate Output
-        output = self.output_layer(x)
-        return output
+        output = self.output_layer(x)  # Shape: (batch_size, sequence_length, displacement_features)
+        return output.squeeze(-1)
 
 
 # =================================================================================================
@@ -943,11 +1084,9 @@ class ShearTransformer(nn.Module):
         # Return predictions up to sequence length + future steps
         return full_output[:, :self.sequence_length]
 
-# =================================================================================================
-
 
 # ======= Informer Model ===========================================================================
-# 1. Transformer-based Informer Architecture
+
 class InformerModel(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length, d_model=512):
         super(InformerModel, self).__init__()
@@ -970,6 +1109,9 @@ class InformerModel(nn.Module):
             norm_first=True  # Apply normalization before attention
         )
 
+        # Positional encoding
+        self.pos_encoder = PositionalEncoding(d_model, max_len=sequence_length)
+
         self.encoder = nn.TransformerEncoder(
             encoder_layer,
             num_layers=3,
@@ -987,9 +1129,6 @@ class InformerModel(nn.Module):
             nn.LayerNorm(64),  # Add LayerNorm for stability
             nn.Linear(64, 1)
         )
-
-        # Positional encoding
-        self.pos_encoder = PositionalEncoding(d_model, dropout=0.1, max_len=sequence_length)
 
     def forward(self, parameters_input, displacement_input):
         # Distribute parameters across sequence
@@ -1231,9 +1370,9 @@ class LLaMA2_Model(nn.Module):
         config = ModelConfig(dim=dim,
                              n_layers=n_layers,
                              n_heads=n_heads,
-                             n_kv_heads=n_heads,
+                             n_kv_heads=n_heads,  # Corrected to match n_heads
                              max_batch_size=32,
-                             device=device,
+                             device='cuda',  # Set device to 'cuda'
                              ffn_dim_multiplier=None,
                              multiple_of=256
                              )
@@ -1247,24 +1386,15 @@ class LLaMA2_Model(nn.Module):
         self.output = nn.Linear(config.dim, 1)
 
     def forward(self, parameters_input, displacement_input):
-        print(f"parameters_input shape: {parameters_input.shape}")
-        print(f"displacement_input shape: {displacement_input.shape}")
-
         distributed_parameters = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
-        print(f"distributed_parameters shape: {distributed_parameters.shape}")
 
         concatenated_tensor = torch.cat([displacement_input.unsqueeze(-1), distributed_parameters], dim=-1)
-        print(f"concatenated_tensor shape: {concatenated_tensor.shape}")
 
         x = self.input_embedding(concatenated_tensor)
-        print(f"After input_embedding shape: {x.shape}")
-
         x = self.dropout(x)
 
         for i, layer in enumerate(self.layers):
-            print(f"Before layer {i} shape: {x.shape}")
             x = layer(x, 0)
-            print(f"After layer {i} shape: {x.shape}")
 
         x = self.norm(x)
         output = self.output(x)
@@ -1272,183 +1402,7 @@ class LLaMA2_Model(nn.Module):
         return output.squeeze(-1)
 
 
-# 2. LLaMA-inspired Architecture
-class LLaMAInspiredModel(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length):
-        super(LLaMAInspiredModel, self).__init__()
-        self.sequence_length = sequence_length
-        hidden_dim = 512
-
-        # Input processing
-        self.input_proj = nn.Linear(displacement_features + parameters_features, hidden_dim)
-
-        # RoPE positional embeddings
-        self.pos_encoder = RotaryPositionalEmbedding(hidden_dim)
-
-        # Multi-head attention with RoPE
-        self.attention = MultiHeadAttention(hidden_dim, num_heads=8)
-
-        # Feed-forward network
-        self.feed_forward = nn.Sequential(
-            nn.Linear(hidden_dim, 4 * hidden_dim),
-            nn.GELU(),
-            nn.Linear(4 * hidden_dim, hidden_dim)
-        )
-
-        # Output layers
-        self.output_layers = nn.Sequential(
-            nn.Linear(hidden_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 1)
-        )
-
-    def forward(self, parameters_input, displacement_input):
-        distributed_params = parameters_input.unsqueeze(1).repeat(1, self.sequence_length, 1)
-        x = torch.cat([displacement_input.unsqueeze(-1), distributed_params], dim=-1)
-
-        # Project and apply positional encoding
-        x = self.input_proj(x)
-        x = self.pos_encoder(x)
-
-        # Self-attention and feed-forward
-        x = self.attention(x)
-        x = self.feed_forward(x)
-
-        # Output processing
-        output = self.output_layers(x)
-        return output.squeeze(-1)
-
-
 # ==================================================================================================
-class LSTM_AE_Model_3_slice(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length, window_size=50, d_model=400):
-        super(LSTM_AE_Model_3_slice, self).__init__()
-        self.sequence_length = sequence_length
-        self.parameters_features = parameters_features
-        self.displacement_features = displacement_features
-        self.window_size = window_size  # Window size for sliding window approach
-        self.overlap_size = window_size // 2  # Half of the window size for overlap
-
-        # Parameter Processing Branch
-        self.param_encoder = nn.Sequential(
-            nn.Linear(parameters_features, d_model // 2),
-            nn.LayerNorm(d_model // 2),
-            nn.GELU(),
-            nn.Dropout(0.1)
-        )
-
-        # Time Series Processing Branch
-        self.series_encoder = nn.Sequential(
-            nn.Linear(displacement_features, d_model // 2),
-            nn.LayerNorm(d_model // 2),
-            nn.GELU(),
-            nn.Dropout(0.1)
-        )
-
-        self.pos_encoder = PositionalEncoding(d_model, max_len=window_size)
-
-        # Encoder
-        self.lstm_encoder1 = nn.LSTM(d_model, 150, batch_first=True)
-        self.lstm_encoder2 = nn.LSTM(150, 50, batch_first=True)
-
-        # Decoder
-        self.lstm_decoder1 = nn.LSTM(50, 150, batch_first=True)
-        self.lstm_decoder2 = nn.LSTM(150, d_model, batch_first=True)
-
-        # Dense layers reduction
-        self.dense1 = nn.Linear(d_model, d_model // 2)
-        self.layer_norm1 = nn.LayerNorm(d_model // 2)
-        self.dropout1 = nn.Dropout(0.1)
-
-        # Output layers
-        self.dense2 = nn.Linear(d_model // 2, 100)
-        self.layer_norm2 = nn.LayerNorm(100)
-        self.dropout2 = nn.Dropout(0.1)
-
-        self.pre_output = nn.Linear(100, 50)
-        self.output = nn.Linear(50, 1)
-
-    def forward(self, parameters_input, displacement_input):
-        batch_size = parameters_input.size(0)
-        full_output = torch.zeros(batch_size, self.sequence_length, device=parameters_input.device)
-
-        # Adjust the sliding window to ensure we cover the entire sequence
-        for start in range(0, self.sequence_length, self.window_size - self.overlap_size):
-            # Ensure we don't go beyond the sequence length
-            end = min(start + self.window_size, self.sequence_length)
-
-            disp_window = displacement_input[:, start:end]
-
-            # Pad the window if it's shorter than window_size
-            if disp_window.size(1) < self.window_size:
-                pad_size = self.window_size - disp_window.size(1)
-                disp_window = F.pad(disp_window, (0, pad_size))
-
-            disp_window = disp_window.unsqueeze(-1)
-
-            # Encode parameters
-            params_encoded = self.param_encoder(parameters_input)
-            params_expanded = params_encoded.unsqueeze(1).repeat(1, self.window_size, 1)
-
-            # Encode displacement
-            series_encoded = self.series_encoder(disp_window)
-
-            # Combine encoded params and series
-            combined = torch.cat([params_expanded, series_encoded], dim=-1)
-            combined = self.pos_encoder(combined)
-
-            # LSTM Encoder and Decoder transition
-            lstm_out, _ = self.lstm_encoder1(combined)
-            encoded_sequence, _ = self.lstm_encoder2(lstm_out)
-            lstm_out, _ = self.lstm_decoder1(encoded_sequence)
-            decoded_sequence, _ = self.lstm_decoder2(lstm_out)
-
-            # Dense Transformation
-            x = decoded_sequence.reshape(-1, decoded_sequence.size(-1))
-            x = self.dense1(x)
-            x = self.layer_norm1(x)
-            x = torch.relu(x)
-            x = self.dropout1(x)
-
-            x = self.dense2(x)
-            x = self.layer_norm2(x)
-            x = torch.relu(x)
-            x = self.dropout2(x)
-
-            x = self.pre_output(x)
-
-            # Generating shear output for current window
-            smoothed_prediction = self.output(x)
-            smoothed_prediction = smoothed_prediction.view(batch_size, self.window_size)
-
-            # Weighted overlap blending
-            if start > 0:
-                overlap_region = min(self.overlap_size, full_output.shape[1] - start)
-                weights = torch.linspace(1, 0, overlap_region, device=full_output.device)
-
-                # Blend overlapping predictions
-                full_output[:, start:start + overlap_region] = (
-                        full_output[:, start:start + overlap_region] * (1 - weights) +
-                        smoothed_prediction[:, :overlap_region] * weights
-                )
-
-            # Add non-overlapping or remaining parts
-            non_overlap_start = start + (self.overlap_size if start > 0 else 0)
-            non_overlap_end = min(start + self.window_size, self.sequence_length)
-
-            full_output[:, non_overlap_start:non_overlap_end] = smoothed_prediction[
-                                                                :,
-                                                                (self.overlap_size if start > 0 else 0):(non_overlap_end - non_overlap_start + (self.overlap_size if start > 0 else 0))
-                                                                ]
-
-        # Trim or pad to ensure exactly 500 points
-        if full_output.size(1) > 500:
-            full_output = full_output[:, :500]
-        elif full_output.size(1) < 500:
-            pad_size = 500 - full_output.size(1)
-            full_output = F.pad(full_output, (0, pad_size))
-
-        return full_output
 
 
 # =====================================================================================================
@@ -1546,4 +1500,3 @@ class DecoderOnlyTransformer(nn.Module):
 
         return output.squeeze(-1)
 # =====================================================================================================
-
