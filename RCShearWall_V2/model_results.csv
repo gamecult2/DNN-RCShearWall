@@ -1,2 +1,0 @@
-Model Name,Total Params,Data Size,Sequence Length,Displacement Features,Parameters Features,Test Size,Validation Size,Batch Size,Learning Rate,Epochs,Patience,Training Loss,Validation Loss,Test Loss,Training R²,Validation R²,Test R²
-DecoderOnlyTransformer,2160849,500,500,1,17,0.1,0.2,32,0.0001,5,5,0.20967686921358109,0.31684116646647453,0.20033646374940872,0.5405260541222312,0.5274080187082291,0.6472351551055908

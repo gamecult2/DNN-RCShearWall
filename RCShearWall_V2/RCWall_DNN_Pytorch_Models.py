@@ -317,7 +317,7 @@ if not os.path.exists(training_folder):
     os.makedirs(training_folder)
 
 # Save all information to a file in the training folder
-file_name = f"{type(model).__name__}_training_summary.txt"
+file_name = f"{type(model).__name__}_{BATCH_SIZE}.txt"
 file_path = os.path.join(training_folder, file_name)  # Full file path
 
 with open(file_path, "w", encoding="utf-8") as f:  # Specify encoding as utf-8
