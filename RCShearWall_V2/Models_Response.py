@@ -29,6 +29,24 @@ class ProbSparseAttention(nn.Module):
         return self.attention(x, x, x)[0]
 
 
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, max_len=5000):
+        super(PositionalEncoding, self).__init__()
+
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0)
+
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        return x + self.pe[:, :x.size(1)]
+
+
 class RotaryPositionalEncoding:
     def __init__(self, dim, max_position_embeddings=2048, base=10000):
         super().__init__()
@@ -1434,7 +1452,7 @@ class LSTM_AE_Model_3_slice(nn.Module):
 
 
 # =====================================================================================================
-class DecoderOnlyTransformer2(nn.Module):
+class DecoderOnlyTransformer(nn.Module):
     def __init__(self, parameters_features, displacement_features, sequence_length, d_model=256, nhead=8,
                  num_layers=2, dim_feedforward=1024, dropout=0.1):
         super().__init__()
@@ -1529,237 +1547,3 @@ class DecoderOnlyTransformer2(nn.Module):
         return output.squeeze(-1)
 # =====================================================================================================
 
-
-class RotaryPositionalEncoding:
-    def __init__(self, dim, max_position_embeddings=2048, base=10000):
-        super().__init__()
-        if dim % 2 != 0:
-            raise ValueError("Dimension must be divisible by 2")
-
-        self.dim = dim
-        self.max_position_embeddings = max_position_embeddings
-        self.base = base
-
-        # Generate inverse frequency bands for half the dimension
-        inv_freq = 1.0 / (base ** (torch.arange(0, dim // 2).float() / (dim // 2)))
-        self.register_buffer = lambda n, t: setattr(self, n, t)
-        self.register_buffer('inv_freq', inv_freq)
-
-    def _get_rotary_embeddings(self, positions, device):
-        # Create sinusoidal embeddings for half dimension
-        t = positions.unsqueeze(-1) * self.inv_freq.to(device)
-        emb = torch.cat((t.sin(), t.cos()), dim=-1)
-        return emb.unsqueeze(-2)  # Add head dimension
-
-    def rotate_half(self, x):
-        dim = x.shape[-1]
-        x1, x2 = x[..., :dim // 2], x[..., dim // 2:]
-        return torch.cat((-x2, x1), dim=-1)
-
-    def apply_rotary_pos_emb(self, x, positions):
-        # x shape: [batch, heads, seq_len, head_dim]
-        # positions shape: [seq_len]
-        rot_emb = self._get_rotary_embeddings(positions, x.device)  # [seq_len, 1, dim]
-
-        # Reshape embeddings to match input dimensions
-        rot_emb = rot_emb.expand(positions.shape[0], x.shape[1], x.shape[-1])  # [seq_len, heads, head_dim]
-        rot_emb = rot_emb.permute(1, 0, 2)  # [heads, seq_len, head_dim]
-
-        # Apply rotary embeddings
-        cos = rot_emb[..., :rot_emb.shape[-1] // 2]  # [heads, seq_len, head_dim//2]
-        sin = rot_emb[..., rot_emb.shape[-1] // 2:]  # [heads, seq_len, head_dim//2]
-
-        x_out = x.clone()
-        dim = x.shape[-1]
-        x_out[..., :dim // 2] = x[..., :dim // 2] * cos - x[..., dim // 2:] * sin
-        x_out[..., dim // 2:] = x[..., dim // 2:] * cos + x[..., :dim // 2] * sin
-
-        return x_out
-
-
-class RoPEMultiheadAttention(nn.Module):
-    def __init__(self, d_model, nhead, dropout=0.1):
-        super().__init__()
-        assert d_model % nhead == 0, "d_model must be divisible by nhead"
-
-        self.d_model = d_model
-        self.nhead = nhead
-        self.head_dim = d_model // nhead
-
-        self.q_proj = nn.Linear(d_model, d_model)
-        self.k_proj = nn.Linear(d_model, d_model)
-        self.v_proj = nn.Linear(d_model, d_model)
-        self.out_proj = nn.Linear(d_model, d_model)
-
-        self.dropout = nn.Dropout(dropout)
-        self.rope = RotaryPositionalEncoding(self.head_dim)
-
-        self.scaling = float(self.head_dim) ** -0.5
-
-    def forward(self, query, key, value, attn_mask=None, positions=None):
-        batch_size = query.size(0)
-        seq_len = query.size(1)
-
-        # Project and reshape
-        q = self.q_proj(query).view(batch_size, seq_len, self.nhead, self.head_dim).transpose(1, 2)
-        k = self.k_proj(key).view(batch_size, seq_len, self.nhead, self.head_dim).transpose(1, 2)
-        v = self.v_proj(value).view(batch_size, seq_len, self.nhead, self.head_dim).transpose(1, 2)
-
-        # Apply RoPE to queries and keys
-        if positions is not None:
-            q = self.rope.apply_rotary_pos_emb(q, positions)
-            k = self.rope.apply_rotary_pos_emb(k, positions)
-
-        # Scaled dot-product attention
-        attn_output_weights = torch.matmul(q, k.transpose(-2, -1)) * self.scaling
-
-        if attn_mask is not None:
-            attn_output_weights = attn_output_weights + attn_mask
-
-        attn_output_weights = torch.softmax(attn_output_weights, dim=-1)
-        attn_output_weights = self.dropout(attn_output_weights)
-
-        attn_output = torch.matmul(attn_output_weights, v)
-
-        # Reshape and project output
-        attn_output = attn_output.transpose(1, 2).contiguous().view(batch_size, seq_len, self.d_model)
-        attn_output = self.out_proj(attn_output)
-
-        return attn_output, attn_output_weights
-
-
-class CustomTransformerDecoderLayer(nn.Module):
-    def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1):
-        super().__init__()
-
-        self.self_attn = RoPEMultiheadAttention(d_model, nhead, dropout)
-        self.cross_attn = RoPEMultiheadAttention(d_model, nhead, dropout)
-
-        self.linear1 = nn.Linear(d_model, dim_feedforward)
-        self.dropout = nn.Dropout(dropout)
-        self.linear2 = nn.Linear(dim_feedforward, d_model)
-
-        self.norm1 = nn.LayerNorm(d_model)
-        self.norm2 = nn.LayerNorm(d_model)
-        self.norm3 = nn.LayerNorm(d_model)
-
-        self.dropout1 = nn.Dropout(dropout)
-        self.dropout2 = nn.Dropout(dropout)
-        self.dropout3 = nn.Dropout(dropout)
-
-        self.activation = nn.GELU()
-
-    def forward(self, x, memory, tgt_mask=None, memory_mask=None, positions=None):
-        # Self attention
-        x2, _ = self.self_attn(x, x, x, attn_mask=tgt_mask, positions=positions)
-        x = x + self.dropout1(x2)
-        x = self.norm1(x)
-
-        # Cross attention
-        x2, _ = self.cross_attn(x, memory, memory, attn_mask=memory_mask, positions=positions)
-        x = x + self.dropout2(x2)
-        x = self.norm2(x)
-
-        # Feedforward
-        x2 = self.linear2(self.dropout(self.activation(self.linear1(x))))
-        x = x + self.dropout3(x2)
-        x = self.norm3(x)
-
-        return x
-
-
-class CustomTransformerDecoder(nn.Module):
-    def __init__(self, decoder_layer, num_layers):
-        super().__init__()
-        self.layers = nn.ModuleList([decoder_layer for _ in range(num_layers)])
-
-    def forward(self, tgt, memory, tgt_mask=None, memory_mask=None, positions=None):
-        output = tgt
-        for layer in self.layers:
-            output = layer(output, memory, tgt_mask, memory_mask, positions)
-        return output
-
-
-class DecoderOnlyTransformer(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=256, nhead=8,
-                 num_layers=4, dim_feedforward=1024, dropout=0.1):
-        super().__init__()
-        self.sequence_length = sequence_length
-        self.d_model = d_model
-
-        # Input embeddings
-        self.param_encoder = nn.Sequential(
-            nn.Linear(parameters_features, d_model // 2),
-            nn.LayerNorm(d_model // 2),
-            nn.GELU(),
-            nn.Dropout(dropout)
-        )
-
-        self.series_encoder = nn.Sequential(
-            nn.Linear(displacement_features, d_model // 2),
-            nn.LayerNorm(d_model // 2),
-            nn.GELU(),
-            nn.Dropout(dropout)
-        )
-
-        # Create custom decoder layer with RoPE
-        decoder_layer = CustomTransformerDecoderLayer(
-            d_model=d_model,
-            nhead=nhead,
-            dim_feedforward=dim_feedforward,
-            dropout=dropout
-        )
-
-        # Create custom decoder
-        self.transformer_decoder = CustomTransformerDecoder(decoder_layer, num_layers)
-
-        # Output projection
-        self.output_layer = nn.Sequential(
-            nn.Linear(d_model, d_model // 2),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(d_model // 2, 100),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(100, 50),
-            nn.GELU(),
-            nn.Linear(50, displacement_features)
-        )
-
-        # Create causal mask for decoder
-        self.register_buffer(
-            "causal_mask",
-            torch.triu(torch.full((sequence_length, sequence_length), float('-inf')), diagonal=1)
-        )
-
-    def forward(self, parameters_input, displacement_input):
-        # Encode parameters and expand across sequence length
-        params_encoded = self.param_encoder(parameters_input)
-        params_encoded = params_encoded.unsqueeze(1).expand(-1, self.sequence_length, -1)
-
-        # Encode displacement input
-        displacement_input = displacement_input.unsqueeze(-1)
-        disp_encoded = self.series_encoder(displacement_input)
-
-        # Combine parameter and displacement encodings
-        combined = torch.cat([params_encoded, disp_encoded], dim=-1)
-
-        # Generate position indices
-        positions = torch.arange(self.sequence_length, device=combined.device)
-
-        # Create memory mask for causal attention
-        causal_mask = self.causal_mask[:self.sequence_length, :self.sequence_length]
-
-        # Pass through transformer decoder with RoPE
-        output = self.transformer_decoder(
-            combined,
-            combined,
-            tgt_mask=causal_mask,
-            memory_mask=causal_mask,
-            positions=positions
-        )
-
-        # Project to output space
-        output = self.output_layer(output)
-
-        return output.squeeze(-1)

@@ -1657,7 +1657,7 @@ validation_model = Zhang_SW12()
 # Cyclic
 # validation_model = Tran_and_Wallace_A20P10S63()
 # validation_model = SW-N-N()
-# validation_model = Oesterle_B7()
+validation_model = Oesterle_B7()
 # validation_model = Thomsen_and_Wallace_RW2()
 # validation_model = Greifenhagen_M3()
 # validation_model = Greifenhagen_M4()
@@ -1675,9 +1675,9 @@ tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, displa
 eleH, eleL = 14, 12
 rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, eleH, eleL, printProgression=True)
 rcmodel.run_gravity(printProgression=False)
-x, y, c1, a1, c2, a2 = rcmodel.run_analysis(displacement_step, analysis='pushover', printProgression=True, enablePlotting=True)
+x, y, c1, a1, c2, a2 = rcmodel.run_analysis(displacement_step, analysis='cyclic', printProgression=True, enablePlotting=True)
 rcmodel.reset_analysis()
-plotting(x, y, 'Displacement (mm)', 'Base Shear (kN)', f'{name}', save_fig=True, plotValidation=True, plot_envelope=False)
+plotting(x, y, 'Displacement (mm)', 'Base Shear (kN)', f'{name}', save_fig=True, plotValidation=True, plot_envelope=True)
 plot_max_panel_response(eleH, eleL, c1, a1, c2, a2, f'{name}', hw/lw, save_fig=True)
 
 # ---------------- RUN PUSHOVER ANALYSIS ---------------------------------------------------------------

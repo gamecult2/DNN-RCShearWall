@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import numpy as np
 from tqdm import tqdm
+import logging
+import sys
 
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from scipy.stats import pearsonr
@@ -17,7 +19,6 @@ from scipy.stats import pearsonr
 from RCWall_Data_Processing import *
 from utils.earlystopping import EarlyStopping
 from Models_Response import *
-
 
 def r2_score_torch(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
     y_true, y_pred = y_true.float(), y_pred.float()
@@ -42,7 +43,7 @@ if device.type == "cuda":
 
 # Define hyperparameters
 DATA_FOLDER = ("RCWall_Data/Run_Final_Full/FullData")
-DATA_SIZE = 50000000
+DATA_SIZE = 500
 SEQUENCE_LENGTH = 500
 DISPLACEMENT_FEATURES = 1
 PARAMETERS_FEATURES = 17
@@ -50,7 +51,7 @@ TEST_SIZE = 0.10
 VAL_SIZE = 0.20
 BATCH_SIZE = 32
 LEARNING_RATE = 0.0001
-EPOCHS = 20
+EPOCHS = 5
 PATIENCE = 5
 
 # Load and preprocess data
@@ -87,9 +88,9 @@ torchinfo.summary(model)
 # Initialize training component
 scaler = GradScaler('cuda')
 optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=1, min_lr=1e-6)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=2, min_lr=1e-4)
 criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
-# earlystop = EarlyStopping(PATIENCE, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}", save_full_model=True, verbose=False)
+earlystop = EarlyStopping(PATIENCE, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}", save_full_model=True, verbose=False)
 
 # Initialize tracking variables
 train_losses, val_losses = [], []
@@ -108,9 +109,9 @@ for epoch in range(EPOCHS):
                              postfix=[{"lr": 0.0, "batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
 
     for batch_param, batch_disp, batch_shear in train_loader_tqdm:
-        batch_param = batch_param.to(device, non_blocking=True)
-        batch_disp = batch_disp.to(device, non_blocking=True)
-        batch_shear = batch_shear.to(device, non_blocking=True)
+        batch_param = batch_param.to(device, non_blocking=False)
+        batch_disp = batch_disp.to(device, non_blocking=False)
+        batch_shear = batch_shear.to(device, non_blocking=False)
         batch_count += 1
 
         optimizer.zero_grad(set_to_none=True)
@@ -190,9 +191,9 @@ for epoch in range(EPOCHS):
     print(f'Epoch [{epoch + 1}/{EPOCHS}], Train Loss: {epoch_train_loss:.4f}, Train R²: {epoch_train_r2:.4f}, Val Loss: {val_loss:.4f}, Val R²: {val_r2:.4f}\n')
 
     # Early Stopping
-    # if earlystop(val_loss, model):
-    #     print("Early stopping triggered")
-    #     break
+    if earlystop(val_loss, model):
+        print("Early stopping triggered")
+        break
 
     if device.type == "cuda":
         torch.cuda.empty_cache()
@@ -220,25 +221,35 @@ with torch.no_grad(), torch.amp.autocast('cuda'):
 print(f'Final Model Performance - Test Loss: {test_loss:.4f}, Test R2: {test_r2:.4f}')
 
 # Plotting
-def plot_metric(train_data, val_data, best_epoch, ylabel, title):
-    plt.figure(figsize=(10, 6))
+def plot_metric(train_data, val_data, best_epoch, ylabel, title, model_name=None, save_figure=False):
+    plt.figure(figsize=(6, 5))
     epochs = range(1, len(train_data) + 1)
 
-    plt.plot(epochs, train_data, label=f"Training {ylabel}")
-    plt.plot(epochs, val_data, label=f"Validation {ylabel}")
+    plt.plot(epochs, train_data, color='#3152a1', label=f"Training {ylabel}", linewidth=2)
+    plt.plot(epochs, val_data, color='red', label=f"Validation {ylabel}", linewidth=2)
     if best_epoch:
         plt.scatter(best_epoch, val_data[best_epoch - 1], color='red', s=100, label="Best Model")
-    plt.xlabel("Epochs")
-    plt.ylabel(ylabel)
-    plt.title(f"{title} Over Epochs")
-    plt.legend()
+    plt.xlabel("Epochs", fontname='Times New Roman', fontsize=14)
+    plt.ylabel(ylabel, fontname='Times New Roman', fontsize=14)
+    plt.yticks(fontname='Times New Roman', fontsize=12)
+    plt.xticks(fontname='Times New Roman', fontsize=12)
+    plt.title(f"{title} Over Epochs", fontname='Times New Roman', fontsize=12)
+    plt.legend(prop={'family': 'Times New Roman', 'size': 12})
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.tight_layout()
+    # Save figure if requested
+    if save_figure and model_name:
+        # Create a directory to save the figures if it doesn't exist
+        os.makedirs("figures", exist_ok=True)
+        # Save the figure as an SVG file
+        filename = f"figures/{model_name}_{title.replace(' ', '_')}.svg"
+        plt.savefig(filename, format='svg', bbox_inches='tight')  # Save as SVG
     plt.show()
 
 # Plot loss & Plot R2 score
-plot_metric(train_losses, val_losses, best_epoch, "MSE Loss", "Training and Validation Loss")
-plot_metric(train_r2_scores, val_r2_scores, best_epoch, "R2 Score", "Training and Validation R2 Score")
+plot_metric(train_losses, val_losses, best_epoch, "Loss", "Training and Validation Loss", f"{type(model).__name__}" , save_figure=True)
+plot_metric(train_r2_scores, val_r2_scores, best_epoch, "R2 Score", "Training and Validation R2 Score", f"{type(model).__name__}" , save_figure=True)
+
 
 # Select a specific test index (e.g., 2)
 test_index = 20
@@ -262,6 +273,7 @@ with torch.no_grad():
 new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
 real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
 predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
+
 
 # plotting
 for i in range(test_index):
