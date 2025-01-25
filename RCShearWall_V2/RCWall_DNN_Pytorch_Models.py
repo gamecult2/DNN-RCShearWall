@@ -54,7 +54,7 @@ TEST_SIZE = 0.10
 VAL_SIZE = 0.20
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
-EPOCHS = 30
+EPOCHS = 3
 PATIENCE = 6
 
 # Load and preprocess data
@@ -232,8 +232,8 @@ print(f'Final Model Performance - Test Loss: {test_loss:.4f}, Test R2: {test_r2:
 
 
 # Plot loss & Plot R2 score
-plot_metric(train_losses, val_losses, best_epoch, "Loss", "Training and Validation Loss", f"{type(model).__name__}" , save_fig=True)
-plot_metric(train_r2_scores, val_r2_scores, best_epoch, "R2 Score", "Training and Validation R2 Score", f"{type(model).__name__}" , save_fig=True)
+plot_metric(train_losses, val_losses, best_epoch, test_loss, "Loss", "Loss", f"{type(model).__name__}" , save_fig=True)
+plot_metric(train_r2_scores, val_r2_scores, best_epoch, test_r2, "R2 Score", "R2 Score", f"{type(model).__name__}" , save_fig=True)
 
 
 # Select a specific test index (e.g., 2)
@@ -259,9 +259,6 @@ new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_
 real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
 predicted_shear = denormalize(predicted_shear.cpu().numpy(), shear_scaler, sequence=True)
 
-
-# Save plots
-save_plots(test_index, predicted_shear, real_shear, new_input_displacement, f"{type(model).__name__}", save_fig=True)
 
 # Define hyperparameters and metrics
 hyperparameters = {
@@ -290,5 +287,6 @@ test_metrics = {
     "test_r2": test_r2
 }
 
-
+# Save plots
+save_plots(test_index, predicted_shear, real_shear, new_input_displacement, f"{type(model).__name__}", save_fig=True)
 save_training_summary(model, f"{type(model).__name__}_{BATCH_SIZE}.txt", hyperparameters, metrics, best_epoch, test_metrics, sum(p.numel() for p in model.parameters()))

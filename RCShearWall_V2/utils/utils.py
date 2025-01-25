@@ -5,7 +5,7 @@ import os
 
 
 # Plotting
-def plot_metric(train_data, val_data, best_epoch, ylabel, title, model_name=None, save_fig=False):
+def plot_metric(train_data, val_data, best_epoch, test_data, ylabel, title, model_name=None, save_fig=False):
     plt.figure(figsize=(6, 5))
     epochs = range(1, len(train_data) + 1)
 
@@ -13,6 +13,10 @@ def plot_metric(train_data, val_data, best_epoch, ylabel, title, model_name=None
     plt.plot(epochs, val_data, color='red', label=f"Validation {ylabel}", linewidth=2)
     if best_epoch:
         plt.scatter(best_epoch, val_data[best_epoch - 1], color='red', s=100, label="Best Model")
+    # Add test loss as a triangle at the last epoch
+    if test_data is not None:
+        plt.scatter(len(epochs), test_data, color='green', marker='^', s=100, label=f"Test {ylabel}")
+
     plt.xlabel("Epochs", fontname='Times New Roman', fontsize=14)
     plt.ylabel(ylabel, fontname='Times New Roman', fontsize=14)
     plt.yticks(fontname='Times New Roman', fontsize=12)
