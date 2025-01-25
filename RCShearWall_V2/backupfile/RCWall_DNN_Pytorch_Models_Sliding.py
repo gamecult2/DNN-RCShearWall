@@ -138,7 +138,7 @@ torchinfo.summary(model)
 optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, patience=1, min_lr=1e-6)
 criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
-earlystop = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}")
+earlystop = EarlyStopping(PATIENCE, verbose=False, save_full_model=True, checkpoint_dir='../checkpoints', model_name=f"{type(model).__name__}")
 
 # Initialize tracking variables
 train_losses, val_losses, train_r2_scores, val_r2_scores = [], [], [], []
