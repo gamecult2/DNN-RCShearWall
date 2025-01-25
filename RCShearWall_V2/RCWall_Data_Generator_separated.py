@@ -1,6 +1,4 @@
 import numpy as np
-from utils import *
-import random
 import math
 from pathlib import Path
 import csv
@@ -8,12 +6,10 @@ import time
 import os
 import sys
 import logging
-from multiprocessing import Pool, cpu_count, current_process, Lock, Manager
-from contextlib import contextmanager
-import io
+from multiprocessing import Pool, cpu_count, current_process
 import RCWall_Model_SFI as rcmodel
 from RCWall_Parameters_Range import parameter_ranges, loading_ranges
-from functions import generate_cyclic_loading_linear, generate_cyclic_loading_exponential
+from utils.functions import generate_cyclic_loading_linear, generate_cyclic_loading_exponential
 
 
 # Define SEQUENCE_LENGTH as a global constant

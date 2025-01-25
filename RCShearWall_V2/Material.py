@@ -1,10 +1,5 @@
-import math
-import opsvis as opsv
 import openseespy.opensees as ops
-import numpy as np
-import matplotlib.pyplot as plt
-from Units import *
-from functions import *
+from RCShearWall_V2.utils.functions import *
 
 
 def generate_cyclic_load(duration=8, sampling_rate=100, max_displacement=3):

@@ -1,15 +1,10 @@
-import numpy as np
-import time
-import matplotlib.pyplot as plt
-import openseespy.opensees as ops
-from functions import *
+from RCShearWall_V2.utils.functions import *
 
 # import RCWall_Model as rcmodel
 # import RCWall_Model_Simple as rcmodel
 # import RCWall_Model_Shell as rcmodel
 import RCWall_Model_SFI as rcmodel
-import sys
-import os
+
 
 # Redirect stderr to suppress error messages
 # sys.stderr = open(os.devnull, 'w')

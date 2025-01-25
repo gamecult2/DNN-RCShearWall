@@ -1,8 +1,4 @@
-import numpy as np
-from functions import *
-import random
-import math
-import csv
+from RCShearWall_V2.utils.functions import *
 
 # ***************************************************************************************************
 #           DEFINE PARAMETER RANGES

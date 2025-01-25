@@ -1,10 +1,8 @@
-import time
 import openseespy.opensees as ops
 # import vfo.vfo as vfo
 # import opsvis as opsv
-from functions import *
-import os
-import sys
+from RCShearWall_V2.utils.functions import *
+
 
 # Redirect stderr to suppress error messages
 # sys.stderr = open(os.devnull, 'w')
