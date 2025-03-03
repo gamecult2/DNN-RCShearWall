@@ -99,20 +99,32 @@ def denormalize(data, scaler=None, scaler_filename=None, sequence=False):
 
 # =================================================================================================================================================================
 
-def load_data(data_size=100, sequence_length=500, input_parameters=17, data_folder="RCWall_Data/ProcessedData/FullData", normalize_data=True, verbose=True):
+def load_data(data_size=100, sequence_length=500, input_parameters=17, loading_type="full", data_folder="RCWall_Data/ProcessedData/FullData", normalize_data=True, verbose=True):
     # Define data and scaler folders
     data_folder = Path(data_folder)
     scaler_folder = data_folder / "Scaler"
     scaler_folder.mkdir(parents=True, exist_ok=True)
 
     # Read input and output data from Parquet files
-    # InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=np.float32)
-    # InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
-    # OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
-    # Read input and output data from Parquet files, starting from the bottom
-    InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[-data_size:, :input_parameters].to_numpy(dtype=np.float32)
-    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[-data_size:, :sequence_length].to_numpy(dtype=np.float32)
-    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[-data_size:, :sequence_length].to_numpy(dtype=np.float32)
+    InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=np.float32)
+    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
+    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
+    # Read InputParameters first to create appropriate mask
+    input_params_df = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size]
+
+    # Create mask based on loading type
+    if loading_type == "cyclic":
+        mask = input_params_df.iloc[:, -1] == 0
+    elif loading_type == "monotonic":
+        mask = input_params_df.iloc[:, -1] == 1
+    else:  # full
+        mask = pd.Series([True] * len(input_params_df))
+
+    # Load and filter data
+    InParams = input_params_df[mask].iloc[:, :input_parameters].to_numpy(dtype=np.float32)
+    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size][mask].iloc[:, :sequence_length].to_numpy(dtype=np.float32)
+    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size][mask].iloc[:, :sequence_length].to_numpy(dtype=np.float32)
+
     if verbose:
         print(f"\nDataset shape and type:")
         print("  Parameters    : Shape =", InParams.shape, " , Type =", InParams.dtype)
@@ -157,87 +169,88 @@ def load_data_crack(data_size=100, sequence_length=500, input_parameters=17, cra
     scaler_folder.mkdir(parents=True, exist_ok=True)  # Create folder if it doesn't exist
 
     # Read input and output data from Parquet files
-    InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=np.float32)
-    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
-    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
-    InDisp = np.array([[row.min(), row.max()] for row in InDisp])
-    OutShear = np.array([[row.min(), row.max()] for row in OutShear])
-    # New outputs for a1, c1, a2, c2
-    Outa1 = pd.read_parquet(data_folder / "a1.parquet").iloc[:data_size, :crack_length].replace(10, 0).to_numpy(dtype=np.float32)
-    Outc1 = pd.read_parquet(data_folder / "c1.parquet").iloc[:data_size, :crack_length].to_numpy(dtype=np.float32)
-    Outa2 = pd.read_parquet(data_folder / "a2.parquet").iloc[:data_size, :crack_length].replace(10, 0).to_numpy(dtype=np.float32)
-    Outc2 = pd.read_parquet(data_folder / "c2.parquet").iloc[:data_size, :crack_length].to_numpy(dtype=np.float32)
+    # InParams = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size, :input_parameters].to_numpy(dtype=np.float32)
+    # InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
+    # OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size, :sequence_length].to_numpy(dtype=np.float32)
+    # # New outputs for a1, c1, a2, c2
+    # Outa1 = pd.read_parquet(data_folder / "a1.parquet").iloc[:data_size, :crack_length].replace(10, 0).to_numpy(dtype=np.float32)
+    # Outc1 = pd.read_parquet(data_folder / "c1.parquet").iloc[:data_size, :crack_length].to_numpy(dtype=np.float32)
+    # Outa2 = pd.read_parquet(data_folder / "a2.parquet").iloc[:data_size, :crack_length].replace(10, 0).to_numpy(dtype=np.float32)
+    # Outc2 = pd.read_parquet(data_folder / "c2.parquet").iloc[:data_size, :crack_length].to_numpy(dtype=np.float32)
 
+    # First read InputParameters and create a mask for rows where last column is 0
+    InputParameters = pd.read_parquet(data_folder / "InputParameters.parquet").iloc[:data_size]
+    mask = InputParameters.iloc[:, -1] == 0  # Create boolean mask for last column == 0
+
+    # Apply the mask when reading each file
+    InParams = InputParameters[mask].iloc[:, :input_parameters].to_numpy(dtype=np.float32)
+    InDisp = pd.read_parquet(data_folder / "InputDisplacement.parquet").iloc[:data_size][mask].iloc[:, :sequence_length].to_numpy(dtype=np.float32)
+    OutShear = pd.read_parquet(data_folder / "OutputShear.parquet").iloc[:data_size][mask].iloc[:, :sequence_length].to_numpy(dtype=np.float32)
+
+    # Apply the same mask to the crack-related outputs
+    Outa1 = pd.read_parquet(data_folder / "a1.parquet").iloc[:data_size][mask].iloc[:, :crack_length].replace(10, 0).to_numpy(dtype=np.float32)
+    Outc1 = pd.read_parquet(data_folder / "c1.parquet").iloc[:data_size][mask].iloc[:, :crack_length].to_numpy(dtype=np.float32)
+    Outa2 = pd.read_parquet(data_folder / "a2.parquet").iloc[:data_size][mask].iloc[:, :crack_length].replace(10, 0).to_numpy(dtype=np.float32)
+    Outc2 = pd.read_parquet(data_folder / "c2.parquet").iloc[:data_size][mask].iloc[:, :crack_length].to_numpy(dtype=np.float32)
     if verbose:
         print(f"\nDataset shape:")
-        print("  Parameters    :", InParams.shape)
-        print("  Displacement  :", InDisp.shape)
-        print("  Lateral Load  :", OutShear.shape)
-        print("  a1            :", Outa1.shape)
-        print("  c1            :", Outc1.shape)
-        print("  a2            :", Outa2.shape)
-        print("  c2            :", Outc2.shape)
+        print("  Parameters   :", InParams.shape)
+        print("  Displacement :", InDisp.shape)
+        print("  Lateral Load :", OutShear.shape)
+        print("  a1           :", Outa1.shape)
+        print("  c1           :", Outc1.shape)
+        print("  a2           :", Outa2.shape)
+        print("  c2           :", Outc2.shape)
 
     if normalize_data:
-        # Normalize input parameters
         NormInParams, param_scaler = normalize(InParams,
                                                 sequence=False,
                                                 range=(0, 1),
                                                 scaling_strategy='robust',
                                                 fit=True,
-                                                save_scaler_path=data_folder / "Scaler/param_scaler.joblib"
-                                                )
+                                                save_scaler_path=data_folder / "Scaler/param_scaler.joblib")
 
-        # Normalize input displacement
         NormInDisp, disp_scaler = normalize(InDisp,
                                              sequence=True,
                                              range=(-1, 1),
                                              scaling_strategy='robust',
                                              fit=True,
-                                             save_scaler_path=data_folder / "Scaler/disp_scaler.joblib"
-                                             )
+                                             save_scaler_path=data_folder / "Scaler/disp_scaler.joblib")
 
-        # Normalize output shear
         NormOutShear, shear_scaler = normalize(OutShear,
                                                 sequence=True,
                                                 range=(-1, 1),
                                                 scaling_strategy='robust',
                                                 fit=True,
-                                                save_scaler_path=data_folder / "Scaler/shear_scaler.joblib"
-                                                )
+                                                save_scaler_path=data_folder / "Scaler/shear_scaler.joblib")
 
-        # Normalize new outputs
         NormOuta1, outa1_scaler = normalize(Outa1,
                                              sequence=True,
                                              range=(-1, 1),
                                              scaling_strategy='robust',
                                              fit=True,
-                                             save_scaler_path=data_folder / "Scaler/outa1_scaler.joblib"
-                                             )
+                                             save_scaler_path=data_folder / "Scaler/outa1_scaler.joblib")
 
         NormOutc1, outc1_scaler = normalize(Outc1,
                                              sequence=True,
                                              range=(-1, 1),
                                              scaling_strategy='robust',
                                              fit=True,
-                                             save_scaler_path=data_folder / "Scaler/outc1_scaler.joblib"
-                                             )
+                                             save_scaler_path=data_folder / "Scaler/outc1_scaler.joblib")
 
         NormOuta2, outa2_scaler = normalize(Outa2,
                                              sequence=True,
                                              range=(-1, 1),
                                              scaling_strategy='robust',
                                              fit=True,
-                                             save_scaler_path=data_folder / "Scaler/outa2_scaler.joblib"
-                                             )
+                                             save_scaler_path=data_folder / "Scaler/outa2_scaler.joblib")
 
         NormOutc2, outc2_scaler = normalize(Outc2,
                                              sequence=True,
                                              range=(-1, 1),
                                              scaling_strategy='robust',
                                              fit=True,
-                                             save_scaler_path=data_folder / "Scaler/outc2_scaler.joblib"
-                                             )
+                                             save_scaler_path=data_folder / "Scaler/outc2_scaler.joblib")
 
         # Optional: save normalized data
         save_normalized_data = False

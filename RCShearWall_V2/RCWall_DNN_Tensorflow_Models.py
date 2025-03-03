@@ -347,49 +347,25 @@ class LSTM_AE:
 
 
 # Define hyperparameters
-DATA_SIZE = 30000
+DATA_FOLDER = "RCWall_Data/Run_Full2/FullData"
+DATA_SIZE = 50000
 SEQUENCE_LENGTH = 500
 DISPLACEMENT_FEATURES = 1
 PARAMETERS_FEATURES = 17
-ANALYSIS = 'CYCLIC'
-BATCH_SIZE = 32
-LEARNING_RATE = 0.001
-EPOCHS = 100
-PATIENCE = 15
-TEST_SIZE = 0.2
-VAL_SIZE = 0.2
-D_MODEL = 128
-NUM_HEADS = 8
-NUM_ENCODER_LAYERS = 2
-NUM_DECODER_LAYERS = 2
-DFF = 256
-DROPOUT_RATE = 0.1
-
-# Define hyperparameters
-DATA_FOLDER = "RCWall_Data/Run_Full/FullData"
-DATA_SIZE = 200000
-SEQUENCE_LENGTH = 500
-DISPLACEMENT_FEATURES = 1
-PARAMETERS_FEATURES = 17
-TEST_SIZE = 0.10
-VAL_SIZE = 0.15
+TEST_SIZE = 0.20
+VAL_SIZE = 0.20
 BATCH_SIZE = 32
 LEARNING_RATE = 0.0001
-EPOCHS = 20
-PATIENCE = 5
+EPOCHS = 15
+PATIENCE = 10
 
 # Load and preprocess data
-(InParams, InDisp, OutShear), (param_scaler, disp_scaler, shear_scaler) = load_data(DATA_SIZE,
-                                                                                    SEQUENCE_LENGTH,
-                                                                                    PARAMETERS_FEATURES,
-                                                                                    DATA_FOLDER,
-                                                                                    True,
-                                                                                    True)
+data, normalizer = load_data(DATA_SIZE, SEQUENCE_LENGTH, PARAMETERS_FEATURES, DATA_FOLDER, True, True)
 
-# ---------------------- Split Data -------------------------------
-# Split data into training, validation, and testing sets (X: Inputs & Y: Outputs)
+# Split the data into train, test, and validation sets
 X_param_train, X_param_test, X_disp_train, X_disp_test, Y_shear_train, Y_shear_test = train_test_split(
-    InParams, InDisp, OutShear, test_size=TEST_SIZE, random_state=42)
+    data, test_size=TEST_SIZE, random_state=42)
+
 
 # ---------------------- Build the model ------------------------------------------
 # model = LSTM_AE(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).model

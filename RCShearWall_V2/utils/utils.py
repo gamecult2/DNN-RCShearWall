@@ -13,9 +13,12 @@ def plot_metric(train_data, val_data, best_epoch, test_data, ylabel, title, mode
     plt.plot(epochs, val_data, color='red', label=f"Validation {ylabel}", linewidth=2)
     if best_epoch:
         plt.scatter(best_epoch, val_data[best_epoch - 1], color='red', s=100, label="Best Model")
-    # Add test loss as a triangle at the last epoch
-    if test_data is not None:
-        plt.scatter(len(epochs), test_data, color='green', marker='^', s=100, label=f"Test {ylabel}")
+        # Add test loss as a triangle at the last epoch
+        if test_data is not None:
+            # Move tensor to CPU and convert to NumPy array if it's a CUDA tensor
+            if hasattr(test_data, 'is_cuda') and test_data.is_cuda:
+                test_data = test_data.cpu().numpy()
+            plt.scatter(best_epoch, test_data, color='green', marker='^', s=100, label=f"Test {ylabel}")
 
     plt.xlabel("Epochs", fontname='Times New Roman', fontsize=14)
     plt.ylabel(ylabel, fontname='Times New Roman', fontsize=14)
@@ -42,7 +45,7 @@ def save_plots(test_index, predicted_shear, real_shear, new_input_displacement, 
     os.makedirs(output_dir, exist_ok=True)
 
     for i in range(test_index):
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 6))
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(30, 6))
 
         # Time Series Plot
         ax1.plot(predicted_shear[i], label=f'Predicted Shear - {i + 1}')
@@ -64,10 +67,19 @@ def save_plots(test_index, predicted_shear, real_shear, new_input_displacement, 
         ax2.legend()
         ax2.grid()
 
+        # Displacement Time Series Plot
+        ax3.plot(new_input_displacement[i], label=f'Displacement - {i + 1}')
+        ax3.set_xlabel('Time Step', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+        ax3.set_ylabel('Displacement', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+        ax3.set_title('Displacement Time Series', {'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
+        ax3.tick_params(axis='both', labelsize=14, labelcolor='black', colors='black')
+        ax3.legend()
+        ax3.grid()
+
         plt.tight_layout()
         if save_fig:
             fig.savefig(os.path.join(output_dir, f'figure_{i + 1}.png'))
-        # plt.show()
+        plt.show()
         plt.close(fig)  # Close the figure to free up memory
 
 
@@ -89,29 +101,68 @@ def save_training_summary(model, file_name, hyperparameters, metrics, best_epoch
 
         # Save training and validation metrics
         f.write("=== Training and Validation Metrics ===\n")
-        f.write("| Epoch | Train Loss | Train R2 | Val Loss | Val R2  |\n")
-        f.write("|-------|------------|----------|----------|---------|\n")
+        f.write("| Epoch | Train Loss | Train R2 | Train MAE | Train MSE | Train MAPE | Val Loss | Val R2  | Val MAE  | Val MSE  | Val MAPE |\n")
+        f.write("|-------|------------|----------|-----------|-----------|------------|----------|---------|----------|----------|----------|\n")
         for epoch in range(len(metrics["train_losses"])):
-            f.write(f"| {epoch + 1:^5} | {metrics['train_losses'][epoch]:^10.4f} | {metrics['train_r2_scores'][epoch]:^8.4f} | {metrics['val_losses'][epoch]:^8.4f} | {metrics['val_r2_scores'][epoch]:^7.4f} |\n")
+            f.write(
+                f"| {epoch + 1:^5} | {metrics['train_losses'][epoch]:^10.4f} | {metrics['train_r2_scores'][epoch]:^8.4f} | "
+                f"{metrics['train_mae_scores'][epoch]:^9.4f} | {metrics['train_mse_scores'][epoch]:^9.4f} | "
+                f"{metrics['train_mape_scores'][epoch]:^10.4f} | {metrics['val_losses'][epoch]:^8.4f} | "
+                f"{metrics['val_r2_scores'][epoch]:^7.4f} | {metrics['val_mae_scores'][epoch]:^8.4f} | "
+                f"{metrics['val_mse_scores'][epoch]:^8.4f} | {metrics['val_mape_scores'][epoch]:^8.4f} |\n"
+            )
         f.write(f"\nBest Epoch: {best_epoch}\n\n")
 
         # Save test metrics
         f.write("=== Test Metrics ===\n")
         f.write(f"Test Loss: {test_metrics['test_loss']:.4f}\n")
-        f.write(f"Test R2: {test_metrics['test_r2']:.4f}\n\n")
+        f.write(f"Test R2: {test_metrics['test_r2']:.4f}\n")
+        f.write(f"Test MAE: {test_metrics['test_mae']:.4f}\n")
+        f.write(f"Test MSE: {test_metrics['test_mse']:.4f}\n")
+        f.write(f"Test MAPE: {test_metrics['test_mape']:.4f}\n\n")
 
         # Save best validation metrics and corresponding training metrics
         best_epoch_index = best_epoch - 1
         f.write("=== Best Validation Metrics ===\n")
         f.write(f"Best Validation Loss: {metrics['val_losses'][best_epoch_index]:.4f}\n")
-        f.write(f"Best Validation R²: {metrics['val_r2_scores'][best_epoch_index]:.4f}\n\n")
+        f.write(f"Best Validation R²: {metrics['val_r2_scores'][best_epoch_index]:.4f}\n")
+        f.write(f"Best Validation MAE: {metrics['val_mae_scores'][best_epoch_index]:.4f}\n")
+        f.write(f"Best Validation MSE: {metrics['val_mse_scores'][best_epoch_index]:.4f}\n")
+        f.write(f"Best Validation MAPE: {metrics['val_mape_scores'][best_epoch_index]:.4f}\n\n")
 
         f.write("=== Training Metrics at Best Validation Epoch ===\n")
         f.write(f"Training Loss: {metrics['train_losses'][best_epoch_index]:.4f}\n")
-        f.write(f"Training R²: {metrics['train_r2_scores'][best_epoch_index]:.4f}\n\n")
+        f.write(f"Training R²: {metrics['train_r2_scores'][best_epoch_index]:.4f}\n")
+        f.write(f"Training MAE: {metrics['train_mae_scores'][best_epoch_index]:.4f}\n")
+        f.write(f"Training MSE: {metrics['train_mse_scores'][best_epoch_index]:.4f}\n")
+        f.write(f"Training MAPE: {metrics['train_mape_scores'][best_epoch_index]:.4f}\n\n")
 
         # Save model summary
         f.write("=== Model Summary ===\n")
         f.write(f"Total Parameters: {total_params:,}\n")
 
     print(f"Model training summary saved to '{file_path}'")
+# Function to save plots
+def save_plots_paper(test_index, predicted_shear, real_shear, new_input_displacement, model_name, save_fig=True):
+    parent_dir = "PaperValidation"
+    output_dir = os.path.join(parent_dir, model_name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    for i in range(test_index):
+        fig, ax = plt.subplots(figsize=(5, 6))
+
+        # Hysteresis Loop Plot
+        ax.plot(new_input_displacement[i], predicted_shear[i], label=f'Predicted Loop - {i + 1}')
+        ax.plot(new_input_displacement[i], real_shear[i], label=f'Real Loop - {i + 1}')
+        ax.set_xlabel('Displacement', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+        ax.set_ylabel('Shear Load', {'fontname': 'Cambria', 'fontstyle': 'italic', 'size': 14})
+        ax.set_title('Predicted Hysteresis', {'fontname': 'Cambria', 'fontstyle': 'normal', 'size': 16})
+        ax.tick_params(axis='both', labelsize=14, labelcolor='black', colors='black')
+        ax.legend()
+        ax.grid()
+
+        plt.tight_layout()
+        if save_fig:
+            fig.savefig(os.path.join(output_dir, f'figure_{i + 1}.png'))
+        plt.show()
+        plt.close(fig)  # Close the figure to free up memory

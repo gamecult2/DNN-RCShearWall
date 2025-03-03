@@ -1,4 +1,4 @@
-from RCShearWall_V2.utils.functions import *
+from utils.functions import *
 
 # import RCWall_Model as rcmodel
 # import RCWall_Model_Simple as rcmodel
@@ -1616,7 +1616,6 @@ def Tao_LW():
     return tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, displacement_step
 
 
-
 # ------- Select Model for Validation -----------------------------------------------------------------------------------------------
 validation_model = Thomsen_and_Wallace_RW2()
 # validation_model = Thomsen_and_Wallace_RW1()
@@ -1667,7 +1666,7 @@ validation_model = Oesterle_B7()
 tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, displacement_step = validation_model
 
 #  ---------------- RUN CYCLIC ANALYSIS ---------------------------------------------------------------
-eleH, eleL = 14, 12
+eleH, eleL = 22, 16
 rcmodel.build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, eleH, eleL, printProgression=True)
 rcmodel.run_gravity(printProgression=False)
 x, y, c1, a1, c2, a2 = rcmodel.run_analysis(displacement_step, analysis='cyclic', printProgression=True, enablePlotting=True)

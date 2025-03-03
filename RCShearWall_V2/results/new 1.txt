@@ -1,0 +1,49 @@
+L1
+256
+Test Loss: 0.0156
+Test R2: 0.9849
+Test MAE: 0.0869
+Test MSE: 0.0357
+Test MAPE: 18.9826
+L1
+128
+Test Loss: 0.0213
+Test R2: 0.9793
+Test MAE: 0.1119
+Test MSE: 0.0484
+Test MAPE: 26.5109
+L1
+64
+Test Loss: 0.0304
+Test R2: 0.9704
+Test MAE: 0.1377
+Test MSE: 0.0695
+Test MAPE: 28.5386
+
+L2
+256
+
+L2
+128
+Test Loss: 0.0177
+Test R2: 0.9831
+Test MAE: 0.0982
+Test MSE: 0.0399
+Test MAPE: 22.6234
+
+L2
+64
+Test Loss: 0.0235
+Test R2: 0.9774
+Test MAE: 0.1165
+Test MSE: 0.0528
+Test MAPE: 24.2343
+
+L3
+256
+
+L3
+128
+
+L3
+64

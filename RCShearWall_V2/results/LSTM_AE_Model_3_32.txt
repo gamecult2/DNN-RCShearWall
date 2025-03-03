@@ -1,0 +1,52 @@
+=== Model Training Summary ===
+
+=== Hyperparameters ===
+DATA_FOLDER: RCWall_Data/Run_Full2/FullData
+DATA_SIZE: 100000
+SEQUENCE_LENGTH: 500
+DISPLACEMENT_FEATURES: 1
+PARAMETERS_FEATURES: 17
+TEST_SIZE: 0.1
+VAL_SIZE: 0.2
+BATCH_SIZE: 32
+LEARNING_RATE: 0.0001
+EPOCHS: 10
+PATIENCE: 8
+Model Type: LSTM_AE_Model_3
+
+=== Training and Validation Metrics ===
+| Epoch | Train Loss | Train R2 | Train MAE | Train MSE | Val Loss | Val R2  | Val MAE  | Val MSE  |
+|-------|------------|----------|-----------|-----------|----------|---------|----------|----------|
+|   1   |   0.1854   |  0.8815  |  0.2282   |  0.1854   |  0.0516  | 0.9678  |  0.1229  |  0.0516  |
+|   2   |   0.0618   |  0.9605  |  0.1405   |  0.0618   |  0.0299  | 0.9805  |  0.0962  |  0.0299  |
+|   3   |   0.0494   |  0.9685  |  0.1251   |  0.0494   |  0.0285  | 0.9816  |  0.0881  |  0.0285  |
+|   4   |   0.0417   |  0.9734  |  0.1148   |  0.0417   |  0.0241  | 0.9844  |  0.0841  |  0.0241  |
+|   5   |   0.0377   |  0.9760  |  0.1085   |  0.0377   |  0.0180  | 0.9883  |  0.0640  |  0.0180  |
+|   6   |   0.0344   |  0.9780  |  0.1036   |  0.0344   |  0.0180  | 0.9884  |  0.0656  |  0.0180  |
+|   7   |   0.0317   |  0.9798  |  0.0991   |  0.0317   |  0.0160  | 0.9896  |  0.0615  |  0.0160  |
+|   8   |   0.0300   |  0.9810  |  0.0959   |  0.0300   |  0.0200  | 0.9868  |  0.0798  |  0.0200  |
+|   9   |   0.0284   |  0.9818  |  0.0933   |  0.0284   |  0.0160  | 0.9898  |  0.0591  |  0.0160  |
+|  10   |   0.0268   |  0.9828  |  0.0909   |  0.0268   |  0.0147  | 0.9905  |  0.0563  |  0.0147  |
+
+Best Epoch: 10
+
+=== Test Metrics ===
+Test Loss: 0.0137
+Test R2: 0.9911
+Test MAE: 0.0557
+Test MSE: 0.0137
+
+=== Best Validation Metrics ===
+Best Validation Loss: 0.0147
+Best Validation R²: 0.9905
+Best Validation MAE: 0.0563
+Best Validation MSE: 0.0147
+
+=== Training Metrics at Best Validation Epoch ===
+Training Loss: 0.0268
+Training R²: 0.9828
+Training MAE: 0.0909
+Training MSE: 0.0268
+
+=== Model Summary ===
+Total Parameters: 5,638,641

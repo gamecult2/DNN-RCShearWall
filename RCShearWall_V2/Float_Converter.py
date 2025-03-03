@@ -4,11 +4,11 @@ import os
 import torch
 
 # Define the input and output file paths
-input_file = r"K:\RCShearWall_V2\RCWall_Data\original\Run_Final_Full\FullData\Full_Data.csv"
-output_file = r"K:\RCShearWall_V2\RCWall_Data\original\Run_Final_Full\FullData\Full_Data_float16.csv"
+input_file = r"K:\RCShearWall_V2\RCWall_Data2\original\Run_Final_Full\CyclicData\Cyclic_Data_float64.csv"
+output_file = r"K:\RCShearWall_V2\RCWall_Data2\original\Run_Final_Full\CyclicData\Cyclic_Data_float32.csv"
 
 # Set the chunk size
-chunk_size = 40000  # Adjust this as necessary
+chunk_size = 20000  # Adjust this as necessary
 
 # Define column ranges based on row position within each batch
 column_ranges = {
@@ -58,7 +58,7 @@ with open(input_file, 'r') as f_in, open(output_file, 'w', newline='') as f_out:
                 # Convert the row elements to float32
                 # row = [np.float16(val) for val in row]
                 # Convert to bfloat16 using PyTorch
-                row = [torch.tensor(float(val)).to(torch.bfloat16).item() for val in row]
+                row = [torch.tensor(float(val)).to(torch.float32).item() for val in row]
 
                 # Write the converted row to the output file
                 writer.writerow(row)
@@ -79,7 +79,7 @@ with open(input_file, 'r') as f_in, open(output_file, 'w', newline='') as f_out:
             row = row[col_start:col_end]
 
             # Convert to bfloat16 using PyTorch
-            row = [torch.tensor(float(val)).to(torch.bfloat16).item() for val in row]
+            row = [torch.tensor(float(val)).to(torch.float32).item() for val in row]
 
             # Write the converted row to the output file
             writer.writerow(row)

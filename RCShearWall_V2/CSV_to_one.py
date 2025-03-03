@@ -10,14 +10,14 @@ choice = input("Enter your choice (1, 2, or 3): ").strip()
 
 # Define folder and output file paths based on the user's choice  ---   Run_Full  -----    Run_1    -----   Run_2
 if choice == "1":
-    folder = r"K:\RCShearWall_V2\RCWall_Data\Run_Final_Full\FullData"
-    output_file = r"K:\RCShearWall_V2\RCWall_Data\original\Run_Final_Full\FullData\Full_Data.csv"
+    folder = r"K:\RCShearWall_V2\RCWall_Data\Run_Last\FullData"
+    output_file = r"K:\RCShearWall_V2\RCWall_Data\original\Run_Last\FullData\Full_Data.csv"
 elif choice == "2":
-    folder = r"K:\RCShearWall_V2\RCWall_Data\Run_Final_Full\CyclicData"
-    output_file = r"K:\RCShearWall_V2\RCWall_Data\original\Run_Final_Full\CyclicData\Cyclic_Data.csv"
+    folder = r"K:\RCShearWall_V2\RCWall_Data\Run_Last\CyclicData"
+    output_file = r"K:\RCShearWall_V2\RCWall_Data\original\Run_Last\CyclicData\Cyclic_Data.csv"
 elif choice == "3":
-    folder = r"K:\RCShearWall_V2\RCWall_Data\Run_Final_Full\MonotonicData"
-    output_file = r"K:\RCShearWall_V2\RCWall_Data\original\Run_Final_Full\MonotonicData\Monotonic_Data.csv"
+    folder = r"K:\RCShearWall_V2\RCWall_Data\Run_Last\MonotonicData"
+    output_file = r"K:\RCShearWall_V2\RCWall_Data\original\Run_Last\MonotonicData\Monotonic_Data.csv"
 else:
     print("Invalid choice. Exiting the program.")
     exit()

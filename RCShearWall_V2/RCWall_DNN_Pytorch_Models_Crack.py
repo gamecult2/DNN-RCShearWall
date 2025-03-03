@@ -17,7 +17,19 @@ from scipy.stats import pearsonr
 
 from RCWall_Data_Processing import *
 from utils.earlystopping import EarlyStopping
+from utils.utils import *
 from Models_Crack import *
+
+
+# Define MAE and MSE functions
+def mae_score_torch(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
+    y_true, y_pred = y_true.float(), y_pred.float()
+    return torch.mean(torch.abs(y_true - y_pred))
+
+
+def mse_score_torch(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
+    y_true, y_pred = y_true.float(), y_pred.float()
+    return torch.mean((y_true - y_pred) ** 2)
 
 
 def r2_score_torch(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
@@ -43,37 +55,40 @@ if device.type == "cuda":
     print(f"CUDA version: {torch.version.cuda}")
 
 # Define hyperparameters
-DATA_FOLDER = "RCWall_Data/Run_Final_Full/FullData"
-DATA_SIZE = 100000
+DATA_FOLDER = "RCWall_Data/Run_Full2/FullData"
+DATA_SIZE = 500000
 SEQUENCE_LENGTH = 500
-DISPLACEMENT_FEATURES = 2
-SHEAR_FEATURES = 2
+DISPLACEMENT_FEATURES = 500
+SHEAR_FEATURES = 500
 PARAMETERS_FEATURES = 17
 CRACK_LENGTH = 168
-TEST_SIZE = 0.01
-VAL_SIZE = 0.10
+TEST_SIZE = 0.15
+VAL_SIZE = 0.15
 BATCH_SIZE = 32
 LEARNING_RATE = 0.001
-EPOCHS = 15
-PATIENCE = 5
+EPOCHS = 150
+PATIENCE = 20
 
 # Load and preprocess data
 data, normalizer = load_data_crack(DATA_SIZE, SEQUENCE_LENGTH, PARAMETERS_FEATURES, CRACK_LENGTH, DATA_FOLDER, True, True)
 
 # Split and convert data
-train_splits, val_splits, test_splits = split_and_convert(data, TEST_SIZE, VAL_SIZE, 44, device, True)
+train_splits, val_splits, test_splits = split_and_convert(data, TEST_SIZE, VAL_SIZE, 34, device, True)
 
 # Create DataLoaders
 train_loader = DataLoader(TensorDataset(*train_splits), BATCH_SIZE, shuffle=True)
-val_loader = DataLoader(TensorDataset(*val_splits), BATCH_SIZE, shuffle=True)
-test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=True)
+val_loader = DataLoader(TensorDataset(*val_splits), BATCH_SIZE, shuffle=False)
+test_loader = DataLoader(TensorDataset(*test_splits), BATCH_SIZE, shuffle=False)
 
 # Initialize model, loss, and optimizer
 # model = CrackTimeSeriesTransformer2().to(device)
-model = CrackDetectionModel3(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SHEAR_FEATURES, CRACK_LENGTH, SEQUENCE_LENGTH).to(device)
+# model = CrackDetectionModel3(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SHEAR_FEATURES, CRACK_LENGTH, SEQUENCE_LENGTH).to(device)
 # model = EnhancedTimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = InformerShearModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SEQUENCE_LENGTH).to(device)
 # model = SpatialAwareCrackTimeSeriesTransformer(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SHEAR_FEATURES, SEQUENCE_LENGTH).to(device)
+# model = CrackPatternCNN().to(device)
+model = CrackDetectionModel(PARAMETERS_FEATURES, DISPLACEMENT_FEATURES, SHEAR_FEATURES, CRACK_LENGTH).to(device)
+# model = CrackPatternTransformer().to(device)
 # model = torch.compile(model)
 
 # Visualize the computation graph
@@ -82,24 +97,26 @@ torchinfo.summary(model)
 # Initialize training component
 scaler = GradScaler('cuda')
 optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=1, min_lr=1e-6)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.8, patience=5, min_lr=1e-5)
 criterion = nn.SmoothL1Loss().to(device)  # nn.MSELoss().to(device)
 earlystop = EarlyStopping(PATIENCE, checkpoint_dir='checkpoints', model_name=f"{type(model).__name__}", save_full_model=True, verbose=False)
 
 # Initialize tracking variables
-train_losses, val_losses, train_r2_scores, val_r2_scores = [], [], [], []
-best_val_loss = float("inf")  # Track the best validation loss
-best_epoch = 0  # Track the epoch number corresponding to the best validation loss
+train_losses, val_losses = [], []
+train_r2_scores, val_r2_scores = [], []
+train_mae_scores, val_mae_scores = [], []
+train_mse_scores, val_mse_scores = [], []
+best_val_loss = float("inf")
+best_epoch = 0
 
 # ================ Training phase ================
 for epoch in range(EPOCHS):
     model.train()
-    epoch_train_loss, epoch_train_r2 = 0.0, 0.0
+    epoch_train_loss, epoch_train_r2, epoch_train_mae, epoch_train_mse = 0.0, 0.0, 0.0, 0.0
     batch_count = 0
 
     train_loader_tqdm = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{EPOCHS} [Train]",
-                             bar_format=(
-                                 "{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | LR: {postfix[0][lr]:.6f} | Remaining: {remaining} | Loss a1: {postfix[0][r2_a1]:.4f} | Loss c1: {postfix[0][r2_c1]:.4f} | Loss a2: {postfix[0][r2_a2]:.4f} | Loss c2: {postfix[0][r2_c2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
+                             bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | LR: {postfix[0][lr]:.6f} | Remaining: {remaining} | R² a1: {postfix[0][r2_a1]:.4f} | R² c1: {postfix[0][r2_c1]:.4f} | R² a2: {postfix[0][r2_a2]:.4f} | R² c2: {postfix[0][r2_c2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
                              postfix=[{"lr": 0.0, "r2_a1": 0.0, "r2_c1": 0.0, "r2_a2": 0.0, "r2_c2": 0.0, "avg_r2": 0.0}], leave=False)
 
     for batch_param, batch_disp, batch_shear, batch_a1, batch_c1, batch_a2, batch_c2 in train_loader_tqdm:
@@ -132,6 +149,20 @@ for epoch in range(EPOCHS):
 
             r2 = (r2_a1 + r2_c1 + r2_a2 + r2_c2) / 4
 
+            # Calculate MAE and MSE using the defined functions
+            mae_a1 = mae_score_torch(batch_a1, a1_pred)
+            mae_c1 = mae_score_torch(batch_c1, c1_pred)
+            mae_a2 = mae_score_torch(batch_a2, a2_pred)
+            mae_c2 = mae_score_torch(batch_c2, c2_pred)
+
+            mse_a1 = mse_score_torch(batch_a1, a1_pred)
+            mse_c1 = mse_score_torch(batch_c1, c1_pred)
+            mse_a2 = mse_score_torch(batch_a2, a2_pred)
+            mse_c2 = mse_score_torch(batch_c2, c2_pred)
+
+            mae = (mae_a1 + mae_c1 + mae_a2 + mae_c2) / 4
+            mse = (mse_a1 + mse_c1 + mse_a2 + mse_c2) / 4
+
         scaler.scale(loss).backward()
         scaler.unscale_(optimizer)
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -142,29 +173,35 @@ for epoch in range(EPOCHS):
         # Update epoch metrics
         epoch_train_loss += loss.item()
         epoch_train_r2 += r2.item()
+        epoch_train_mae += mae.item()
+        epoch_train_mse += mse.item()
 
         # Update progress bar with real-time batch metrics
-        train_loader_tqdm.postfix[0]["lr"] = scheduler.get_last_lr()[0]
-        train_loader_tqdm.postfix[0]["r2_a1"] = r2_a1
-        train_loader_tqdm.postfix[0]["r2_c1"] = r2_c1
-        train_loader_tqdm.postfix[0]["r2_a2"] = r2_a2
-        train_loader_tqdm.postfix[0]["r2_c2"] = r2_c2
-        train_loader_tqdm.postfix[0]["avg_r2"] = epoch_train_r2 / batch_count  # Running average
-        train_loader_tqdm.update(1)
+        train_loader_tqdm.postfix[0].update({
+            "lr": scheduler.get_last_lr()[0],
+            "r2_a1": r2_a1,
+            "r2_c1": r2_c1,
+            "r2_a2": r2_a2,
+            "r2_c2": r2_c2,
+            "avg_r2": epoch_train_r2 / batch_count  # Running average
+        })
 
-    # Calculate average training loss and R² for the epoch
+    # Calculate average training loss, R², MAE, and MSE for the epoch
     epoch_train_loss /= len(train_loader)
     epoch_train_r2 /= len(train_loader)
+    epoch_train_mae /= len(train_loader)
+    epoch_train_mse /= len(train_loader)
     train_losses.append(epoch_train_loss)
     train_r2_scores.append(epoch_train_r2)
+    train_mae_scores.append(epoch_train_mae)
+    train_mse_scores.append(epoch_train_mse)
 
     # ================ Validation phase ================
     model.eval()
-    val_loss, val_r2 = 0.0, 0.0
+    val_loss, val_r2, val_mae, val_mse = 0.0, 0.0, 0.0, 0.0
     batch_count = 0
 
-    val_loader_tqdm = tqdm(val_loader,
-                           desc=f"Epoch {epoch + 1}/{EPOCHS} [Val]",
+    val_loader_tqdm = tqdm(val_loader, desc=f"Epoch {epoch + 1}/{EPOCHS} [Val]",
                            bar_format=("{l_bar}{bar} | Processed: {n_fmt}/{total_fmt} | Remaining: {remaining} | Batch Loss: {postfix[0][batch_loss]:.4f} | Batch R²: {postfix[0][batch_r2]:.4f} | Avg R²: {postfix[0][avg_r2]:.4f}"),
                            postfix=[{"batch_loss": 0.0, "batch_r2": 0.0, "avg_r2": 0.0}], leave=False)
 
@@ -182,47 +219,69 @@ for epoch in range(EPOCHS):
             # Forward pass with all inputs
             a1_pred, c1_pred, a2_pred, c2_pred = model(batch_param, batch_disp, batch_shear)
 
-            # Compute loss for each output
-            batch_loss_a1 = criterion(a1_pred, batch_a1)
-            batch_loss_c1 = criterion(c1_pred, batch_c1)
-            batch_loss_a2 = criterion(a2_pred, batch_a2)
-            batch_loss_c2 = criterion(c2_pred, batch_c2)
+            # Compute validation loss and metrics
+            loss_a1 = criterion(a1_pred, batch_a1)
+            loss_c1 = criterion(c1_pred, batch_c1)
+            loss_a2 = criterion(a2_pred, batch_a2)
+            loss_c2 = criterion(c2_pred, batch_c2)
 
-            # Total loss (you can adjust weights if needed)
-            batch_loss = batch_loss_a1 + batch_loss_c1 + batch_loss_a2 + batch_loss_c2
+            val_batch_loss = loss_a1 + loss_c1 + loss_a2 + loss_c2
+            val_loss += val_batch_loss.item()
 
-            # Compute R² for each output
-            batch_r2_a1 = r2_score_torch(batch_a1, a1_pred)
-            batch_r2_c1 = r2_score_torch(batch_c1, c1_pred)
-            batch_r2_a2 = r2_score_torch(batch_a2, a2_pred)
-            batch_r2_c2 = r2_score_torch(batch_c2, c2_pred)
+            # R² calculations
+            r2_a1 = r2_score_torch(batch_a1, a1_pred).item()
+            r2_c1 = r2_score_torch(batch_c1, c1_pred).item()
+            r2_a2 = r2_score_torch(batch_a2, a2_pred).item()
+            r2_c2 = r2_score_torch(batch_c2, c2_pred).item()
+            current_batch_r2 = (r2_a1 + r2_c1 + r2_a2 + r2_c2) / 4
+            val_r2 += current_batch_r2
 
-            # Average R²
-            batch_r2 = (batch_r2_a1 + batch_r2_c1 + batch_r2_a2 + batch_r2_c2) / 4
+            # MAE calculations
+            mae_a1 = mae_score_torch(batch_a1, a1_pred).item()
+            mae_c1 = mae_score_torch(batch_c1, c1_pred).item()
+            mae_a2 = mae_score_torch(batch_a2, a2_pred).item()
+            mae_c2 = mae_score_torch(batch_c2, c2_pred).item()
+            current_batch_mae = (mae_a1 + mae_c1 + mae_a2 + mae_c2) / 4
+            val_mae += current_batch_mae
 
-            # Update validation metrics
-            val_loss += batch_loss.item()
-            val_r2 += batch_r2.item()
+            # MSE calculations
+            mse_a1 = mse_score_torch(batch_a1, a1_pred).item()
+            mse_c1 = mse_score_torch(batch_c1, c1_pred).item()
+            mse_a2 = mse_score_torch(batch_a2, a2_pred).item()
+            mse_c2 = mse_score_torch(batch_c2, c2_pred).item()
+            current_batch_mse = (mse_a1 + mse_c1 + mse_a2 + mse_c2) / 4
+            val_mse += current_batch_mse
 
-            # Update progress bar with real-time batch metrics
+            # Update progress bar with CURRENT BATCH metrics
+            val_loader_tqdm.postfix[0].update({
+                "batch_loss": val_batch_loss.item(),
+                "batch_r2": current_batch_r2,
+                "avg_r2": val_r2 / batch_count
+            })
 
-            val_loader_tqdm.postfix[0]["batch_loss"] = batch_loss.item()
-            val_loader_tqdm.postfix[0]["batch_r2"] = batch_r2
-            val_loader_tqdm.postfix[0]["avg_r2"] = val_r2 / batch_count  # Running average
-            val_loader_tqdm.update(1)
-
-    # Calculate average validation loss and R² for the epoch
+    # Calculate average validation loss, R², MAE, and MSE for the epoch
     val_loss /= len(val_loader)
     val_r2 /= len(val_loader)
+    val_mae /= len(val_loader)
+    val_mse /= len(val_loader)
     val_losses.append(val_loss)
     val_r2_scores.append(val_r2)
-
-    # Update learning rate
-    lr = scheduler.get_last_lr()[0]  # Assuming a single learning rate group
-    # scheduler.step(val_loss)
+    val_mae_scores.append(val_mae)
+    val_mse_scores.append(val_mse)
 
     # Print epoch summary
-    print(f'Epoch [{epoch + 1}/{EPOCHS}], Learning Rate: {lr}, Train Loss: {epoch_train_loss:.4f}, Train R²: {epoch_train_r2:.4f}, Val Loss: {val_loss:.4f}, Val R²: {val_r2:.4f}\n')
+    print(f'Epoch [{epoch + 1}/{EPOCHS}], '
+          f'Train Loss: {epoch_train_loss:.4f}, '
+          f'Train MAE: {epoch_train_mae:.4f}, '
+          f'Train MSE: {epoch_train_mse:.4f},'
+          f'Train R²: {epoch_train_r2:.4f}, '
+          f'Val Loss: {val_loss:.4f}, '
+          f'Val MAE: {val_mae:.4f}, '
+          f'Val MSE: {val_mse:.4f}, '
+          f'Val R²: {val_r2:.4f}\n')
+
+    # Update learning rate
+    scheduler.step(val_loss)
 
     # Early Stopping
     if earlystop(val_loss, model):
@@ -234,10 +293,18 @@ print(f"Best Epoch: {best_epoch}")
 
 # Final test evaluation
 model.eval()
-test_loss = test_r2 = 0
+test_loss, test_r2, test_mae, test_mse = 0.0, 0.0, 0.0, 0.0
 
 with torch.no_grad():
     for batch_param, batch_disp, batch_shear, batch_a1, batch_c1, batch_a2, batch_c2 in test_loader:
+        batch_param = batch_param.to(device, non_blocking=True)
+        batch_disp = batch_disp.to(device, non_blocking=True)
+        batch_shear = batch_shear.to(device, non_blocking=True)
+        batch_a1 = batch_a1.to(device, non_blocking=True)
+        batch_c1 = batch_c1.to(device, non_blocking=True)
+        batch_a2 = batch_a2.to(device, non_blocking=True)
+        batch_c2 = batch_c2.to(device, non_blocking=True)
+
         # Forward pass with all inputs
         a1_pred, c1_pred, a2_pred, c2_pred = model(batch_param, batch_disp, batch_shear)
 
@@ -251,42 +318,47 @@ with torch.no_grad():
         batch_test_loss = test_loss_a1 + test_loss_c1 + test_loss_a2 + test_loss_c2
         test_loss += batch_test_loss.item()
 
-        # Compute R² for each output
-        test_r2_a1 = r2_score(batch_a1.detach().cpu().numpy(), a1_pred.detach().cpu().numpy())
-        test_r2_c1 = r2_score(batch_c1.detach().cpu().numpy(), c1_pred.detach().cpu().numpy())
-        test_r2_a2 = r2_score(batch_a2.detach().cpu().numpy(), a2_pred.detach().cpu().numpy())
-        test_r2_c2 = r2_score(batch_c2.detach().cpu().numpy(), c2_pred.detach().cpu().numpy())
+        # Compute R² for each output using torch method
+        test_r2_a1 = r2_score_torch(batch_a1, a1_pred)
+        test_r2_c1 = r2_score_torch(batch_c1, c1_pred)
+        test_r2_a2 = r2_score_torch(batch_a2, a2_pred)
+        test_r2_c2 = r2_score_torch(batch_c2, c2_pred)
 
         # Average R²
         batch_test_r2 = (test_r2_a1 + test_r2_c1 + test_r2_a2 + test_r2_c2) / 4
         test_r2 += batch_test_r2
 
-    test_loss /= len(test_loader)
-    test_r2 /= len(test_loader)
+        # Compute MAE and MSE for each output
+        batch_mae_a1 = mae_score_torch(batch_a1, a1_pred)
+        batch_mae_c1 = mae_score_torch(batch_c1, c1_pred)
+        batch_mae_a2 = mae_score_torch(batch_a2, a2_pred)
+        batch_mae_c2 = mae_score_torch(batch_c2, c2_pred)
 
-print(f'Final Model Performance - Test Loss: {test_loss:.4f}, Test R2: {test_r2:.4f}')
+        batch_mse_a1 = mse_score_torch(batch_a1, a1_pred)
+        batch_mse_c1 = mse_score_torch(batch_c1, c1_pred)
+        batch_mse_a2 = mse_score_torch(batch_a2, a2_pred)
+        batch_mse_c2 = mse_score_torch(batch_c2, c2_pred)
 
+        # Total MAE and MSE for the batch
+        batch_mae = (batch_mae_a1 + batch_mae_c1 + batch_mae_a2 + batch_mae_c2) / 4
+        batch_mse = (batch_mse_a1 + batch_mse_c1 + batch_mse_a2 + batch_mse_c2) / 4
 
-# Plotting
-def plot_metric(train_data, val_data, best_epoch, ylabel, title):
-    plt.figure(figsize=(10, 6))
-    epochs = range(1, len(train_data) + 1)
-    plt.plot(epochs, train_data, label=f"Training {ylabel}")
-    plt.plot(epochs, val_data, label=f"Validation {ylabel}")
-    if best_epoch:
-        plt.scatter(best_epoch, val_data[best_epoch - 1], color='red', s=100, label="Best Model")
-    plt.xlabel("Epochs")
-    plt.ylabel(ylabel)
-    plt.title(f"{title} Over Epochs")
-    plt.legend()
-    plt.grid(True, linestyle='--', alpha=0.7)
-    plt.tight_layout()
-    plt.show()
+        # Accumulate MAE and MSE for average calculation
+        test_mae += batch_mae.item()
+        test_mse += batch_mse.item()
 
+# Average test loss, R², MAE, and MSE
+test_loss /= len(test_loader)
+test_r2 /= len(test_loader)
+test_mae /= len(test_loader)
+test_mse /= len(test_loader)
 
-# Plot loss & Plot R2 score
-plot_metric(train_losses, val_losses, best_epoch, "MSE Loss", "Training and Validation Loss")
-plot_metric(train_r2_scores, val_r2_scores, best_epoch, "R2 Score", "Training and Validation R2 Score")
+# Print the final test performance
+print(f'Final Model Performance - Test Loss: {test_loss:.4f}, Test MAE: {test_mae:.4f}, Test MSE: {test_mse:.4f}, Test R²: {test_r2:.4f}')
+
+# # Plot loss & Plot R2 score
+# plot_metric(train_losses, val_losses, best_epoch, test_loss, "Loss", "Loss", f"{type(model).__name__}", save_fig=True)
+# plot_metric(train_r2_scores, val_r2_scores, best_epoch, test_r2, "R2 Score", "R2 Score", f"{type(model).__name__}", save_fig=True)
 
 # Select a specific test index (e.g., 2)
 test_index = 20
@@ -311,7 +383,6 @@ with torch.no_grad():
     a1_pred, c1_pred, a2_pred, c2_pred = trained_model(new_input_parameters, new_input_displacement, real_shear)
 
 # Move tensors to CPU for plotting and denormalization
-new_input_parameters = denormalize(new_input_parameters.cpu().numpy(), param_scaler, sequence=False)
 new_input_displacement = denormalize(new_input_displacement.cpu().numpy(), disp_scaler, sequence=True)
 real_shear = denormalize(real_shear.cpu().numpy(), shear_scaler, sequence=True)
 real_a1 = denormalize(real_a1.cpu().numpy(), outa1_scaler, sequence=True)

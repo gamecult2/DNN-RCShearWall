@@ -1,0 +1,52 @@
+=== Model Training Summary ===
+
+=== Hyperparameters ===
+DATA_FOLDER: RCWall_Data/Run_Full2/FullData
+DATA_SIZE: 50000
+SEQUENCE_LENGTH: 500
+DISPLACEMENT_FEATURES: 1
+PARAMETERS_FEATURES: 17
+TEST_SIZE: 0.1
+VAL_SIZE: 0.2
+BATCH_SIZE: 32
+LEARNING_RATE: 0.001
+EPOCHS: 40
+PATIENCE: 8
+Model Type: LSTM_AE_Model_3_Optimized
+
+=== Training and Validation Metrics ===
+| Epoch | Train Loss | Train R2 | Train MAE | Train MSE | Val Loss | Val R2  | Val MAE  | Val MSE  |
+|-------|------------|----------|-----------|-----------|----------|---------|----------|----------|
+|   1   |   0.0553   |  0.9099  |  0.2080   |  0.1284   |  0.0212  | 0.9665  |  0.1240  |  0.0461  |
+|   2   |   0.0264   |  0.9599  |  0.1438   |  0.0564   |  0.0163  | 0.9739  |  0.1197  |  0.0350  |
+|   3   |   0.0207   |  0.9688  |  0.1263   |  0.0440   |  0.0172  | 0.9725  |  0.1139  |  0.0362  |
+|   4   |   0.0176   |  0.9734  |  0.1163   |  0.0373   |  0.0303  | 0.9510  |  0.1701  |  0.0625  |
+|   5   |   0.0161   |  0.9758  |  0.1106   |  0.0341   |  0.0527  | 0.9132  |  0.2424  |  0.1081  |
+|   6   |   0.0123   |  0.9816  |  0.0949   |  0.0260   |  0.0504  | 0.9172  |  0.2309  |  0.1027  |
+|   7   |   0.0114   |  0.9829  |  0.0914   |  0.0241   |  0.0622  | 0.8973  |  0.2653  |  0.1266  |
+|   8   |   0.0109   |  0.9836  |  0.0889   |  0.0230   |  0.0758  | 0.8740  |  0.2892  |  0.1543  |
+|   9   |   0.0092   |  0.9861  |  0.0815   |  0.0196   |  0.0780  | 0.8703  |  0.3014  |  0.1585  |
+|  10   |   0.0090   |  0.9866  |  0.0795   |  0.0189   |  0.0831  | 0.8611  |  0.3132  |  0.1685  |
+
+Best Epoch: 2
+
+=== Test Metrics ===
+Test Loss: 0.0810
+Test R2: 0.8651
+Test MAE: 0.3087
+Test MSE: 0.1633
+
+=== Best Validation Metrics ===
+Best Validation Loss: 0.0163
+Best Validation R²: 0.9739
+Best Validation MAE: 0.1197
+Best Validation MSE: 0.0350
+
+=== Training Metrics at Best Validation Epoch ===
+Training Loss: 0.0264
+Training R²: 0.9599
+Training MAE: 0.1438
+Training MSE: 0.0564
+
+=== Model Summary ===
+Total Parameters: 5,668,637

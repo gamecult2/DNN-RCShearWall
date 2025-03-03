@@ -127,7 +127,7 @@ if __name__ == "__main__":
         choice = input("Enter your choice (1, 2, or 3): ").strip()
 
         # Define global variables for base paths and common subfolder
-        FOLDER_BASE = r"K:\RCShearWall_V2\RCWall_Data\original"
+        FOLDER_BASE = r"K:\RCShearWall_V2\RCWall_Data2\original"
         OUTPUT_BASE = r"RCWall_Data"
         RUN_FOLDER = "Run_Final_Full"  # Common subfolder
 

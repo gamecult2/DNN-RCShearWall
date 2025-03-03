@@ -16,20 +16,6 @@ from informer.decoder import Decoder, DecoderLayer
 
 
 # ======= Global Use Layers  ====================================================================
-class ProbSparseAttention(nn.Module):
-    def __init__(self, d_model, n_heads):
-        super(ProbSparseAttention, self).__init__()
-        self.attention = nn.MultiheadAttention(
-            d_model,
-            n_heads,
-            dropout=0.1,
-            batch_first=True  # Set batch_first=True
-        )
-
-    def forward(self, x):
-        return self.attention(x, x, x)[0]
-
-
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_len=5000):
         super(PositionalEncoding, self).__init__()
@@ -87,19 +73,6 @@ class MultiHeadAttention(nn.Module):
         return self.attention(x, x, x)[0]
 
 
-class StochasticDepth(nn.Module):
-    def __init__(self, drop_prob=0.1):
-        super(StochasticDepth, self).__init__()
-        self.drop_prob = drop_prob
-
-    def forward(self, x):
-        if not self.training or self.drop_prob == 0.:
-            return x
-        keep_prob = 1 - self.drop_prob
-        mask = x.new_empty([x.shape[0], 1, 1]).bernoulli_(keep_prob)
-        return x / keep_prob * mask
-
-
 class ResidualBlock(nn.Module):
     def __init__(self, channels, dropout=0.1):
         super().__init__()
@@ -118,53 +91,6 @@ class ResidualBlock(nn.Module):
         x = self.conv2(x.transpose(1, 2)).transpose(1, 2)
         x = self.norm2(x)
         return residual + x
-
-
-class AdaptivePositionalEncoding(nn.Module):
-    def __init__(self, d_model, max_len=500):
-        super().__init__()
-        position = torch.arange(max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) * (-torch.log(torch.tensor(10000.0)) / d_model))
-        pe = torch.zeros(max_len, d_model)
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        self.register_buffer('pe', pe)
-        self.adaptive_scale = nn.Parameter(torch.ones(1))
-
-    def forward(self, x):
-        return x + self.adaptive_scale * self.pe[:x.size(1), :].unsqueeze(0)
-
-
-class LocalAttention(nn.Module):
-    def __init__(self, d_model, nhead, window_size, dropout=0.05):
-        super(LocalAttention, self).__init__()
-        self.d_model = d_model
-        self.nhead = nhead
-        self.window_size = window_size
-        self.dropout = dropout
-
-        # Multi-head attention
-        self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout, batch_first=True)
-
-    def forward(self, x):
-        # Get the sequence length
-        seq_len = x.size(1)
-
-        # Create local attention mask (size [seq_len, seq_len])
-        attn_mask = self.create_local_mask(seq_len)
-
-        # Self-attention with local mask
-        attn_output, _ = self.self_attn(x, x, x, attn_mask=attn_mask)
-        return attn_output
-
-    def create_local_mask(self, seq_len):
-        # Create a mask that only allows attention to local neighbors within the window size
-        mask = torch.zeros(seq_len, seq_len).to(torch.bool)
-        for i in range(seq_len):
-            start = max(0, i - self.window_size)
-            end = min(seq_len, i + self.window_size + 1)
-            mask[i, start:end] = 1
-        return mask
 
 
 # ===============================================================================================
@@ -576,7 +502,7 @@ class LSTM_AE_Model_1(nn.Module):
 
 
 class LSTM_AE_Model_3(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=256):
+    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=512):
         super(LSTM_AE_Model_3, self).__init__()
         self.sequence_length = sequence_length
         self.parameters_features = parameters_features
@@ -596,10 +522,10 @@ class LSTM_AE_Model_3(nn.Module):
             nn.Dropout(0.2)
         )
 
-        self.lstm_encoder1 = nn.LSTM(d_model, 300, batch_first=True, dropout=0.1)
-        self.lstm_encoder2 = nn.LSTM(300, 50, batch_first=True, dropout=0.1)
-        self.lstm_decoder1 = nn.LSTM(50, 300, batch_first=True, dropout=0.1)
-        self.lstm_decoder2 = nn.LSTM(300, d_model, batch_first=True, dropout=0.1)
+        self.lstm_encoder1 = nn.LSTM(d_model, d_model, batch_first=True, dropout=0.1)
+        self.lstm_encoder2 = nn.LSTM(d_model, 50, batch_first=True, dropout=0.1)
+        self.lstm_decoder1 = nn.LSTM(50, d_model, batch_first=True, dropout=0.1)
+        self.lstm_decoder2 = nn.LSTM(d_model, d_model, batch_first=True)
 
         self.output_layer = nn.Sequential(
             nn.Linear(d_model, d_model // 2),
@@ -633,19 +559,19 @@ class LSTM_AE_Model_3(nn.Module):
 
 
 class LSTM_AE_Model_3_Optimized(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=200):
+    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=512):
         super(LSTM_AE_Model_3_Optimized, self).__init__()
         self.sequence_length = sequence_length
         self.parameters_features = parameters_features
         self.displacement_features = displacement_features
 
+        # Encoders (unchanged)
         self.param_encoder = nn.Sequential(
             nn.Linear(parameters_features, d_model // 2),
             nn.LayerNorm(d_model // 2),
             nn.GELU(),
             nn.Dropout(0.2)
         )
-
         self.series_encoder = nn.Sequential(
             nn.Linear(displacement_features, d_model // 2),
             nn.LayerNorm(d_model // 2),
@@ -653,61 +579,69 @@ class LSTM_AE_Model_3_Optimized(nn.Module):
             nn.Dropout(0.2)
         )
 
-        # LSTM layers with bidirectionality and adjusted dropout
-        self.lstm_encoder1 = nn.LSTM(d_model, d_model, batch_first=True, bidirectional=False, dropout=0.1)
-        self.lstm_encoder2 = nn.LSTM(d_model, 20, batch_first=True, bidirectional=False, dropout=0.1)
-        self.lstm_decoder1 = nn.LSTM(20, d_model, batch_first=True, bidirectional=False, dropout=0.1)
-        self.lstm_decoder2 = nn.LSTM(d_model, d_model, batch_first=True, bidirectional=False, dropout=0.1)
+        # LSTM layers
+        self.lstm_encoder1 = nn.LSTM(d_model, d_model, batch_first=True)
+        self.lstm_encoder1_norm = nn.LayerNorm(d_model)
+        self.lstm_encoder1_dropout = nn.Dropout(0.1)
 
-        # Layer normalization after each LSTM output
-        self.lstm_encoder1_ln = nn.LayerNorm(d_model)
-        self.lstm_encoder2_ln = nn.LayerNorm(20)
-        self.lstm_decoder1_ln = nn.LayerNorm(d_model)
-        self.lstm_decoder2_ln = nn.LayerNorm(d_model)
+        self.lstm_encoder2 = nn.LSTM(d_model, 50, batch_first=True)
+        self.lstm_encoder2_norm = nn.LayerNorm(50)
+        self.lstm_encoder2_dropout = nn.Dropout(0.1)
 
-        # Output layer with adjusted dropout rates
+        # Decoder layers with residual projections
+        self.lstm_decoder1 = nn.LSTM(50, d_model, batch_first=True)
+        self.residual_proj1 = nn.Linear(50, d_model)  # Projection: 50 → 512
+        self.lstm_decoder1_norm = nn.LayerNorm(d_model)
+        self.lstm_decoder1_dropout = nn.Dropout(0.1)
+
+        self.lstm_decoder2 = nn.LSTM(d_model, d_model, batch_first=True)
+        self.lstm_decoder2_norm = nn.LayerNorm(d_model)
+        self.lstm_decoder2_dropout = nn.Dropout(0.1)
+
+        # Output layer (unchanged)
         self.output_layer = nn.Sequential(
             nn.Linear(d_model, d_model // 2),
+            nn.LayerNorm(d_model // 2),
             nn.GELU(),
-            nn.Dropout(0.2),  # Higher dropout for fully connected layers
-            nn.Linear(d_model // 2, 80),
+            nn.Dropout(0.3),
+            nn.Linear(d_model // 2, 100),
+            nn.LayerNorm(100),
             nn.GELU(),
-            nn.Dropout(0.2),
-            nn.Linear(80, 40),
+            nn.Dropout(0.3),
+            nn.Linear(100, 50),
             nn.GELU(),
-            nn.Linear(40, displacement_features)
+            nn.Linear(50, displacement_features)
         )
 
     def forward(self, parameters_input, displacement_input):
-        # Encoding parameters and displacement
+        # Encoder path (unchanged)
         params_encoded = self.param_encoder(parameters_input)
         params_encoded = params_encoded.unsqueeze(1).expand(-1, self.sequence_length, -1)
-
         displacement_input = displacement_input.unsqueeze(-1)
         disp_encoded = self.series_encoder(displacement_input)
-
-        # Concatenate parameter and displacement encodings
         combined = torch.cat([params_encoded, disp_encoded], dim=-1)
 
-        # LSTM encoding with residual connections
+        # Encoder LSTM
         out1, _ = self.lstm_encoder1(combined)
-        out1_res = out1 + combined  # Residual connection
-        out1_res = self.lstm_encoder1_ln(out1_res)  # Apply LayerNorm
+        out1 = self.lstm_encoder1_norm(out1 + combined)  # Residual (dim 512 matches)
+        out1 = self.lstm_encoder1_dropout(out1)
 
-        out2, _ = self.lstm_encoder2(out1_res)
-        out2_res = self.lstm_encoder2_ln(out2)
+        out2, _ = self.lstm_encoder2(out1)
+        out2 = self.lstm_encoder2_norm(out2)
+        out2 = self.lstm_encoder2_dropout(out2)
 
-        # LSTM decoding with residual connections
-        out3, _ = self.lstm_decoder1(out2_res)
-        out3_res = self.lstm_decoder1_ln(out3)
+        # Decoder LSTM with projection
+        out3, _ = self.lstm_decoder1(out2)
+        # Project residual to match dimensions: 50 → 512
+        residual = self.residual_proj1(out2)
+        out3 = self.lstm_decoder1_norm(out3 + residual)  # Now both are 512
+        out3 = self.lstm_decoder1_dropout(out3)
 
-        out4, _ = self.lstm_decoder2(out3_res)
-        out4_res = out4 + out3_res  # Residual connection
-        out4_res = self.lstm_decoder2_ln(out4_res)
+        out4, _ = self.lstm_decoder2(out3)
+        out4 = self.lstm_decoder2_norm(out4 + out3)  # Residual (dim 512 matches)
+        out4 = self.lstm_decoder2_dropout(out4)
 
-        # Final output layer
-        output_shear = self.output_layer(out4_res)
-
+        output_shear = self.output_layer(out4)
         return output_shear.squeeze(-1)
 
 
@@ -1402,16 +1336,12 @@ class LLaMA2_Model(nn.Module):
         return output.squeeze(-1)
 
 
-# ==================================================================================================
-
-
 # =====================================================================================================
 class DecoderOnlyTransformer(nn.Module):
-    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=256, nhead=8,
-                 num_layers=2, dim_feedforward=1024, dropout=0.1):
+    def __init__(self, parameters_features, displacement_features, sequence_length,
+                 d_model=512, nhead=8, num_layers=2, dim_feedforward=1024, dropout=0.1):
         super().__init__()
         self.sequence_length = sequence_length
-        self.d_model = d_model
 
         # Input embeddings
         self.param_encoder = nn.Sequential(
@@ -1448,12 +1378,12 @@ class DecoderOnlyTransformer(nn.Module):
             nn.Linear(d_model, d_model // 2),
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(d_model // 2, 100),
+            nn.Linear(d_model // 2, d_model // 4),
             nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(100, 50),
+            nn.Linear(d_model // 4, d_model // 8),
             nn.GELU(),
-            nn.Linear(50, displacement_features)
+            nn.Linear(d_model // 8, displacement_features)
         )
 
         # Create causal mask for decoder
@@ -1462,17 +1392,10 @@ class DecoderOnlyTransformer(nn.Module):
             torch.triu(torch.full((sequence_length, sequence_length), float('-inf')), diagonal=1)
         )
 
-    def generate_square_subsequent_mask(self, sz):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-        return mask
-
     def forward(self, parameters_input, displacement_input):
-        # Encode parameters and expand across sequence length
         params_encoded = self.param_encoder(parameters_input)
         params_encoded = params_encoded.unsqueeze(1).expand(-1, self.sequence_length, -1)
 
-        # Encode displacement input
         displacement_input = displacement_input.unsqueeze(-1)
         disp_encoded = self.series_encoder(displacement_input)
 
@@ -1480,14 +1403,12 @@ class DecoderOnlyTransformer(nn.Module):
         combined = torch.cat([params_encoded, disp_encoded], dim=-1)
 
         # Add positional encoding
-        combined = self.pos_encoder(combined.transpose(0, 1)).transpose(0, 1)
+        combined = self.pos_encoder(combined)
 
         # Create memory mask for causal attention
-        batch_size = combined.size(0)
         causal_mask = self.causal_mask[:self.sequence_length, :self.sequence_length]
 
         # Pass through transformer decoder
-        # Using the same tensor as both input and memory since it's decoder-only
         output = self.transformer_decoder(
             combined,
             combined,
@@ -1498,5 +1419,207 @@ class DecoderOnlyTransformer(nn.Module):
         # Project to output space
         output = self.output_layer(output)
 
+        return output.squeeze(-1)
+
+
+class DecoderOnlyLSTM(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length, d_model=256, lstm_hidden=128, lstm_layers=2, dropout=0.1):
+        super().__init__()
+        self.sequence_length = sequence_length
+        self.d_model = d_model
+
+        # Input embeddings
+        self.param_encoder = nn.Sequential(
+            nn.Linear(parameters_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout)
+        )
+
+        # LSTM-based series encoder
+        self.series_encoder = nn.LSTM(
+            input_size=displacement_features,
+            hidden_size=lstm_hidden,
+            num_layers=lstm_layers,
+            batch_first=True,
+            dropout=dropout,
+            bidirectional=False
+        )
+
+        self.projection = nn.Linear(lstm_hidden, d_model // 2)
+
+        # Positional encoding
+        self.pos_encoder = PositionalEncoding(d_model)
+
+        # Transformer decoder layer
+        decoder_layer = nn.TransformerDecoderLayer(
+            d_model=d_model,
+            nhead=8,
+            dim_feedforward=1024,
+            dropout=dropout,
+            batch_first=True
+        )
+
+        # Transformer decoder
+        self.transformer_decoder = nn.TransformerDecoder(decoder_layer, num_layers=2)
+
+        # Output projection
+        self.output_layer = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model // 2, d_model // 4),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model // 4, d_model // 8),
+            nn.GELU(),
+            nn.Linear(d_model // 8, displacement_features)
+        )
+
+        # Create causal mask for decoder
+        self.register_buffer(
+            "causal_mask",
+            torch.triu(torch.full((sequence_length, sequence_length), float('-inf')), diagonal=1)
+        )
+
+    def forward(self, parameters_input, displacement_input):
+        # Encode parameters and expand across sequence length
+        params_encoded = self.param_encoder(parameters_input)
+        params_encoded = params_encoded.unsqueeze(1).expand(-1, self.sequence_length, -1)
+
+        # Encode displacement input using LSTM
+        lstm_output, _ = self.series_encoder(displacement_input.unsqueeze(-1))
+        disp_encoded = self.projection(lstm_output)
+
+        # Combine parameter and displacement encodings
+        combined = torch.cat([params_encoded, disp_encoded], dim=-1)
+
+        # Add positional encoding
+        combined = self.pos_encoder(combined.transpose(0, 1)).transpose(0, 1)
+
+        # Create memory mask for causal attention
+        causal_mask = self.causal_mask[:self.sequence_length, :self.sequence_length]
+
+        # Pass through transformer decoder
+        output = self.transformer_decoder(
+            combined,
+            combined,
+            tgt_mask=causal_mask,
+            memory_mask=causal_mask
+        )
+
+        # Project to output space
+        output = self.output_layer(output)
+
+        return output.squeeze(-1)
+
+
+class DecoderOnlyTransformer2(nn.Module):
+    def __init__(self, parameters_features, displacement_features, sequence_length,
+                 d_model=256, nhead=8, num_layers=4, dim_feedforward=512, dropout=0.1):
+        super().__init__()
+        self.sequence_length = sequence_length
+
+        # Input embeddings for parameters
+        self.param_encoder = nn.Sequential(
+            nn.Linear(parameters_features, d_model // 2),
+            nn.LayerNorm(d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout)
+        )
+
+        # LSTM-based series encoder
+        self.series_encoder = nn.LSTM(
+            input_size=displacement_features,
+            hidden_size=d_model // 2,
+            num_layers=1,
+            dropout=dropout,
+            batch_first=True,
+            bidirectional=False
+        )
+
+        # Layer normalization after encoder LSTM
+        self.lstm_norm = nn.LayerNorm(d_model // 2)
+
+        # Positional encoding
+        self.pos_encoder = PositionalEncoding(d_model)
+
+        # Transformer decoder layer
+        decoder_layer = nn.TransformerDecoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            dim_feedforward=dim_feedforward,
+            dropout=dropout,
+            batch_first=True
+        )
+
+        # Transformer decoder
+        self.transformer_decoder = nn.TransformerDecoder(decoder_layer, num_layers=num_layers)
+
+        # Output LSTM
+        self.output_lstm = nn.LSTM(
+            input_size=d_model,
+            hidden_size=d_model,
+            num_layers=1,
+            dropout=dropout,
+            batch_first=True,
+            bidirectional=False
+        )
+
+        # Layer normalization after output LSTM
+        self.output_lstm_norm = nn.LayerNorm(d_model)
+
+        # Final output projection
+        self.output_layer = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model // 2, d_model // 4),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model // 4, d_model // 8),
+            nn.GELU(),
+            nn.Linear(d_model // 8, displacement_features)
+        )
+
+        # In the __init__ method, keep the register_buffer code
+        self.register_buffer(
+            "causal_mask",
+            torch.triu(torch.full((sequence_length, sequence_length), float('-inf')), diagonal=1)
+        )
+
+    def forward(self, parameters_input, displacement_input):
+        # Encode parameters and expand across sequence length
+        params_encoded = self.param_encoder(parameters_input)
+        params_encoded = params_encoded.unsqueeze(1).expand(-1, self.sequence_length, -1)
+
+        # Encode displacement input using LSTM
+        displacement_input = displacement_input.unsqueeze(-1)
+        lstm_out, _ = self.series_encoder(displacement_input)
+        disp_encoded = self.lstm_norm(lstm_out)
+
+        # Combine parameter and displacement encodings
+        combined = torch.cat([params_encoded, disp_encoded], dim=-1)
+
+        # Add positional encoding
+        combined = self.pos_encoder(combined)
+
+        # Create memory mask for causal attention
+        causal_mask = self.causal_mask[:self.sequence_length, :self.sequence_length]
+
+        # Pass through transformer decoder
+        transformer_output = self.transformer_decoder(
+            combined,
+            combined,
+            tgt_mask=causal_mask,
+            memory_mask=causal_mask
+        )
+
+        # Pass through output LSTM
+        # lstm_output, _ = self.output_lstm(transformer_output)
+        # lstm_output = self.output_lstm_norm(lstm_output)
+
+        # Project to final output space
+        output = self.output_layer(transformer_output)
         return output.squeeze(-1)
 # =====================================================================================================

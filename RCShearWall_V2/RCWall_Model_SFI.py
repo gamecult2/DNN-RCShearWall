@@ -1,7 +1,7 @@
 import openseespy.opensees as ops
 # import vfo.vfo as vfo
 # import opsvis as opsv
-from RCShearWall_V2.utils.functions import *
+from utils.functions import *
 
 
 # Redirect stderr to suppress error messages
@@ -23,10 +23,10 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
     eleBE = 2 * 2
 
     lweb = lw - (2 * lbe)  # Web length
-
     eleWeb = eleL - eleBE
     elelweb = lweb / eleWeb
-    Ag = tw * lweb + 2 * (tb * lbe)  # Wall area
+    Ag = tw * (lw - (2 * lbe)) + 2 * (tb * lbe)  # Calculate Ag based on provided formula
+    ar = hw / lw
 
     # Node definition
     for i in range(1, eleH + 2):
@@ -107,15 +107,15 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
     xcrnu = 1.0125  # cracking strain - compression
     rc = 1.5  # shape parameter - compression
     xcrnc = 1.039  # cracking strain - compression
-    et = 0.0001236  # strain at peak tensile stress (0.00008)
+    et = 0.00008  # strain at peak tensile stress (0.00008)
     rt = 1.5  # shape parameter - tension
     xcrp = 1000  # cracking strain - tension
 
     # ConcreteCM model
     # ops.uniaxialMaterial('ConcreteCM', IDconcWeb, fcU, ecU, EcU, ru, xcrnu, ftU, et, rt, xcrp, '-GapClose', 0)  # Web (unconfined concrete)
     # ops.uniaxialMaterial('ConcreteCM', IDconcBE, fcC, ecC, EcC, rc, xcrnc, ftC, et, rt, xcrp, '-GapClose', 0)  # BE (confined concrete)
-    ops.uniaxialMaterial('ConcreteCM', IDconcWeb, fcU, ecU, EcU, rU, xcrnu, ftU, etU, rt, xcrp, '-GapClose', 0)  # Web (unconfined concrete)
-    ops.uniaxialMaterial('ConcreteCM', IDconcBE, fcC, ecC, EcC, rC, xcrnc, ftC, etC, rt, xcrp, '-GapClose', 0)  # BE (confined concrete)
+    ops.uniaxialMaterial('ConcreteCM', IDconcWeb, fcU, ecU, EcU, rU, xcrnu, ftU, et, rt, xcrp, '-GapClose', 0)  # Web (unconfined concrete)
+    ops.uniaxialMaterial('ConcreteCM', IDconcBE, fcC, ecC, EcC, rC, xcrnc, ftC, et, rt, xcrp, '-GapClose', 0)  # BE (confined concrete)
     if printProgression:
         print('--------------------------------------------------------------------------------------------------')
         print('ConcreteCM', IDconcWeb, fcU, ecU, EcU, rU, xcrnu, ftU, etU, rt, xcrp, '-GapClose', 0)  # Web (unconfined concrete)
@@ -180,8 +180,6 @@ def build_model(tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouX
         if printProgression:
             print('E_SFI', i + 1, *[i + 1, i + 2], eleL, 0.4, '-thick', *MVLEM_thick, '-width', *MVLEM_width, '-mat', *MVLEM_mat)
 
-    Ag = tw * (lw - (2 * lbe)) + 2 * (tb * lbe)  # Calculate Ag based on provided formula
-    ar = hw / lw
     # parameter_values = [tw, tb, hw, lw, lbe, fc, fyb, fyw, fx, round(rouYb, 4), round(rouYw, 4), round(rouXb, 4), round(rouXw, 4), loadF, Ag]
     parameter_values = [tw, tb, hw, lw, ar, lbe, fc, fyb, fyw, fx, rouYb, rouYw, rouXb, rouXw, loadF, Ag]
 
@@ -244,7 +242,7 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
     min_factor = 1e-6  # at most initial/1e6
     max_factor_increment = 1.5  # define how fast the factor can increase
     min_factor_increment = 1e-6  # define how fast the factor can decrease
-    max_iter = 3000
+    max_iter = 2500
     desired_iter = int(max_iter / 2)  # should be higher than the desired number of iterations
 
     # -------------CYCLIC-----------------
@@ -256,7 +254,7 @@ def run_analysis(displacement_step, analysis='cyclic', printProgression=True, en
     ops.numberer('RCM')
     ops.system("ProfileSPD")  # UmfPack 19
     # ops.system("UmfPack")  # UmfPack 19
-    ops.test('NormDispIncr', 1e-4, desired_iter, 0)
+    ops.test('NormDispIncr', 1e-5, desired_iter, 0)
     ops.algorithm('KrylovNewton')  # KrylovNewton
     ops.analysis("Static")
 
